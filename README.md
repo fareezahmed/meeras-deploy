@@ -14,6 +14,7 @@ meeras-deploy/
 ├── donation-config.js      ← Stripe Payment Link URLs (optional donations)
 ├── README.md               ← This file
 ├── DEPLOYMENT.md           ← Detailed step-by-step deployment guide
+├── MANUAL_TEST_PLAN.md     ← Manual test scenarios & sign-off checklist
 ├── bucket-policy.json      ← S3 bucket policy template
 ├── cloudfront-config.json  ← CloudFront distribution template (optional)
 ├── cloudfront/             ← apply_s3_website_origin.py (REST vs website origin)
@@ -27,6 +28,8 @@ The entire application is **one HTML file** plus a small **`donation-config.js`*
 for Stripe links (loaded first). No build step, no bundler, no framework
 installation. CSS and JavaScript are inline in `index.html`. The only external dependencies fetched
 at runtime are Google Fonts and `pdf-lib` from cdnjs (both via HTTPS).
+
+**Manual QA:** see **`MANUAL_TEST_PLAN.md`** for step-by-step scenarios and a smoke sign-off checklist.
 
 ---
 
@@ -169,9 +172,11 @@ CloudFront invalidations for the first 1,000 paths each month are free.
 
 Meeras is designed to protect users' will data:
 
-- **All data stays on the user's device.** Drafts are stored in IndexedDB
-  (or `window.storage` in artifact environments). The application never
-  transmits will data anywhere.
+- **All data stays on the user's device.** By default drafts live in
+  **sessionStorage** for that browser tab only (closing the tab clears them).
+  Set `MEERAS_USE_INDEXEDDB = true` in `index.html` for IndexedDB persistence
+  across sessions on the same device. Artifact environments may use
+  `window.storage` instead. The application never transmits will data anywhere.
 - **External requests:** the page loads Google Fonts and `pdf-lib` from
   cdnjs at first visit. Both are served over HTTPS, but if you have strict
   privacy requirements you may want to self-host these (see "Advanced:

@@ -330,11 +330,16 @@ This is optional. The defaults work fine for most deployments.
 - Confirm **`donation-config.js`** is deployed next to `index.html` (same S3 prefix / folder).
 - In `donation-config.js`, check `enabled` is not `false` and at least one `links.*` value is a full `https://buy.stripe.com/...` URL. Open the browser Network tab and verify `donation-config.js` returns 200 (not 404).
 
-**Drafts don't persist between visits**
-- This is browser-dependent. The app uses IndexedDB; some browsers (notably
-  Safari in private mode, or with aggressive storage clearing) may not persist
-  data across sessions. The diagnostic strip below the hero shows whether
-  storage is working — share that with users having issues.
+**Drafts don't persist after you close the tab**
+- By default Meeras uses **sessionStorage**: drafts exist only for that tab.
+  Closing the tab clears them. Use **Manage drafts → Export to file** to keep a
+  copy. For saves across tab closes on the same device, set
+  `MEERAS_USE_INDEXEDDB = true` in the app script in `index.html` (advanced).
+  Check the browser developer console for `[Meeras] Storage ready` logs if you need to debug storage.
+
+**Drafts missing when IndexedDB mode is off**
+- Old data may still exist in IndexedDB from a previous version but is not read
+  unless `MEERAS_USE_INDEXEDDB` is enabled.
 
 **ACM certificate stuck on "Pending validation"**
 - The CNAME records must be added exactly as shown (including the trailing

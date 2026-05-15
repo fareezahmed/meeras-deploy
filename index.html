@@ -1493,9 +1493,16 @@ const DRAFT_PREFIX = 'wasiyyah-draft-';
 
 // ─── Storage adapter ────────────────────────────────────────────────────────
 // In Claude artifacts, IndexedDB is unavailable but window.storage is provided.
-// In standalone use, window.storage doesn't exist so we fall back to IndexedDB.
+// Otherwise: by default Meeras uses sessionStorage so drafts exist only for this
+// browser tab (closing the tab clears them). Set MEERAS_USE_INDEXEDDB below to
+// true to restore cross-session persistence on this device (IndexedDB).
 // Both back-ends expose the same dbGet/dbSet/dbDelete contract.
 const USE_WINDOW_STORAGE = (typeof window !== 'undefined') && !!window.storage;
+const MEERAS_USE_INDEXEDDB = false;
+
+function _sessionStoreKey(key) {
+  return 'meeras:v1:' + key;
+}
 
 async function openDB() {
   return new Promise((resolve, reject) => {
@@ -1519,6 +1526,15 @@ async function dbGet(key) {
       return undefined;
     }
   }
+  if (!MEERAS_USE_INDEXEDDB) {
+    try {
+      const raw = sessionStorage.getItem(_sessionStoreKey(key));
+      if (raw == null) return undefined;
+      return JSON.parse(raw);
+    } catch (e) {
+      return undefined;
+    }
+  }
   try {
     const db = await openDB();
     return new Promise((resolve, reject) => {
@@ -1537,6 +1553,18 @@ async function dbSet(key, value) {
     } catch (e) { console.warn('window.storage.set failed', e); }
     return;
   }
+  if (!MEERAS_USE_INDEXEDDB) {
+    try {
+      sessionStorage.setItem(_sessionStoreKey(key), JSON.stringify(value));
+    } catch (e) {
+      if (e && e.name === 'QuotaExceededError') {
+        alert('This tab ran out of storage space. Export your draft to a file (Manage drafts → Export), then continue in a new tab.');
+      } else {
+        console.warn('sessionStorage.set failed', e);
+      }
+    }
+    return;
+  }
   try {
     const db = await openDB();
     return new Promise((resolve, reject) => {
@@ -1553,6 +1581,10 @@ async function dbDelete(key) {
     try { await window.storage.delete(key); } catch (e) {}
     return;
   }
+  if (!MEERAS_USE_INDEXEDDB) {
+    try { sessionStorage.removeItem(_sessionStoreKey(key)); } catch (e) {}
+    return;
+  }
   try {
     const db = await openDB();
     return new Promise((resolve, reject) => {
@@ -1565,7 +1597,7 @@ async function dbDelete(key) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-//   SESSIONS LAYER — multi-draft management on top of IndexedDB
+//   SESSIONS LAYER — multi-draft management (sessionStorage by default; see MEERAS_USE_INDEXEDDB)
 // ═══════════════════════════════════════════════════════════════════════════
 const Sessions = {
   index: [],          // [{ id, name, createdAt, lastSavedAt, completionPct, testatorName }]
@@ -1596,7 +1628,7 @@ const Sessions = {
       const id = this._newId();
       this.index.push({
         id,
-        name: legacyResult.testator?.fullName ? `${legacyResult.testator.fullName}'s will` : 'My will',
+        name: legacyResult.testator?.fullName ? `${legacyResult.testator.fullName}'s will` : 'Untitled draft',
         createdAt: legacyResult.meta?.createdAt || new Date().toISOString(),
         lastSavedAt: legacyResult.meta?.lastSavedAt || new Date().toISOString(),
         completionPct: 0,
@@ -1611,22 +1643,13 @@ const Sessions = {
       return;
     }
 
-    // Empty state → create a default draft in memory, defer index/active writes only.
-    // We deliberately do NOT queue a write of DEFAULT_STATE() into the draft slot —
-    // scheduleSave will write it once the user types anything. If they leave without
-    // typing, there's nothing meaningful to persist anyway. This eliminates a race
-    // where the deferred empty write could land after the user's first save.
+    // Empty storage → no phantom draft. First real draft is created when the user
+    // clicks "Begin your Will" (see beginNewWill). Clear any orphaned active pointer.
     if (this.index.length === 0) {
-      const id = this._newId();
-      const now = new Date().toISOString();
-      this.index.push({
-        id, name: 'My will', createdAt: now, lastSavedAt: now,
-        completionPct: 0, testatorName: '',
-      });
-      this.activeId = id;
+      this.activeId = null;
       this._initialState = null;
-      this._pendingWrites.push([DRAFTS_INDEX_KEY, this.index]);
-      this._pendingWrites.push([ACTIVE_DRAFT_KEY, id]);
+      this._pendingWrites.push([DRAFTS_INDEX_KEY, []]);
+      this._pendingDeletes.push(ACTIVE_DRAFT_KEY);
       return;
     }
 
@@ -1725,10 +1748,10 @@ const Sessions = {
       if (this.index.length > 0) {
         await this.switchTo(this.index[0].id);
       } else {
-        const newId = await this.create('My will');
-        this.activeId = newId;
-        await dbSet(ACTIVE_DRAFT_KEY, newId);
+        this.activeId = null;
         STATE = DEFAULT_STATE();
+        await dbSet(DRAFTS_INDEX_KEY, this.index);
+        await dbDelete(ACTIVE_DRAFT_KEY);
       }
     }
   },
@@ -1893,6 +1916,26 @@ function goTo(screenId) {
   renderScreen(screenId);
   window.scrollTo({ top: 0, behavior: 'smooth' });
   renderProgress();
+}
+
+/** First visit / cleared storage: create the first draft only when the user starts. */
+let _beginNewWillLock = false;
+async function beginNewWill() {
+  if (_beginNewWillLock) return;
+  _beginNewWillLock = true;
+  try {
+    if (!Sessions.activeId) {
+      const id = await Sessions.create('Untitled draft');
+      await Sessions.switchTo(id);
+      refreshSessionIndicator();
+    }
+    goTo('S02');
+  } catch (e) {
+    console.error(e);
+    alert('Could not start a new draft. Please try again.');
+  } finally {
+    _beginNewWillLock = false;
+  }
 }
 
 function nextScreen() {
@@ -2281,7 +2324,6 @@ screens.S01 = () => {
     || (STATE.bequests.length > 0 && STATE.bequests[0].recipient)
     || STATE.capacity.age || STATE.capacity.willing || STATE.capacity.faraid;
   const hasDraft = hasNavigated || hasData;
-  const active = Sessions.active();
   const pct = computeCompletion();
   const lastStep = STATE.currentScreen || 'S01';
   const lastStepLabel = ({
@@ -2304,10 +2346,6 @@ screens.S01 = () => {
   // (c) more than one draft exists. The hero "Begin" button shows only when none apply.
   const showDraftsList = allDrafts.length > 0 && (Sessions._hadExistingData || hasDraft || allDrafts.length > 1);
   const draftsWithContent = allDrafts;
-
-  // Storage diagnostic line — useful when troubleshooting persistence issues.
-  const diag = STORAGE_DIAG;
-  const diagOk = diag.selfTestPassed === true;
 
   return `
   ${showDraftsList ? `
@@ -2372,31 +2410,11 @@ screens.S01 = () => {
       <div style="margin-top:14px;font-size:13px;color:var(--muted);">Picks up at: <strong style="color:var(--text);">${escapeHtml(lastStepLabel)}</strong>  ·  ${pct}% complete</div>
     ` : `
       <div>
-        <button class="cta-start" onclick="goTo('S02')">Begin your Will  →</button>
+        <button class="cta-start" onclick="void beginNewWill()">Begin your Will  →</button>
       </div>
       <div style="margin-top:14px;font-size:13px;color:var(--muted);">Takes about 20 minutes  ·  Private to your device  ·  Always free</div>
     `}
   </div>
-
-  <!-- Storage health diagnostic strip — visible so persistence issues are obvious -->
-  <div style="max-width:720px;margin:0 auto 16px;padding:8px 14px;background:${diagOk ? 'rgba(45,122,79,0.06)' : 'rgba(178,58,58,0.06)'};border:1px solid ${diagOk ? 'rgba(45,122,79,0.2)' : 'rgba(178,58,58,0.25)'};border-radius:4px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-    <span>
-      <strong style="color:${diagOk ? 'var(--success)' : 'var(--danger)'};">${diagOk ? '✓ Persistence' : '⚠ Persistence'}</strong>
-      &nbsp;Storage: <strong>${diag.backend}</strong>
-      ${diag.selfTestPassed === false ? ` — <strong>self-test failed${diag.selfTestError ? ': ' + escapeHtml(diag.selfTestError) : ''}</strong>` : ''}
-    </span>
-    <span>
-      ${diag.draftsFound} draft${diag.draftsFound === 1 ? '' : 's'} loaded${diag.loadDurationMs !== null ? ` in ${diag.loadDurationMs}ms` : ''}
-    </span>
-  </div>
-
-  ${diag.selfTestPassed === false ? `
-    <div class="warn-callout" style="max-width:720px;margin:0 auto 22px;">
-      <strong>Heads up — persistent storage isn't working in this environment.</strong>
-      Your draft will be kept in memory only and will be lost if you close or refresh this page.
-      To save your work, use <strong>Manage drafts → Export to file</strong> regularly, or open this app in a regular browser tab outside the artifact viewer where IndexedDB is available.
-    </div>
-  ` : ''}
 
   <div class="scripture" style="max-width:600px;margin:28px auto;">
     <div class="scripture-arabic">مَا حَقُّ امْرِئٍ مُسْلِمٍ لَهُ شَيْءٌ يُوصِي فِيهِ يَبِيتُ لَيْلَتَيْنِ إِلَّا وَوَصِيَّتُهُ مَكْتُوبَةٌ عِنْدَهُ</div>
@@ -2420,7 +2438,7 @@ screens.S01 = () => {
     <div class="guarantee">
       <svg class="guarantee-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       <div class="guarantee-title">Private by design</div>
-      <div class="guarantee-desc">Your information never leaves your browser. No accounts, no cloud, no tracking.</div>
+      <div class="guarantee-desc">Your information never leaves this browser tab by default; closing the tab clears your draft. No accounts, no cloud, no tracking.</div>
     </div>
   </div>
 
@@ -5435,11 +5453,15 @@ function hideResetModal() {
 //   SESSIONS UI — drafts modal, top-bar pill, export/import, resume card
 // ═══════════════════════════════════════════════════════════════════════════
 function refreshSessionIndicator() {
-  const active = Sessions.active();
-  if (!active) return;
   const pillName = document.getElementById('sessionPillName');
   const pillMeta = document.getElementById('sessionPillMeta');
   if (!pillName || !pillMeta) return;
+  const active = Sessions.active();
+  if (!active) {
+    pillName.textContent = 'No draft yet';
+    pillMeta.textContent = '  ·  Begin from home';
+    return;
+  }
   pillName.textContent = active.name;
   const pct = computeCompletion();
   active.completionPct = pct;
@@ -5571,10 +5593,16 @@ async function duplicateDraft(id) {
 async function deleteDraft(id) {
   const entry = Sessions.index.find(d => d.id === id);
   if (!confirm(`Delete "${entry?.name || 'this draft'}"? This cannot be undone.`)) return;
+  const wasActive = id === Sessions.activeId;
   await Sessions.remove(id);
   refreshSessionIndicator();
   renderDraftsList();
-  if (id === Sessions.activeId) renderScreen(STATE.currentScreen);
+  if (!Sessions.activeId) {
+    STATE = DEFAULT_STATE();
+    goTo('S01');
+  } else if (wasActive) {
+    renderScreen(STATE.currentScreen);
+  }
 }
 
 async function exportDraft(id) {
@@ -5653,7 +5681,7 @@ async function resetAndReload() {
 // ────────────────────────────────────────────────────────────────────────────
 // 9.  INIT
 // ────────────────────────────────────────────────────────────────────────────
-// Storage diagnostic state (exposed for the landing diagnostic panel)
+// Storage diagnostic state (used by init console logging; not shown on the landing page)
 const STORAGE_DIAG = {
   backend: 'unknown',
   selfTestPassed: null,
@@ -5682,7 +5710,7 @@ async function storageSelfTest() {
 }
 
 async function init() {
-  STORAGE_DIAG.backend = USE_WINDOW_STORAGE ? 'window.storage' : 'IndexedDB';
+  STORAGE_DIAG.backend = USE_WINDOW_STORAGE ? 'window.storage' : (MEERAS_USE_INDEXEDDB ? 'IndexedDB' : 'sessionStorage (this tab only)');
 
   const withTimeout = (p, ms, label) => new Promise(resolve => {
     let settled = false;
