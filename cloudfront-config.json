@@ -1,0 +1,72 @@
+{
+  "CallerReference": "meeras-deployment",
+  "Comment": "Meeras — Islamic Will WebApp distribution",
+  "Enabled": true,
+  "Origins": {
+    "Quantity": 1,
+    "Items": [
+      {
+        "Id": "meeras-s3-website-origin",
+        "DomainName": "<BUCKET_NAME>.s3-website-<AWS_REGION>.amazonaws.com",
+        "CustomOriginConfig": {
+          "HTTPPort": 80,
+          "HTTPSPort": 443,
+          "OriginProtocolPolicy": "http-only",
+          "OriginSslProtocols": {
+            "Quantity": 1,
+            "Items": ["TLSv1.2"]
+          },
+          "OriginReadTimeout": 30,
+          "OriginKeepaliveTimeout": 5
+        }
+      }
+    ]
+  },
+  "DefaultRootObject": "index.html",
+  "DefaultCacheBehavior": {
+    "TargetOriginId": "meeras-s3-website-origin",
+    "ViewerProtocolPolicy": "redirect-to-https",
+    "AllowedMethods": {
+      "Quantity": 2,
+      "Items": ["GET", "HEAD"],
+      "CachedMethods": {
+        "Quantity": 2,
+        "Items": ["GET", "HEAD"]
+      }
+    },
+    "Compress": true,
+    "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+    "_comment_CachePolicyId": "AWS-managed 'CachingOptimized' policy"
+  },
+  "CustomErrorResponses": {
+    "Quantity": 2,
+    "Items": [
+      {
+        "ErrorCode": 403,
+        "ResponsePagePath": "/index.html",
+        "ResponseCode": "200",
+        "ErrorCachingMinTTL": 10
+      },
+      {
+        "ErrorCode": 404,
+        "ResponsePagePath": "/index.html",
+        "ResponseCode": "200",
+        "ErrorCachingMinTTL": 10
+      }
+    ]
+  },
+  "Aliases": {
+    "Quantity": 1,
+    "Items": ["<DOMAIN_NAME>"]
+  },
+  "ViewerCertificate": {
+    "ACMCertificateArn": "<CERTIFICATE_ARN>",
+    "SSLSupportMethod": "sni-only",
+    "MinimumProtocolVersion": "TLSv1.2_2021",
+    "Certificate": "<CERTIFICATE_ARN>",
+    "CertificateSource": "acm"
+  },
+  "PriceClass": "PriceClass_All",
+  "HttpVersion": "http2",
+  "IsIPV6Enabled": true
+}

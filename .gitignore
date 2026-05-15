@@ -1,0 +1,20 @@
+# AWS credentials — never commit these
+.aws/
+*.pem
+*.key
+aws-credentials*
+
+# Temp files from deploy script
+/tmp/
+
+# Editor cruft
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# If you regenerate index.html from a source repo
+node_modules/
+dist/
+build/
