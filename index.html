@@ -2589,7 +2589,7 @@ screens.S04 = () => `
   <div class="field-row">
     <div class="field">
       <label class="field-label">Date of birth <span style="color:var(--danger);">*</span></label>
-      <input class="input" type="date" max="${new Date().toISOString().slice(0,10)}" value="${STATE.testator.dob}" oninput="setValue('testator.dob', this.value); validateS04(); renderScreen('S04');">
+      <input class="input" type="date" max="${new Date().toISOString().slice(0,10)}" value="${STATE.testator.dob}" oninput="setValue('testator.dob', this.value); validateS04();" onchange="renderScreen('S04');" onblur="renderScreen('S04');">
       ${renderDateError(STATE.testator.dob, { minAge: 18, label: 'Date of birth' })}
     </div>
     <div class="field">
@@ -2988,7 +2988,7 @@ screens.S09 = () => `
       <div class="field-row">
         <div class="field">
           <label class="field-label">Date of birth</label>
-          <input class="input" type="date" max="${new Date().toISOString().slice(0,10)}" value="${STATE.arbitrators[i].dob}" oninput="setValue('arbitrators[${i}].dob', this.value); renderScreen('S09');">
+          <input class="input" type="date" max="${new Date().toISOString().slice(0,10)}" value="${STATE.arbitrators[i].dob}" oninput="setValue('arbitrators[${i}].dob', this.value);" onchange="renderScreen('S09');" onblur="renderScreen('S09');">
           ${renderDateError(STATE.arbitrators[i].dob, { minAge: 18, label: 'Date of birth' })}
         </div>
         <div class="field">
@@ -3029,7 +3029,7 @@ screens.S10 = () => `
     <div class="field-row">
       <div class="field">
         <label class="field-label">Date of birth</label>
-        <input class="input" type="date" max="${new Date().toISOString().slice(0,10)}" value="${STATE.guardianSpouse.dob}" oninput="setValue('guardianSpouse.dob', this.value); renderScreen('S10');">
+        <input class="input" type="date" max="${new Date().toISOString().slice(0,10)}" value="${STATE.guardianSpouse.dob}" oninput="setValue('guardianSpouse.dob', this.value);" onchange="renderScreen('S10');" onblur="renderScreen('S10');">
         ${renderDateError(STATE.guardianSpouse.dob, { minAge: 18, label: 'Date of birth' })}
       </div>
       <div class="field">
