@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Privacy-friendly analytics (Umami) -->
+<script async src="https://analytics.fareez.dev/script.js" data-website-id="95d7e13f-5749-4edc-a724-df39b41f5246"></script>
 <title>Meeras — Islamic Will WebApp</title>
 <meta name="description" content="A free, private web application that helps Muslims in Australia create a Shariah-compliant Last Will and Testament that is legally valid in every Australian State and Territory.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -582,6 +584,13 @@
   @media (max-width: 600px) {
     .choice-grid.cols-2, .choice-grid.cols-3 { grid-template-columns: 1fr; }
   }
+  /* Temporarily hidden feature — re-enable by removing the `feature-hidden`
+     class from the relevant element(s). Kept in the DOM intentionally. */
+  .feature-hidden { display: none !important; }
+  /* When an option inside a 2-column choice grid is hidden, let the
+     remaining option(s) span the full width so the layout stays balanced.
+     Auto-reverts to two columns once `feature-hidden` is removed. */
+  .choice-grid.cols-2:has(.feature-hidden) { grid-template-columns: 1fr; }
   .choice {
     background: var(--white);
     border: 1.5px solid var(--border);
@@ -2542,13 +2551,13 @@ screens.S03 = () => `
       <div class="choice-title">Sunni</div>
       <div class="choice-desc">Schedule A as in the source Will Kit. Covers Hanafi, Shafi'i, Maliki, and Hanbali — all four schools largely agree on the core inheritance rules.</div>
     </button>
-    <button class="choice ${STATE.madhhab === 'shia' ? 'selected' : ''}" onclick="selectMadhhab('shia')">
+    <button class="choice feature-hidden ${STATE.madhhab === 'shia' ? 'selected' : ''}" onclick="selectMadhhab('shia')">
       <div class="choice-title">Shia (Jaʿfari)</div>
       <div class="choice-desc">Twelver Shia inheritance rules. Note: this MVP implements only the Sunni engine. The Shia engine will arrive in v1.1 (see roadmap).</div>
     </button>
   </div>
 
-  <button class="btn-link" style="margin-top:18px;display:block;" onclick="selectMadhhab('undecided')">I'm not sure — please consult my local Imam.</button>
+  <button class="btn-link feature-hidden" style="margin-top:18px;display:block;" onclick="selectMadhhab('undecided')">I'm not sure — please consult my local Imam.</button>
 
   <div class="info-callout">
     <strong>Source.</strong> The fixed shares (sahām al-farāʾiḍ) come directly from <span class="citation" title="Allah instructs you concerning your children...">Surah an-Nisāʾ 4:11–12</span> and 4:176. Schedule A converts these into a deterministic decision tree.
@@ -4573,14 +4582,26 @@ async function buildPDFBytes() {
     let y = PAGE_H - MARGIN_TOP;
     let pageNum = 1;
 
+    // Pages whose footer should NOT carry the three signature columns
+    // (e.g. the dedicated Signature Block page already has full-size
+    // signature panels in its body, so the per-page sign strip is redundant).
+    const pagesWithoutSignFooter = new Set();
+
     const testatorName = STATE.testator.fullName || '_______________';
 
     function addPageFooter(p, n) {
-      // Three signature columns across the bottom of every page
+      const pageNumY = 30;
+      // Page identification — always rendered, on every page
+      p.drawText(safe(`Page ${n}  ·  Meeras — Will of ${testatorName}`), {
+        x: MARGIN_X, y: pageNumY - 14, size: 7.5, font, color: colorMuted,
+      });
+      // Skip the three signature columns on pages explicitly marked as such
+      if (pagesWithoutSignFooter.has(n)) return;
+
+      // Three signature columns across the bottom of every other page
       const sigY = 78;
       const labelY = 60;
       const noteY = 44;
-      const pageNumY = 30;
       const colW = (CONTENT_W - 24) / 3;
       const cols = [
         { x: MARGIN_X, label: 'TESTATOR' },
@@ -4606,10 +4627,6 @@ async function buildPDFBytes() {
       p.drawText(safe('All three parties must be present together when each page is signed or initialled.'), {
         x: MARGIN_X, y: noteY - 18, size: 7, font: fontItalic, color: colorMuted,
       });
-      // Page identification
-      p.drawText(safe(`Page ${n}  ·  Meeras — Will of ${testatorName}`), {
-        x: MARGIN_X, y: pageNumY - 14, size: 7.5, font, color: colorMuted,
-      });
     }
 
     function newPage() {
@@ -4620,7 +4637,12 @@ async function buildPDFBytes() {
     }
 
     function ensureSpace(needed) {
-      if (y - needed < MARGIN_BOTTOM) newPage();
+      // Pages that skip the per-page sign columns have ~80 px of extra
+      // usable space at the bottom, so we lower the effective bottom margin
+      // accordingly. Otherwise content gets pushed onto an extra page even
+      // though the bottom of this page is mostly empty.
+      const bottom = pagesWithoutSignFooter.has(pageNum) ? 55 : MARGIN_BOTTOM;
+      if (y - needed < bottom) newPage();
     }
 
     function wrapText(text, fontObj, fontSize, maxWidth) {
@@ -4817,17 +4839,17 @@ async function buildPDFBytes() {
     }
 
     // ============ COVER PAGE ============
-    y = PAGE_H - 200;
+    y = PAGE_H - 130;
     page.drawText(safe('ISLAMIC LAST WILL AND TESTAMENT'), {
       x: MARGIN_X, y, size: 22, font: fontBold, color: colorPrimary,
     });
-    y -= 30;
+    y -= 28;
     page.drawText(safe('Meeras  ·  ميراث'), {
       x: MARGIN_X, y, size: 14, font: fontItalic, color: colorAccent,
     });
-    y -= 80;
+    y -= 42;
     page.drawLine({ start: { x: MARGIN_X, y }, end: { x: PAGE_W - MARGIN_X, y }, thickness: 1, color: colorAccent });
-    y -= 30;
+    y -= 22;
 
     drawKeyValue('Testator', STATE.testator.fullName);
     drawKeyValue('Date of birth', STATE.testator.dob);
@@ -4836,16 +4858,16 @@ async function buildPDFBytes() {
     drawKeyValue('Jurisdiction', STATES[STATE.jurisdiction]?.name + ' — ' + STATES[STATE.jurisdiction]?.act);
     drawKeyValue('Madhhab', STATE.madhhab === 'sunni' ? 'Sunni' : STATE.madhhab === 'shia' ? 'Shia (Jaʿfari)' : 'Undecided — refer to local Imam');
 
-    y -= 24;
+    y -= 16;
     // Disclaimer
     drawParagraph('Disclaimer', { bold: true, color: colorPrimary, size: 11 });
     drawParagraph('The content of this Will is intended to be used as a guide and is not intended to be comprehensive. It does not constitute legal advice or substitute for legal advice in any specific situation. The testator is advised to seek legal or other professional advice — and the counsel of a qualified Imam — before relying on its content, particularly where properties, assets, debts and other investments (including superannuation) are part of the inheritance. The publisher does not accept responsibility for any losses or disputes arising as a result of this Will.', { italic: true, size: 9.5, color: colorMuted });
     drawParagraph('Australian Government guidance on wills, executors, powers of attorney and estate plans: moneysmart.gov.au/plan-for-your-retirement/wills-and-powers-of-attorney', { italic: true, size: 9.5, color: colorMuted });
 
-    y -= 14;
+    y -= 10;
     drawParagraph('I, being of sound mind and memory, do hereby revoke any and all former Wills and codicils (as applicable) made by me, and do make, ordain, publish, and declare this as my Last Will and Testament.', { italic: true });
 
-    y -= 8;
+    y -= 6;
     drawParagraph('I bear witness that there is none worthy of worship except Allah, and I bear witness that Prophet Muhammad ﷺ is His servant and Messenger. I ask my relatives, friends and anyone reading this Will, whether or not they believe as I do, to respect my beliefs and wishes. Please do not obstruct or alter this document.', { italic: true });
 
     newPage();
@@ -4965,6 +4987,7 @@ async function buildPDFBytes() {
     drawParagraph('In the event of any dispute regarding my burial, funeral rites, or any Islamic procedure mentioned in this Article, I direct that the matter be referred to the Australian National Imams Council (ANIC) or its nominated Islamic body, in addition to the arbitrator nominated in Article 4. The Islamic body\'s decision shall be considered binding by all parties, and I request my family and executor to comply with the ruling in accordance with Islamic law and guidance.');
 
     // ============ ARTICLE 3 — EXECUTOR ============
+    newPage();
     drawHeading('Article 3 — Executor');
     drawParagraph('3.1  I hereby appoint the persons named below to serve as the executor(s) of my Will, in the order listed. I entrust the control of my entire estate to the executor who shall distribute it according to this Will and Islamic law of inheritance.');
 
@@ -4986,6 +5009,7 @@ async function buildPDFBytes() {
     }
 
     // ============ ARTICLE 4 — ARBITRATOR ============
+    newPage();
     drawHeading('Article 4 — Arbitrator');
     drawParagraph('4.1  Any disputes regarding this Will shall be adjudicated via private, binding arbitration by a neutral Arbitrator.');
     STATE.arbitrators.forEach((a, i) => {
@@ -5000,6 +5024,7 @@ async function buildPDFBytes() {
     drawParagraph('4.4  The judgment of the arbitrator shall be final and legally enforceable, irrespective of the opinion of the disputing parties.');
 
     // ============ ARTICLE 5 — GUARDIAN ============
+    newPage();
     drawHeading('Article 5 — Guardianship of Minor Children');
     drawParagraph('5.1  "My children" means the biological sons and daughters that I currently have, as well as any others hereafter born to me from any legally married spouse.');
     if (STATE.guardianSpouse.name) {
@@ -5086,8 +5111,26 @@ async function buildPDFBytes() {
     if (validBequests.length === 0) {
       drawParagraph('No bequests are made. The entirety of the remainder of my estate (after debts) is to be distributed to my heirs according to farāʾiḍ.');
     } else {
+      // Custom row layout: recipient name on the left (wraps if long),
+      // percentage right-aligned against the right margin. Avoids the
+      // fixed 130-px key column of drawKeyValue, which used to clip
+      // longer recipient names into the percentage text.
       validBequests.forEach(b => {
-        drawKeyValue(b.recipient, b.percent + '% of remainder');
+        const percentText = b.percent + '% of remainder';
+        const percentWidth = font.widthOfTextAtSize(percentText, 10);
+        const gap = 16;
+        const nameMaxWidth = CONTENT_W - percentWidth - gap;
+        const nameLines = wrapText(b.recipient + ':', fontBold, 10, nameMaxWidth);
+        ensureSpace(nameLines.length * 14 + 4);
+        const percentX = MARGIN_X + CONTENT_W - percentWidth;
+        nameLines.forEach((ln, i) => {
+          page.drawText(ln, { x: MARGIN_X, y, size: 10, font: fontBold, color: colorText });
+          if (i === 0) {
+            page.drawText(percentText, { x: percentX, y, size: 10, font, color: colorText });
+          }
+          y -= 14;
+        });
+        y -= 2;
       });
       drawParagraph(`Total bequest: ${validBequests.reduce((s, b) => s + (+b.percent || 0), 0).toFixed(2)}% of the remainder of my estate.`);
     }
@@ -5123,6 +5166,9 @@ async function buildPDFBytes() {
     drawParagraph('Classical maxim. The jurists of all four Sunni madhāhib have held: "al-mīrāth lā yathbutu illā bi\'l-mawt" — inheritance is not established except by death. The Will captures my intentions; the inheritance itself crystallises at the moment of my death.', { italic: true, size: 9.5 });
 
     // Computed shares table (now explicitly framed as illustrative)
+    // Isolated on its own page so the table + its heading stand alone,
+    // with no other content above or below them on the same page.
+    newPage();
     const result = calculateFaraid();
     drawParagraph('Computed shares as per Islamic Ruling, as at the date of signing (per clause 8.7(d), illustrative — not binding):', { bold: true });
     if (result.unhandled) {
@@ -5145,6 +5191,7 @@ async function buildPDFBytes() {
     }
 
     // ============ ARTICLE 9 — TESTAMENTARY TRUST ============
+    newPage();
     drawHeading('Article 9 — Testamentary Trust');
     drawParagraph('9.1  Any inheritance accruing to one or more minor children shall be held in Trust by the guardian (Article 5) until the minor attains the age of 18.');
     drawParagraph('9.2  The guardian shall be empowered to hold, administer, and invest assets in Shariah-compliant investments only. Income and, where necessary, capital may be applied for the maintenance, education, and welfare of the beneficiaries.');
@@ -5170,42 +5217,61 @@ async function buildPDFBytes() {
 
     // ============ SIGNING BLOCK ============
     newPage();
+    // The Signature Block page has full-size signature panels in its body,
+    // so the per-page sign strip in the footer is redundant on this page only.
+    pagesWithoutSignFooter.add(pageNum);
     drawHeading('Signature Block');
     drawParagraph('To be signed in the presence of two adult witnesses, both present at the same time. Witnesses must then sign in the testator\'s presence. Sign every page using the same pen.');
 
-    y -= 10;
+    y -= 22;
     drawHr();
+    y -= 6;
     drawParagraph('TESTATOR', { bold: true, size: 11, color: colorPrimary });
+    y -= 6;
     drawKeyValue('Name', STATE.testator.fullName);
+    y -= 8;
     drawParagraph('Signature: _______________________________________   Date: ___________', { size: 10 });
-    y -= 14;
+    y -= 28;
 
     drawParagraph(STATES[STATE.jurisdiction]?.strictWitness
       ? `Important — ${STATES[STATE.jurisdiction]?.name} requires that witnesses NOT be beneficiaries of this Will.`
       : `Recommendation — independent witnesses (not beneficiaries) are strongly recommended.`,
       { italic: true, size: 9, color: rgb(0.7, 0.2, 0.2) }
     );
-    y -= 8;
+    y -= 16;
 
     drawHr();
+    y -= 6;
     drawParagraph('WITNESS 1', { bold: true, size: 11, color: colorPrimary });
+    y -= 6;
     drawKeyValue('Name', '');
+    y -= 4;
     drawKeyValue('Address', '');
+    y -= 4;
     drawKeyValue('Identification', '');
+    y -= 8;
     drawParagraph('Signature: _______________________________________   Date: ___________', { size: 10 });
-    y -= 14;
+    y -= 28;
 
     drawHr();
+    y -= 6;
     drawParagraph('WITNESS 2', { bold: true, size: 11, color: colorPrimary });
+    y -= 6;
     drawKeyValue('Name', '');
+    y -= 4;
     drawKeyValue('Address', '');
+    y -= 4;
     drawKeyValue('Identification', '');
+    y -= 8;
     drawParagraph('Signature: _______________________________________   Date: ___________', { size: 10 });
-    y -= 14;
+    y -= 28;
 
     drawHr();
+    y -= 6;
     drawKeyValue('Date of signing', '');
+    y -= 4;
     drawKeyValue('Day of the week', '');
+    y -= 4;
     drawKeyValue('Time', '');
 
     // ============ SCHEDULE A APPENDIX ============
