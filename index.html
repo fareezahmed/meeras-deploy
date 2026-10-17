@@ -753,6 +753,27 @@
   .rule-row .choice { padding: 14px 16px; }
   .honorific { font-family: 'Amiri', serif; }
 
+  /* Informational pages: comparison table, FAQ, feature status */
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 14px 0 22px; background: var(--white); }
+  .compare-table th, .compare-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+  .compare-table th { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-dark); background: var(--parchment, #F4F1EA); }
+  .compare-table td.yes { color: var(--success); font-weight: 600; }
+  .compare-table td.no { color: var(--muted); }
+  .faq details { border: 1px solid var(--border); border-radius: 6px; background: var(--white); margin-bottom: 10px; padding: 0 16px; }
+  .faq summary { cursor: pointer; padding: 14px 0; font-weight: 600; color: var(--primary); font-size: 15px; list-style-position: inside; }
+  .faq details p { margin: 0 0 14px; font-size: 14px; line-height: 1.65; color: var(--text); }
+  .status-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+  .status-row:last-child { border-bottom: none; }
+  .status-badge { flex-shrink: 0; display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .status-live { background: rgba(45,122,79,0.12); color: var(--success); }
+  .status-progress { background: rgba(201,169,97,0.22); color: var(--accent-dark); }
+  .status-planned { background: rgba(27,77,107,0.1); color: var(--primary); }
+  .status-considering { background: rgba(138,132,127,0.16); color: var(--muted); }
+  @media (max-width: 600px) {
+    .compare-table { font-size: 13px; }
+    .compare-table th, .compare-table td { padding: 8px 6px; }
+  }
+
   /* ========== BUTTONS ========== */
   .btn-row {
     display: flex;
@@ -1469,6 +1490,7 @@
         <div class="footer-heading">Explore</div>
         <ul class="footer-links">
           <li><button class="footer-link" onclick="goTo('S01')">Home</button></li>
+          <li><button class="footer-link" onclick="goTo('S31')">How it works</button></li>
           <li><button class="footer-link" onclick="beginNewWill()">Start my Will</button></li>
           <li><button class="footer-link" onclick="downloadSamplePDF()">Sample Will (PDF)</button></li>
           <li><button class="footer-link" onclick="goTo('S22')">Execution checklist</button></li>
@@ -1479,6 +1501,8 @@
         <div class="footer-heading">More</div>
         <ul class="footer-links">
           <li><button class="footer-link" onclick="goTo('S26')">About Us</button></li>
+          <li><button class="footer-link" onclick="goTo('S32')">FAQ</button></li>
+          <li><button class="footer-link" onclick="goTo('S33')">For executors</button></li>
           <li><button class="footer-link" onclick="goTo('S27')">Resources</button></li>
           <li><button class="footer-link" onclick="goTo('S24')">Donate</button></li>
         </ul>
@@ -2093,7 +2117,29 @@ const PROGRESS_SCREENS = [
 // reachable from the header/footer at any time and must never disturb wizard
 // state: navigating to one does not change STATE.currentScreen, so drafts
 // resume where the user actually left off and completion % is unaffected.
-const INFO_SCREENS = new Set(['S26', 'S27', 'S28', 'S29']);
+const INFO_SCREENS = new Set(['S26', 'S27', 'S28', 'S29', 'S30', 'S31', 'S32', 'S33']);
+
+// Deep links for the informational pages (meeras.com.au/#faq and so on).
+// S30 (feature status) is internal: reachable by its link only, never from
+// the header or footer.
+const PAGE_HASHES = {
+  'how-it-works': 'S31',
+  faq: 'S32',
+  executors: 'S33',
+  about: 'S26',
+  resources: 'S27',
+  privacy: 'S28',
+  terms: 'S29',
+  status: 'S30',
+};
+function applyHashRoute() {
+  const key = (location.hash || '').replace(/^#\/?/, '').toLowerCase();
+  const id = PAGE_HASHES[key];
+  if (id) goTo(id);
+}
+function hashForScreen(id) {
+  return Object.keys(PAGE_HASHES).find(k => PAGE_HASHES[k] === id) || null;
+}
 
 // Shared helper text for every identification field (see privacy note: probated
 // wills become public documents, so ID numbers should not be encouraged).
@@ -2151,6 +2197,12 @@ function goTo(screenId) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   renderProgress();
   Analytics.screen(screenId);
+  // Keep the address bar in step with the informational pages so links can be shared.
+  try {
+    const key = hashForScreen(screenId);
+    if (key) history.replaceState(null, '', '#' + key);
+    else if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  } catch (e) { /* history API unavailable */ }
 }
 
 /** First visit / cleared storage: create the first draft only when the user starts. */
@@ -5134,6 +5186,245 @@ screens.S29 = () => `
   </div>
 `;
 
+// ───── S30 FEATURE STATUS (internal page: /#status, not linked anywhere) ─────
+const STATUS_UPDATED = '17 October 2026';
+const STATUS_LABELS = {
+  live: ['Live', 'status-live'],
+  progress: ['In progress', 'status-progress'],
+  planned: ['Planned', 'status-planned'],
+  considering: ['Under consideration', 'status-considering'],
+};
+const FEATURE_STATUS = [
+  { area: 'The Will wizard', items: [
+    ['Fourteen-step guided wizard producing all twelve Articles and Schedule A', 'live'],
+    ['Farāʾiḍ engine aligned with Al-Mawārīth (5,000-family cross-check, 0 differences)', 'live'],
+    ['School of fiqh selector with per-ruling choices (grandmother beside the father; grandfather beside siblings)', 'live'],
+    ['PDF generated on the device; nothing uploaded', 'live'],
+    ['Drafts kept in the browser tab, with export and import', 'live'],
+    ['Share the PDF by email or the device share sheet', 'live'],
+    ['Execution checklist and witness rules for every State and Territory', 'live'],
+    ['Optional identification numbers; accessible declarations', 'live'],
+  ]},
+  { area: 'Review and assurance', items: [
+    ['Independent legal review of the template by an Australian practitioner', 'progress'],
+    ['Seven specimen Wills for the reviewer', 'live'],
+    ['Scholar review of the inheritance rules (through Al-Mawārīth)', 'live'],
+    ['Automated engine tests and browser tests', 'live'],
+  ]},
+  { area: 'Site and platform', items: [
+    ['Production at meeras.com.au (Cloudflare)', 'live'],
+    ['Dev environment at fareez.dev/meeras (AWS)', 'live'],
+    ['Anonymous, cookie-free analytics (Umami)', 'live'],
+    ['About, Resources, FAQ, For executors, Privacy and Terms pages', 'live'],
+    ['Responsive header and footer', 'live'],
+  ]},
+  { area: 'Next', items: [
+    ['Specific-item gifts counted against the one-third', 'planned'],
+    ['Curated list of registered Australian Muslim charities', 'planned'],
+    ["Start my spouse's Will from this draft", 'planned'],
+    ['Executor information sheet PDF (assets, accounts, documents, last message)', 'planned'],
+    ['Care of animals direction', 'planned'],
+    ['Encrypted accounts with stored, updatable Wills (paid tier)', 'considering'],
+    ['Enduring Power of Attorney and Advance Care Directive', 'considering'],
+    ['Lawyer review referral by State', 'considering'],
+    ['Arabic, Urdu, Turkish, Indonesian and Somali versions', 'considering'],
+  ]},
+];
+screens.S30 = () => {
+  const tag = document.querySelector('script[data-website-id]');
+  const host = location.hostname || '(file)';
+  const env = /meeras\.com\.au$/.test(host) ? 'Production' : /fareez\.dev$/.test(host) ? 'Dev' : 'Local';
+  const canonical = !!document.querySelector('link[rel="canonical"]');
+  const badge = s => { const [label, cls] = STATUS_LABELS[s] || STATUS_LABELS.planned; return `<span class="status-badge ${cls}">${label}</span>`; };
+  return `
+  <div class="step-label">Internal</div>
+  <h2 class="screen-title">Feature status</h2>
+  <p class="screen-subtitle">An internal page, not linked from the site. Last updated ${STATUS_UPDATED}. Edit <code>FEATURE_STATUS</code> in index.html to change it.</p>
+
+  <div class="info-callout">
+    <strong>This build.</strong> Environment: <strong>${env}</strong> (${escapeHtml(host)}) ·
+    analytics domains: ${escapeHtml(tag ? tag.getAttribute('data-domains') || '(all)' : 'none')} ·
+    canonical link: ${canonical ? 'present' : 'absent'} ·
+    school of fiqh on this device: ${MADHHAB ? madhhabName(MADHHAB) : 'not selected'}.
+  </div>
+
+  ${FEATURE_STATUS.map(group => `
+    <h4 class="section-h">${group.area}</h4>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 16px;margin-bottom:18px;">
+      ${group.items.map(([text, status]) => `
+        <div class="status-row"><span>${text}</span>${badge(status)}</div>
+      `).join('')}
+    </div>
+  `).join('')}
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo('S01')">← Back to home</button>
+    <button class="btn btn-primary" onclick="goTo('S31')">How it works →</button>
+  </div>
+  `;
+};
+
+// ───── S31 HOW IT WORKS (product page) ─────
+screens.S31 = () => `
+  <div class="step-label">How it works</div>
+  <h2 class="screen-title">An Islamic Will, done properly, in about twenty minutes</h2>
+  <p class="screen-subtitle">
+    Answer plain-English questions, and Meeras assembles a complete Last Will and Testament
+    built on the Sunni rules of inheritance (Schedule A) and designed to meet the formal
+    requirements for a valid will in every Australian State and Territory. Free, with no
+    account, and nothing you type ever leaves your device.
+  </p>
+
+  <h4 class="section-h">Three steps</h4>
+  <div class="steps">
+    <div class="step-card"><div class="step-num">1</div><div class="step-name">Answer the questions</div><div class="step-desc">Executors, guardians, burial wishes, debts and religious obligations, bequests, and your family. Pause any time; your draft stays in this browser tab, and you can export it to a file.</div></div>
+    <div class="step-card"><div class="step-num">2</div><div class="step-name">Download the PDF</div><div class="step-desc">Generated on your own device: twelve Articles, Schedule A, an illustrative share table, and a signing block prepared for your State or Territory.</div></div>
+    <div class="step-card"><div class="step-num">3</div><div class="step-name">Sign with two witnesses</div><div class="step-desc">Print it, sign before two adult witnesses present at the same time, staple it once, and keep it with your papers. The execution checklist walks you through it.</div></div>
+  </div>
+
+  <h4 class="section-h">What is in your Will</h4>
+  <table class="compare-table">
+    <tr><th style="width:34%;">Article</th><th>What it does</th></tr>
+    <tr><td>Preamble</td><td>Declaration of faith and advice to your family.</td></tr>
+    <tr><td>1. Organ donation and autopsy</td><td>Your choice on donation; objection to autopsy unless the law requires it.</td></tr>
+    <tr><td>2. Funeral and burial</td><td>Ghusl, kafan, janāzah and burial by the Sunnah; your pre-arrangements and chosen burial organisation.</td></tr>
+    <tr><td>3. Executor</td><td>Up to three executors in order, their powers, and the order in which the estate is settled.</td></tr>
+    <tr><td>4. Arbitrator</td><td>A request that disputes be referred first to Islamic arbitration or mediation.</td></tr>
+    <tr><td>5. Guardianship</td><td>Who raises your minor children, with Muslim next of kin as the fallback.</td></tr>
+    <tr><td>6. Debts and obligations</td><td>Legal debts first, then unpaid zakāt, Hajj badal, fidyah and kaffārāt as directions of the Will.</td></tr>
+    <tr><td>7. Bequests (wasiyyah)</td><td>Gifts of up to one third of the estate to people or charities who are not heirs.</td></tr>
+    <tr><td>8. Distribution</td><td>The remainder by the Quranic shares, verified by a scholar, with the living-heir principle and the foetus clause.</td></tr>
+    <tr><td>9 to 12</td><td>Trust for minors, superannuation, severability, and your closing declaration.</td></tr>
+    <tr><td>Schedule A</td><td>The Sunni rules of inheritance your executor applies to whoever survives you.</td></tr>
+  </table>
+
+  <h4 class="section-h">How Meeras compares</h4>
+  <table class="compare-table">
+    <tr><th>Feature</th><th>Solicitor</th><th>Meeras</th><th>Generic kit</th></tr>
+    <tr><td>Cost</td><td>$600 and up</td><td class="yes">Free</td><td>$25 to $160</td></tr>
+    <tr><td>Shariah-compliant distribution built in</td><td class="no">Only if the solicitor specialises</td><td class="yes">Yes, Schedule A with a scholar-reviewed engine</td><td class="no">No</td></tr>
+    <tr><td>Islamic burial instructions</td><td class="no">Rarely</td><td class="yes">Yes, Article 2</td><td class="no">No</td></tr>
+    <tr><td>Designed for every State and Territory</td><td class="yes">Yes</td><td class="yes">Yes, with State-specific witness rules</td><td>Varies</td></tr>
+    <tr><td>Advice on your circumstances</td><td class="yes">Yes</td><td class="no">No; we recommend a review for property, business or blended families</td><td class="no">No</td></tr>
+    <tr><td>Done in an afternoon</td><td class="no">Usually weeks</td><td class="yes">About twenty minutes</td><td class="yes">Yes</td></tr>
+    <tr><td>Your answers stay on your device</td><td class="no">Held by the firm</td><td class="yes">Yes, always</td><td class="yes">Paper only</td></tr>
+    <tr><td>Update whenever life changes</td><td>New fee each time</td><td class="yes">Free, any time</td><td>New kit</td></tr>
+  </table>
+
+  <div class="info-callout">
+    <strong>Honest limits.</strong> Meeras is a guide, not a law firm. The template is under independent legal review; every Will it produces tells the executor to have the shares verified by a qualified Sunni scholar, and we encourage a review by an Australian legal practitioner where property, business interests, superannuation or a blended family is involved.
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo('S32')">Questions? Read the FAQ</button>
+    <button class="btn btn-primary" onclick="beginNewWill()">Start my Will →</button>
+  </div>
+`;
+
+// ───── S32 FAQ ─────
+screens.S32 = () => `
+  <div class="step-label">FAQ</div>
+  <h2 class="screen-title">Questions people ask</h2>
+  <p class="screen-subtitle">Short answers on the legal side and the Islamic side. None of this is advice on your own circumstances.</p>
+
+  <h4 class="section-h">Validity and signing</h4>
+  <div class="faq">
+    <details><summary>Is a Will made with Meeras legally valid?</summary><p>The document is designed to meet the formal requirements for a valid will in every Australian State and Territory: in writing, signed by an adult with capacity, before two adult witnesses present at the same time who then sign in your presence. Validity depends on executing it correctly, which is why the execution checklist matters. The template is under independent legal review, and we recommend a review of your own Will where property, a business, superannuation or a blended family is involved.</p></details>
+    <details><summary>Who can be a witness?</summary><p>Two adults who watch you sign, at the same time, and then sign themselves. Choose people who are not beneficiaries: in New South Wales, Queensland, Tasmania and the Northern Territory a gift to a witness can be lost, and everywhere else an independent witness avoids any challenge. A paid executor should not witness either.</p></details>
+    <details><summary>Can I sign electronically?</summary><p>No. Print it on plain paper, sign every page with the same pen, and keep the original. Staple it once and never remove the staple. A scanned copy is a reference, not the Will.</p></details>
+    <details><summary>What happens if I die without a Will?</summary><p>Your State's intestacy formula decides who inherits, usually your spouse and children in fixed statutory proportions. It does not follow the Quranic shares, and it says nothing about Islamic burial, guardianship or bequests. A valid Will is the only instrument that makes your farāʾiḍ intentions operate.</p></details>
+    <details><summary>How do I update my Will?</summary><p>Run the wizard again (import your exported draft to save time), print and sign the new Will with two witnesses. A later valid Will revokes the earlier one, so destroy the old original. Review it after marriage, divorce, a birth, a death in the family, buying property, or moving State.</p></details>
+  </div>
+
+  <h4 class="section-h">Islamic questions</h4>
+  <div class="faq">
+    <details><summary>Which school of fiqh does Meeras follow?</summary><p>The Sunni rules of inheritance, which the Hanafi, Shafi'i, Maliki and Hanbali schools share. Where they differ on a family (the paternal grandmother beside the father, the grandfather beside brothers and sisters) you can choose your school on the heirs step and Meeras applies its ruling; with no school selected it applies the default rulings and tells you which.</p></details>
+    <details><summary>What is the one-third rule?</summary><p>A Muslim may give away up to one third of the estate by bequest (wasiyyah) to people or causes who are not already heirs. The other two thirds, at least, pass to the heirs by their Quranic shares. Meeras enforces the cap on the bequests step and prints the shares in Article 8.</p></details>
+    <details><summary>Can I leave something to a non-Muslim relative?</summary><p>Not as an heir: Article 8 distributes the remainder among Muslim heirs. You can provide for a non-Muslim relative with a bequest in Article 7, within the one third. Specialist advice is sensible here, because family provision laws also apply.</p></details>
+    <details><summary>Why are the printed percentages "illustrative"?</summary><p>Inheritance is determined at the moment of death, by whoever survives you then. The table shows the shares for the family you listed today; Article 8.7 directs the executor to apply Schedule A to your then-living heirs, with a scholar's verification. A child born later still inherits.</p></details>
+    <details><summary>Does superannuation follow my Will?</summary><p>Not automatically. Superannuation is paid by the fund's trustee, usually to whoever you nominated. Make a binding nomination to your estate (or to your dependants) if you want it distributed Islamically; Article 10 asks the trustee to pay it to the estate where there is no valid nomination.</p></details>
+    <details><summary>Can I include my funeral wishes?</summary><p>Yes. Article 2 records ghusl, kafan, janāzah and burial by the Sunnah, your chosen burial organisation and plot, and any additional instructions. Tell your family where the Will is, because burial happens before probate.</p></details>
+  </div>
+
+  <h4 class="section-h">About Meeras</h4>
+  <div class="faq">
+    <details><summary>Is it really free?</summary><p>Yes. No account, no fee, no advertising. Contributions through the Donate page help cover hosting and development; they are voluntary and not tax-deductible.</p></details>
+    <details><summary>Where is my information stored?</summary><p>Only in your browser tab, on your device. The PDF is generated locally. Meeras has no server that receives your answers; we collect only anonymous page-view statistics. Closing the tab clears the draft, so export it if you want to come back later.</p></details>
+    <details><summary>Is Meeras a law firm?</summary><p>No. It is a free community tool. Nothing it produces is legal advice, and using it creates no solicitor-client relationship. For advice on your circumstances, consult an Australian legal practitioner and a qualified Imam.</p></details>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo('S31')">← How it works</button>
+    <button class="btn btn-primary" onclick="beginNewWill()">Start my Will →</button>
+  </div>
+`;
+
+// ───── S33 FOR EXECUTORS ─────
+screens.S33 = () => `
+  <div class="step-label">For executors and families</div>
+  <h2 class="screen-title">When someone has died</h2>
+  <p class="screen-subtitle">
+    A plain guide for the executor and family of a Muslim who made a Will with Meeras. It follows the
+    order the Will itself sets out. It is general information, not legal advice.
+  </p>
+
+  <h4 class="section-h">The first day</h4>
+  <div class="person-card">
+    <div class="person-card-title">1. Call the burial organisation first</div>
+    <div style="font-size:14px;color:var(--muted);">Article 2.8 of the Will names any Muslim burial service the deceased engaged, and the cemetery or plot. Call them before anyone else so ghusl and burial can begin without delay; most Australian cities have a Muslim burial service reachable at any hour.</div>
+  </div>
+  <div class="person-card">
+    <div class="person-card-title">2. Find the Will and read Article 2</div>
+    <div style="font-size:14px;color:var(--muted);">Burial happens before probate. Article 2 records the wishes for ghusl, kafan, the funeral prayer and the grave, who should wash and lower the body, and that the body is not to be repatriated. Article 1 records the position on organ donation and autopsy; a coroner's requirement overrides it.</div>
+  </div>
+  <div class="person-card">
+    <div class="person-card-title">3. Obtain the death certificate</div>
+    <div style="font-size:14px;color:var(--muted);">The funeral director or burial organisation registers the death with the State registry; the certificate arrives within a few weeks and is needed for everything that follows.</div>
+  </div>
+
+  <h4 class="section-h">The executor's duties, in the Will's order</h4>
+  <table class="compare-table">
+    <tr><th style="width:30%;">Step</th><th>What the Will says</th></tr>
+    <tr><td>Take control of the estate</td><td>Article 3 appoints the executors in order and gives them power to sell property and settle claims. If none can act, a local Sunni Imam is to be asked.</td></tr>
+    <tr><td>Pay expenses and legal debts</td><td>Article 3.3 and Article 6: funeral and administration expenses, then every legal debt (Article 6.6 lists those the deceased recorded; those marked "not validated" must be checked first).</td></tr>
+    <tr><td>Discharge religious obligations</td><td>Then unpaid zakāt, Hajj badal, fidyah for missed fasts and kaffārāt, using the amounts in Article 6, as first-priority directions of the Will.</td></tr>
+    <tr><td>Pay the bequests</td><td>Article 7: the gifts the deceased made, never more than one third of what remains.</td></tr>
+    <tr><td>Distribute the remainder</td><td>Article 8 and Schedule A: by the Quranic shares among the Muslim heirs alive at the death. Article 8.1 requires a qualified Sunni scholar to verify the shares; the printed table is illustrative only. If a relative was expecting a child, see the foetus clause (Article 8.6).</td></tr>
+    <tr><td>Minors' shares</td><td>Article 9: held in trust by the guardian until eighteen, invested only in Shariah-compliant ways.</td></tr>
+    <tr><td>Superannuation</td><td>Article 10: claim the death benefit from each fund; it follows the fund's nomination, not the Will, unless nominated to the estate.</td></tr>
+  </table>
+
+  <h4 class="section-h">Probate</h4>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Probate is the Supreme Court's confirmation that the Will is valid and the executor may act. Banks,
+    the land registry and superannuation funds usually require it above modest amounts. Every State
+    has an online probate registry with its own forms and fees; a solicitor can lodge it for a fixed fee
+    if the estate is complex. Article 8.2 asks you to include the list of qualifying heirs with the
+    application.
+  </p>
+
+  <h4 class="section-h">Getting help</h4>
+  <div class="person-card">
+    <div class="person-card-title">Verifying the shares</div>
+    <div style="font-size:14px;color:var(--muted);">Take the Will, Schedule A and the list of surviving relatives to a qualified Imam or scholar. The Australian National Imams Council can refer you; the Imam directory on this site has details.</div>
+    <div style="margin-top:10px;"><button class="footer-link" style="color:var(--secondary);" onclick="goTo('S25')">Imam directory →</button></div>
+  </div>
+  <div class="person-card">
+    <div class="person-card-title">Government guidance</div>
+    <div style="font-size:14px;color:var(--muted);">MoneySmart explains executors' duties, probate and superannuation death benefits in plain English.</div>
+    <div style="margin-top:10px;"><a href="https://moneysmart.gov.au/plan-for-your-retirement/wills-and-powers-of-attorney" target="_blank" rel="noopener" class="nav-link" style="color:var(--secondary);">moneysmart.gov.au →</a></div>
+  </div>
+
+  <div class="warn-callout">
+    <strong>Disputes.</strong> Article 4 asks that disputes be referred first to Islamic arbitration or mediation, and Article 2.9 names the Australian National Imams Council for questions about the rites. The courts keep their probate and family-provision jurisdiction; if a claim is threatened, get legal advice early.
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo('S01')">← Back to home</button>
+    <button class="btn btn-primary" onclick="goTo('S32')">Read the FAQ →</button>
+  </div>
+`;
+
 // ────────────────────────────────────────────────────────────────────────────
 // 6.  RENDERING
 // ────────────────────────────────────────────────────────────────────────────
@@ -6516,6 +6807,8 @@ async function init() {
   renderScreen(STATE.currentScreen);
   renderProgress();
   refreshSessionIndicator();
+  applyHashRoute();   // a shared link such as /#faq opens that page directly
+  window.addEventListener('hashchange', applyHashRoute);
 
   setTimeout(() => {
     pendingFlushPromise = Sessions.flushPendingWrites().catch(e => {
