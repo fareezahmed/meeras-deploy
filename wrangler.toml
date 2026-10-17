@@ -1,0 +1,7 @@
+# Cloudflare Pages project for the production site, meeras.com.au.
+# Used by `npm run deploy:prod` (direct upload). If the Pages project is
+# connected to the GitHub repository instead, Cloudflare runs `npm run build`
+# itself and this file is only read for the output directory.
+name = "meeras"
+compatibility_date = "2026-10-01"
+pages_build_output_dir = "dist"

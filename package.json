@@ -3,6 +3,9 @@
   "private": true,
   "description": "Meeras Islamic Will WebApp: single-file static site; the tests slice the farāʾiḍ engine out of index.html",
   "scripts": {
-    "test": "node tests/faraid-engine.test.js"
+    "test": "node tests/faraid-engine.test.js",
+    "build": "node build.js --env production",
+    "build:dev": "node build.js --env dev",
+    "deploy:prod": "npm test && npm run build && npx --yes wrangler pages deploy dist --project-name meeras --branch main"
   }
 }

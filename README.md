@@ -21,6 +21,8 @@ meeras-deploy/
 ├── deploy.sh               ← One-command AWS CLI deploy script
 ├── 404.html                ← Fallback page that redirects to the SPA
 ├── robots.txt              ← Search-engine indexing rules
+├── build.js                ← Assembles dist/ per environment (npm run build; see DEPLOYMENT.md Part 8)
+├── wrangler.toml           ← Cloudflare Pages project for production (meeras.com.au)
 ├── test.html               ← Browser tests for the inheritance engine (serve, then open)
 ├── tests/faraid-engine.test.js ← Node tests + cross-check against Al-Mawārīth (npm test)
 ├── package.json            ← `npm test` only; no dependencies
@@ -123,7 +125,17 @@ to the production setup in `DEPLOYMENT.md`.
 
 ---
 
-## Production deploy (S3 + CloudFront + HTTPS + custom domain)
+## Environments
+
+- **Production:** https://meeras.com.au on Cloudflare Pages, deployed on every
+  push to `main` (or `npm run deploy:prod`). Setup in `DEPLOYMENT.md` Part 8.
+- **Dev:** https://fareez.dev/meeras/ on AWS S3 + CloudFront, deployed with
+  `./deploy.sh` (the sections below).
+
+Both are built from the same `index.html`; `node build.js` only swaps the
+analytics tag and adds the production canonical link and headers.
+
+## Dev deploy on AWS (S3 + CloudFront + HTTPS + custom domain)
 
 See `DEPLOYMENT.md` for the full walkthrough. The short version:
 

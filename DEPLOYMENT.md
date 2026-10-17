@@ -347,6 +347,76 @@ This is optional. The defaults work fine for most deployments.
 
 ---
 
+## Part 8 — Production on Cloudflare Pages (meeras.com.au)
+
+Meeras has two environments built from the same files:
+
+| Environment | URL | Host | Deploy |
+|---|---|---|---|
+| **Dev** | https://fareez.dev/meeras/ | AWS S3 + CloudFront (Parts 2–3 above) | `./deploy.sh` with `BUCKET_NAME=fareez.dev S3_PREFIX=meeras` |
+| **Production** | https://meeras.com.au | Cloudflare Pages (this part) | `git push` to `main` (Git integration) or `npm run deploy:prod` |
+
+`node build.js` assembles `dist/` for one environment. The only differences
+between the two builds are the Umami analytics tag (`data-domains`, and the
+Umami website id for production) and, in production, a `<link rel="canonical">`
+pointing at `https://meeras.com.au/` plus Cloudflare's `_headers` (security and
+cache headers) and `_redirects` (www → apex). No Will clause text changes, so
+the MD5 pinned in the legal-review document refers to the repository
+`index.html`, not to `dist/index.html`.
+
+### 8.1 One-time setup (about 15 minutes)
+
+1. **Umami:** in https://analytics.fareez.dev add a second website,
+   `meeras.com.au`, and copy its website id. Keeping production and dev as
+   separate Umami websites keeps the dashboards separate. (If you prefer one
+   combined dashboard, skip this: the build falls back to the shared id, and
+   `data-domains` already lists both hosts.)
+2. **Create the Pages project (Git integration, recommended):** Cloudflare
+   dashboard → Workers & Pages → Create → Pages → *Connect to Git* →
+   repository `fareezahmed/meeras-deploy`.
+   - Production branch: `main`
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+   - Environment variable (Production): `UMAMI_WEBSITE_ID` = the id from step 1
+   - Node version: 18 or later (the build has no dependencies)
+   Every push to `main` then deploys production; every other branch or pull
+   request gets a preview URL on `*.meeras.pages.dev`.
+3. **Custom domains:** in the project → *Custom domains* → add
+   `meeras.com.au`, then add `www.meeras.com.au`. Because the zone is already on
+   Cloudflare, the CNAME records are created for you and the certificate is
+   issued automatically (a few minutes). The `_redirects` file then sends
+   `www` to the apex.
+4. **Check:** open https://meeras.com.au, generate the sample PDF, confirm the
+   donation buttons open Stripe, and look for the production hostname in the
+   Umami dashboard. `curl -sI https://meeras.com.au | grep -i content-security`
+   should show the CSP from `_headers`.
+
+### 8.2 Alternative: deploy from this machine (direct upload)
+
+```bash
+npx --yes wrangler login        # once; opens the browser
+npm run deploy:prod             # runs the tests, builds dist/, uploads
+```
+
+The first run creates the Pages project `meeras` if it does not exist. Custom
+domains are still attached in the dashboard (step 3 above).
+
+### 8.3 Day to day
+
+- Dev first, then production: `./deploy.sh` (dev on AWS) → review at
+  https://fareez.dev/meeras/ → `git push` (or `npm run deploy:prod`).
+- Rollback: Pages keeps every deployment; *Deployments* → pick an earlier one
+  → *Rollback*.
+- The content-security policy in `_headers` allows exactly what the app loads:
+  Google Fonts, pdf-lib from cdnjs, the self-hosted Umami script, and
+  inline CSS/JS. If a future change loads something new, add it there or the
+  browser will block it in production only.
+- Search engines: production carries the canonical link. If the dev copy ever
+  shows up in search results, add `<meta name="robots" content="noindex">` to
+  the dev build in `build.js`.
+
+---
+
 ## Need to back out?
 
 To completely remove the deployment:
