@@ -77,8 +77,9 @@ if (cfg.cloudflare) {
     '  Permissions-Policy: camera=(), microphone=(), geolocation=()',
     '  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload',
     "  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://analytics.fareez.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://analytics.fareez.dev; frame-ancestors 'self'; base-uri 'self'",
-    '/index.html',
-    '  Cache-Control: max-age=300, public',
+    // The page itself keeps Cloudflare's default (max-age=0, must-revalidate):
+    // /index.html is normalised to / with a redirect, and revalidation means a
+    // deploy is picked up on the next visit.
     '/donation-config.js',
     '  Cache-Control: max-age=300, public',
     '',
