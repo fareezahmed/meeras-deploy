@@ -38,15 +38,15 @@ function freshHeirs() {
     fatherAlive: false, motherAlive: false,
     fullBrothers: 0, fullSisters: 0,
     paternalGrandfatherAlive: false, paternalGrandmotherAlive: false,
-    maternalGrandmotherAlive: false, sex: null,
+    maternalGrandmotherAlive: false, rulings: {}, sex: null,
   };
 }
 
-function runCase(W, name, setup, checks) {
+function runCase(W, name, setup, checks, rules) {
   W.STATE.heirs = freshHeirs();
   W.STATE.bequests = [{ recipient: '', percent: 0 }];
   setup(W.STATE);
-  const r = W.calculateFaraid();
+  const r = W.calculateFaraid(rules || {});
 
   const div = document.createElement('div');
   div.className = 'case';
@@ -100,10 +100,10 @@ function startTests() {
       return;
     }
     let pass = 0, total = 0;
-    const T = (name, setup, checks) => {
+    const T = (name, setup, checks, rules) => {
       total++;
       try {
-        if (runCase(W, name, setup, checks)) pass++;
+        if (runCase(W, name, setup, checks, rules)) pass++;
       } catch (e) {
         const div = document.createElement('div');
         div.className = 'case fail';
@@ -224,7 +224,114 @@ function startTests() {
       ['Farāʾiḍ shares + bequest = 100%', c => near(c.sumPct() + c.result.bequestPct, 100)],
     ]);
 
-    // NOTE — Schedule A Case 3 (children of sons, no direct children) is NOT
+    // ── Sisters: fixed share and radd; residuary with daughters ──
+    T('Mother + 1 full sister: 2/5 and 3/5 (1/3 and 1/2, then radd)', S => {
+      S.testatorSex = 'male';
+      S.heirs.motherAlive = true; S.heirs.fullSisters = 1;
+    }, [
+      ['Mother 2/5 = 40%', c => c.frac('Mother') === '2/5' && near(c.pct('Mother'), 40)],
+      ['Full sister 3/5 = 60%', c => c.frac('Sister') === '3/5' && near(c.pct('Sister'), 60)],
+      ['raddApplied flag set', c => c.result.raddApplied === true],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+    T('1 daughter + 1 full sister: 1/2 and 1/2 (sister residuary with the daughter)', S => {
+      S.testatorSex = 'male';
+      S.heirs.daughters = 1; S.heirs.fullSisters = 1;
+    }, [
+      ['Daughter 1/2', c => c.frac('Daughter') === '1/2'],
+      ['Full sister 1/2 as residuary', c => c.frac('Sister') === '1/2' && c.result.shares.some(s => s.category === 'full-sister-residue')],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+    T('2 daughters + 1 full sister: 2/3 and 1/3', S => {
+      S.testatorSex = 'male';
+      S.heirs.daughters = 2; S.heirs.fullSisters = 1;
+    }, [
+      ['Each daughter 1/3', c => c.frac('Daughter 1') === '1/3' && c.frac('Daughter 2') === '1/3'],
+      ['Full sister 1/3', c => c.frac('Sister') === '1/3'],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+
+    // ── Grandfather with brothers and sisters: Zayd ibn Thābit's method ──
+    T('Grandfather + 1 full brother: 1/2 each (sharing beats a third)', S => {
+      S.testatorSex = 'male';
+      S.heirs.paternalGrandfatherAlive = true; S.heirs.fullBrothers = 1;
+    }, [
+      ['Grandfather 1/2', c => c.frac('Grandfather') === '1/2'],
+      ['Brother 1/2', c => c.frac('Brother') === '1/2'],
+      ['Explained: best option named and siblings shared the rest', c => c.result.warnings.some(w => /sharing as a brother/.test(w) && /shared the rest/.test(w))],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+    T('Grandfather + 1 full sister: 2/3 and 1/3 (no fixed half beside him)', S => {
+      S.testatorSex = 'male';
+      S.heirs.paternalGrandfatherAlive = true; S.heirs.fullSisters = 1;
+    }, [
+      ['Grandfather 2/3', c => c.frac('Grandfather') === '2/3'],
+      ['Sister 1/3', c => c.frac('Sister') === '1/3'],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+    T('Grandfather + 2 full brers + 1 sister under the Ḥanafī ruling: he excludes them', S => {
+      S.testatorSex = 'male';
+      S.heirs.paternalGrandfatherAlive = true; S.heirs.fullBrothers = 2; S.heirs.fullSisters = 1;
+    }, [
+      ['Grandfather takes all', c => c.frac('Grandfather') === '1/1'],
+      ['No brother or sister rows', c => !c.result.shares.some(s => /Brother|Sister/.test(s.name))],
+      ['Exclusion note names the Ḥanafī ruling', c => c.result.notes.some(n => /Ḥanafī ruling selected/.test(n))],
+    ], W.rulesForMadhhab('hanafi'));
+    T('Al-Akdariyyah: husband + mother + grandfather + 1 full sister', S => {
+      S.testatorSex = 'female';
+      S.heirs.spouses = [{ name: 'Omar' }];
+      S.heirs.motherAlive = true; S.heirs.paternalGrandfatherAlive = true; S.heirs.fullSisters = 1;
+    }, [
+      ['Husband 1/3', c => c.frac('Husband') === '1/3'],
+      ['Mother 2/9', c => c.frac('Mother') === '2/9'],
+      ['Grandfather 8/27', c => c.frac('Grandfather') === '8/27'],
+      ['Sister 4/27', c => c.frac('Sister') === '4/27'],
+      ['Explained as al-Akdariyyah', c => c.result.warnings.some(w => /Akdariyyah/.test(w))],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+    T('Same family under the Ḥanafī ruling: husband 1/2, mother 1/3, grandfather 1/6, sister nothing', S => {
+      S.testatorSex = 'female';
+      S.heirs.spouses = [{ name: 'Omar' }];
+      S.heirs.motherAlive = true; S.heirs.paternalGrandfatherAlive = true; S.heirs.fullSisters = 1;
+    }, [
+      ['Husband 1/2', c => c.frac('Husband') === '1/2'],
+      ['Mother 1/3', c => c.frac('Mother') === '1/3'],
+      ['Grandfather 1/6', c => c.frac('Grandfather') === '1/6'],
+      ['No sister row', c => !c.result.shares.some(s => /Sister/.test(s.name))],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ], W.rulesForMadhhab('hanafi'));
+
+    // ── Paternal grandmother beside the father ──
+    T('Father + paternal grandmother + son (default): she takes 1/6', S => {
+      S.testatorSex = 'male';
+      S.heirs.fatherAlive = true; S.heirs.paternalGrandmotherAlive = true; S.heirs.sons = 1;
+    }, [
+      ['Paternal grandmother 1/6', c => c.frac('Paternal Grandmother') === '1/6'],
+      ['Father 1/6, son 2/3', c => c.frac('Father') === '1/6' && c.frac('Son') === '2/3'],
+      ['No school named by default', c => !c.result.warnings.concat(c.result.notes).some(t => /Ḥanbalī|Ḥanafī/.test(t))],
+    ]);
+    T('Father + paternal grandmother + son under the Ḥanafī, Shāfiʿī and Mālikī ruling: excluded', S => {
+      S.testatorSex = 'male';
+      S.heirs.fatherAlive = true; S.heirs.paternalGrandmotherAlive = true; S.heirs.sons = 1;
+    }, [
+      ['No grandmother row', c => !c.result.shares.some(s => /Grandmother/.test(s.name))],
+      ['Son 5/6', c => c.frac('Son') === '5/6'],
+      ['Note names the selected ruling', c => c.result.notes.some(n => /ruling selected/.test(n))],
+    ], W.rulesForMadhhab('shafii'));
+
+    // ── ʿUmariyyatān ──
+    T('ʿUmariyyatān: wife + both parents: 1/4, 1/4, 1/2', S => {
+      S.testatorSex = 'male';
+      S.heirs.spouses = [{ name: 'Aisha' }];
+      S.heirs.fatherAlive = true; S.heirs.motherAlive = true;
+    }, [
+      ['Wife 1/4', c => c.frac('Wife') === '1/4'],
+      ['Mother 1/4 (a third of the remainder after the wife)', c => c.frac('Mother') === '1/4'],
+      ['Father 1/2', c => c.frac('residue') === '1/2'],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+
+    // NOTE: Schedule A Case 3 (children of sons, no direct children) is NOT
     // representable: the heirs inventory has no grandchildren fields, so the
     // engine cannot be exercised for it. Flagged in the review report.
 

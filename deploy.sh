@@ -143,6 +143,7 @@ aws s3 sync . "$SYNC_DEST" \
   --exclude "*.docx" \
   --exclude "test.html" \
   --exclude "specimens/*" \
+  --exclude "tests/*" \
   --exclude "cloudfront/*" \
   --cache-control "max-age=300, public" \
   --delete

@@ -1,0 +1,8 @@
+{
+  "name": "meeras",
+  "private": true,
+  "description": "Meeras Islamic Will WebApp: single-file static site; the tests slice the farāʾiḍ engine out of index.html",
+  "scripts": {
+    "test": "node tests/faraid-engine.test.js"
+  }
+}

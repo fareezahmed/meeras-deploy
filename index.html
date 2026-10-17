@@ -741,6 +741,17 @@
   }
   .checkbox-card.checked .check-box { background: var(--success); border-color: var(--success); color: white; }
   .check-text { font-size: 14px; line-height: 1.5; color: var(--text); flex: 1; }
+  /* Optional per-ruling choice shown under a relative where the schools differ */
+  .rule-row {
+    margin: 2px 0 14px;
+    padding: 12px 14px;
+    background: var(--white);
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+  }
+  .rule-row-label { font-size: 12px; color: var(--muted); letter-spacing: 0.02em; }
+  .rule-row .choice { padding: 14px 16px; }
+  .honorific { font-family: 'Amiri', serif; }
 
   /* ========== BUTTONS ========== */
   .btn-row {
@@ -1603,6 +1614,7 @@ const DEFAULT_STATE = () => ({
     paternalGrandfatherAlive: false,
     paternalGrandmotherAlive: false,
     maternalGrandmotherAlive: false,
+    rulings: {},            // per-draft choices where the schools differ: { pgmWithFather?, jaddMuqasama? }
     sex: null,              // 'male' | 'female' (testator)
   },
   testatorSex: null,
@@ -2197,8 +2209,12 @@ function renderProgress() {
 // Computes inheritance shares as fractions. Returns array of:
 //   { name, relation, fraction: { num, den }, percent, reason }
 //
-// Implements the most common cases from Schedule A. For uncovered configurations
-// the engine returns a flag instructing the user to consult a qualified Imam.
+// Implements the Sunni rules for every family the heir model can express, in step
+// with Al-Mawārīth's calcSunni (the reference engine). Where the four schools
+// differ (paternal grandmother beside the father; grandfather beside brothers
+// and sisters) the selected school's ruling applies, see rulesForMadhhab.
+// With no heir recorded the engine returns a flag referring the family to the
+// residual rule of Schedule A Case 6.
 
 function gcd(a, b) { return b ? gcd(b, a % b) : a; }
 function simplify({ num, den }) {
@@ -2224,313 +2240,426 @@ function fracToPercent(f, decimals = 2) {
   return (fracToFloat(f) * 100).toFixed(decimals);
 }
 
-function calculateFaraid() {
+function divFrac(a, b) {
+  return simplify({ num: a.num * b.den, den: a.den * b.num });
+}
+
+// ---- Schools of fiqh --------------------------------------------------------
+// The four Sunni schools agree on the Quranic shares and differ on two families
+// this engine can express: the paternal grandmother beside the father, and the
+// grandfather beside brothers and sisters. The selected school's ruling is
+// applied; with no school selected both flags are true (the Ḥanbalī ruling on
+// the grandmother, Zayd ibn Thābit's method on the grandfather). Same shape and
+// defaults as Al-Mawārīth's rulesForMadhhab.
+const MADHHABS = [
+  { id: 'hanafi',  name: 'Ḥanafī' },
+  { id: 'maliki',  name: 'Mālikī' },
+  { id: 'shafii',  name: 'Shāfiʿī' },
+  { id: 'hanbali', name: 'Ḥanbalī' },
+];
+const madhhabName = id => { const m = MADHHABS.find(x => x.id === id); return m ? m.name : null; };
+const rulesForMadhhab = id => ({
+  madhhab: id || null,
+  pgmWithFather: !(id === 'hanafi' || id === 'maliki' || id === 'shafii'),
+  jaddMuqasama: id !== 'hanafi',
+  raddToHeirs: true,
+  distantKindred: true,
+});
+// Test hook (test.html runs the app in an iframe): lexical bindings are not
+// window properties, so expose the rules helpers. No-op under Node.
+if (typeof window !== 'undefined') Object.assign(window, { rulesForMadhhab, madhhabName, MADHHABS });
+
+// The chosen school is kept outside the draft (localStorage), so starting a new
+// Will keeps it. A per-ruling choice made inside a draft lives in
+// STATE.heirs.rulings and overrides the school for that draft only.
+const MADHHAB_KEY = 'meeras:madhhab';
+function loadMadhhab() {
+  try {
+    const v = localStorage.getItem(MADHHAB_KEY);
+    return MADHHABS.some(m => m.id === v) ? v : null;
+  } catch (e) { return null; }
+}
+function saveMadhhab(id) {
+  try {
+    if (id) localStorage.setItem(MADHHAB_KEY, id); else localStorage.removeItem(MADHHAB_KEY);
+  } catch (e) { /* storage unavailable */ }
+}
+let MADHHAB = loadMadhhab();
+function currentRules() {
+  const r = rulesForMadhhab(MADHHAB);
+  const o = (typeof STATE !== 'undefined' && STATE && STATE.heirs && STATE.heirs.rulings) || {};
+  if (o.pgmWithFather === true || o.pgmWithFather === false) r.pgmWithFather = o.pgmWithFather;
+  if (o.jaddMuqasama === true || o.jaddMuqasama === false) r.jaddMuqasama = o.jaddMuqasama;
+  return r;
+}
+
+// ---- The engine -------------------------------------------------------------
+// Mirrors Al-Mawārīth's calcSunni for every family the Meeras heir model can
+// express (spouses, sons, daughters, parents, paternal grandfather, both
+// grandmothers, full brothers and sisters). Reads STATE.heirs, STATE.testatorSex
+// and STATE.bequests; `rules` is the object returned by rulesForMadhhab.
+function calculateFaraid(rules = {}) {
+  rules = rules || {};
   const h = STATE.heirs;
   const sex = STATE.testatorSex;
+  const F = (num, den = 1) => simplify({ num, den });
+  const ONE = F(1), ZERO = F(0);
 
-  const hasChildren = h.sons > 0 || h.daughters > 0;
-  const hasMaleDesc = h.sons > 0;
-  const numSpouses = (h.spouses || []).filter(s => s && s.name && s.name.trim()).length;
+  const named = (h.spouses || []).filter(s => s && s.name && s.name.trim());
+  const wives = sex === 'male' ? named : [];
+  const husband = sex === 'female' ? (named[0] || null) : null;
+  const hasSon = h.sons > 0;
+  const hasDaughter = h.daughters > 0;
+  const hasChildren = hasSon || hasDaughter;
+  const hasFather = !!h.fatherAlive;
+  const hasMother = !!h.motherAlive;
+  const hasPGF = !!h.paternalGrandfatherAlive && !hasFather;   // only in the father's place
+  // Paternal grandmother beside the father: the schools differ. The Ḥanbalī
+  // ruling (she takes 1/6 with him) applies unless rules.pgmWithFather is
+  // explicitly false, which selects the Ḥanafī, Shāfiʿī and Mālikī ruling.
+  const pgmDisputed = !!h.paternalGrandmotherAlive && !hasMother && hasFather;
+  const pgmWithFather = rules.pgmWithFather !== false;
+  const hasPGM = !!h.paternalGrandmotherAlive && !hasMother && (!hasFather || pgmWithFather);
+  const hasMGM = !!h.maternalGrandmotherAlive && !hasMother;
+  // Grandfather with brothers and sisters (father absent, no son): Zayd ibn
+  // Thābit's method applies unless rules.jaddMuqasama is explicitly false,
+  // which selects the Ḥanafī ruling (the grandfather excludes them).
+  // Meeras records full brothers and sisters only. Paternal half-siblings are
+  // not in the heir model, so the muʿādda reckoning (half-siblings counted
+  // against the grandfather and then yielding to the full siblings) never
+  // arises here.
+  const jaddZayd = rules.jaddMuqasama !== false;
+  const fullSibs = (h.fullBrothers | 0) + (h.fullSisters | 0);
+  const jaddWithSibs = hasPGF && !hasSon && fullSibs > 0;
+  const zaydCase = jaddWithSibs && jaddZayd;
+  const hanafiJaddExcludes = jaddWithSibs && !jaddZayd;
+  const mothersBlockingSibs = fullSibs;   // two or more siblings reduce the mother to 1/6
 
   const shares = [];
-  let totalAssigned = { num: 0, den: 1 };
-  let unhandled = false;
-  let unhandledReason = '';
-
-  // ---- SPOUSE share ----
-  if (sex === 'male' && numSpouses > 0) {
-    // Wife/wives share collectively 1/8 (with children) or 1/4 (without)
-    const collective = hasChildren ? { num: 1, den: 8 } : { num: 1, den: 4 };
-    const each = simplify({ num: collective.num, den: collective.den * numSpouses });
-    h.spouses.filter(s => s && s.name).forEach(s => {
-      shares.push({
-        name: s.name,
-        relation: numSpouses > 1 ? 'Wife (share of collective ' + fracToString(collective) + ')' : 'Wife',
-        fraction: each,
-        reason: `Quran 4:12 — "for them is one-eighth of what you leave behind${hasChildren ? '' : ' if you have no child, otherwise one-fourth'}". ${numSpouses > 1 ? 'Multiple wives share the collective spouse share equally.' : ''}`,
-        category: 'spouse',
-      });
-      totalAssigned = addFrac(totalAssigned, each);
-    });
-  } else if (sex === 'female' && numSpouses > 0) {
-    const husband = h.spouses.find(s => s && s.name);
-    if (husband) {
-      const frac = hasChildren ? { num: 1, den: 4 } : { num: 1, den: 2 };
-      shares.push({
-        name: husband.name,
-        relation: 'Husband',
-        fraction: frac,
-        reason: `Quran 4:12 — "For you is half of what your wives leave if they have no child. But if they have a child, for you is one fourth."`,
-        category: 'spouse',
-      });
-      totalAssigned = addFrac(totalAssigned, frac);
+  const notes = [], warnings = [], schoolDifferences = [];
+  let total = ZERO;
+  const push = row => { shares.push(row); total = addFrac(total, row.fraction); };
+  // One row per person from a collective fraction (Son 1, Son 2, ...).
+  const pushGroup = (count, single, relation, collective, reason, category, suffix, extra) => {
+    if (count <= 0 || collective.num === 0) return;
+    const each = divFrac(collective, F(count));
+    for (let i = 1; i <= count; i++) {
+      push(Object.assign({
+        name: (count > 1 ? single + ' ' + i : single) + (suffix || ''),
+        relation, fraction: each, reason, category,
+      }, extra || {}));
     }
-  }
+  };
 
-  // ---- PARENTS share ----
-  const mothersShare = (() => {
-    if (hasChildren) return { num: 1, den: 6 };
-    // 2+ siblings reduce mother to 1/6
-    if (h.fullBrothers + h.fullSisters >= 2) return { num: 1, den: 6 };
-    return { num: 1, den: 3 };
-  })();
-
-  if (h.motherAlive) {
-    shares.push({
-      name: 'Mother',
-      relation: 'Mother',
-      fraction: mothersShare,
+  // ---- SPOUSE ----
+  if (sex === 'male' && wives.length > 0) {
+    const collective = hasChildren ? F(1, 8) : F(1, 4);
+    const each = divFrac(collective, F(wives.length));
+    wives.forEach(s => push({
+      name: s.name,
+      relation: wives.length > 1 ? 'Wife (share of the collective ' + fracToString(collective) + ')' : 'Wife',
+      fraction: each,
+      reason: (hasChildren
+        ? 'Quran 4:12: "But if you leave a child, then for them is an eighth."'
+        : 'Quran 4:12: "And for them is one fourth if you leave no child."')
+        + (wives.length > 1 ? ' Several wives share the collective spouse share equally.' : ''),
+      category: 'spouse',
+    }));
+  } else if (sex === 'female' && husband) {
+    push({
+      name: husband.name,
+      relation: 'Husband',
+      fraction: hasChildren ? F(1, 4) : F(1, 2),
       reason: hasChildren
-        ? `Quran 4:11 — "And for one's parents, to each one of them is a sixth of his estate if he left children."`
-        : (h.fullBrothers + h.fullSisters >= 2
-            ? `Quran 4:11 — "But if he had brothers [or sisters], for his mother is a sixth."`
-            : `Quran 4:11 — "If he had no children and the parents alone inherit from him, then for his mother is one third."`),
-      category: 'mother',
+        ? 'Quran 4:12: "But if they leave a child, for you is one fourth of what they leave."'
+        : 'Quran 4:12: "For you is half of what your wives leave if they have no child."',
+      category: 'spouse',
     });
-    totalAssigned = addFrac(totalAssigned, mothersShare);
+  }
+  const spouseTotal = total;
+
+  // ---- MOTHER ----
+  if (hasMother) {
+    let ms, reason;
+    if (hasChildren) {
+      ms = F(1, 6);
+      reason = 'Quran 4:11: "And for one\'s parents, to each one of them is a sixth of his estate if he left children."';
+    } else if (mothersBlockingSibs >= 2) {
+      ms = F(1, 6);
+      reason = 'Quran 4:11: "But if he had brothers [or sisters], for his mother is a sixth." Two or more siblings reduce the mother\'s share.';
+    } else {
+      ms = F(1, 3);
+      reason = 'Quran 4:11: "If he had no children and the parents alone inherit from him, then for his mother is one third."';
+    }
+    // ʿUmariyyatān (Gharrāwayn): spouse and both parents, no children, fewer
+    // than two siblings. The father only; not a grandfather in his place.
+    if (hasFather && !hasChildren && mothersBlockingSibs < 2 && spouseTotal.num > 0) {
+      ms = multFrac(F(1, 3), subFrac(ONE, spouseTotal));
+      reason = 'ʿUmariyyatān (Gharrāwayn) case: with a spouse and both parents surviving, no children and fewer than two siblings, the mother takes one third of what remains after the spouse, by the ruling of ʿUmar ibn al-Khaṭṭāb (رضي الله عنه) agreed by the majority of the Companions.';
+    }
+    push({ name: 'Mother', relation: 'Mother', fraction: ms, reason, category: 'mother' });
   }
 
-  // Father: fixed 1/6 if children, otherwise residuary
+  // ---- DAUGHTERS (no son): fixed share ----
+  if (hasDaughter && !hasSon) {
+    pushGroup(h.daughters, 'Daughter', 'Daughter', h.daughters === 1 ? F(1, 2) : F(2, 3),
+      h.daughters === 1
+        ? 'Quran 4:11: "And if there is only one [daughter], for her is half."'
+        : 'Quran 4:11: "But if there are only daughters, two or more, for them is two thirds." Divided equally among the daughters.',
+      'daughter');
+  }
+
+  // ---- FATHER ----
   let fatherTakesResidue = false;
-  if (h.fatherAlive) {
-    if (hasChildren) {
-      const f = { num: 1, den: 6 };
-      shares.push({
-        name: 'Father',
-        relation: 'Father',
-        fraction: f,
-        reason: `Quran 4:11 — fixed 1/6 share when the deceased leaves children. Father may also receive residue if no son exists.`,
-        category: 'father-fixed',
-      });
-      totalAssigned = addFrac(totalAssigned, f);
-      // If no son but has daughters, father gets residue too — handled below
-      if (!hasMaleDesc && h.daughters > 0) fatherTakesResidue = true;
+  if (hasFather) {
+    if (hasSon) {
+      push({ name: 'Father', relation: 'Father', fraction: F(1, 6),
+        reason: 'Quran 4:11: "And for one\'s parents, to each one of them is a sixth of his estate if he left children." With a son surviving, the father takes the fixed sixth only.',
+        category: 'father-fixed' });
+    } else if (hasDaughter) {
+      push({ name: 'Father', relation: 'Father (Quranic share)', fraction: F(1, 6),
+        reason: 'Quran 4:11: fixed sixth. With only daughters surviving, the father also takes any remainder as the nearest male agnate.',
+        category: 'father-fixed' });
+      fatherTakesResidue = true;
     } else {
-      // No children: father is residuary after spouse + mother
       fatherTakesResidue = true;
     }
   }
 
-  // ---- Grandparents (paternal grandfather as substitute for father) ----
-  let grandfatherTakesResidue = false;
-  if (!h.fatherAlive && h.paternalGrandfatherAlive) {
-    if (hasChildren) {
-      const gf = { num: 1, den: 6 };
-      shares.push({
-        name: 'Paternal Grandfather',
-        relation: 'Father of father',
-        fraction: gf,
-        reason: 'Schedule A Case 1.g — paternal grandfather replaces an absent father with 1/6 when children survive.',
-        category: 'gf-fixed',
-      });
-      totalAssigned = addFrac(totalAssigned, gf);
-      if (!hasMaleDesc && h.daughters > 0) grandfatherTakesResidue = true;
+  // ---- PATERNAL GRANDFATHER in the father's place (outside Zayd's case) ----
+  let pgfTakesResidue = false;
+  if (hasPGF && !zaydCase) {
+    if (hasSon) {
+      push({ name: 'Paternal Grandfather', relation: "Father's father", fraction: F(1, 6),
+        reason: 'The paternal grandfather replaces an absent father with a fixed sixth when a son survives (Schedule A Case 1.g).',
+        category: 'pgf-fixed' });
+    } else if (hasDaughter) {
+      push({ name: 'Paternal Grandfather', relation: "Father's father (Quranic share)", fraction: F(1, 6),
+        reason: 'Replaces an absent father: fixed sixth, plus the remainder as nearest male agnate when only daughters survive.',
+        category: 'pgf-fixed' });
+      pgfTakesResidue = true;
     } else {
-      grandfatherTakesResidue = true;
+      pgfTakesResidue = true;
     }
   }
 
-  if (!h.motherAlive && (h.paternalGrandmotherAlive || h.maternalGrandmotherAlive)) {
-    // Grandmother(s) substitute for absent mother — share 1/6 equally
-    const grandmas = [
-      h.paternalGrandmotherAlive ? 'Paternal Grandmother (Mother of father)' : null,
-      h.maternalGrandmotherAlive ? 'Maternal Grandmother (Mother of mother)' : null,
-    ].filter(Boolean);
-    const each = { num: 1, den: 6 * grandmas.length };
-    grandmas.forEach(g => {
-      shares.push({
-        name: g,
-        relation: g,
-        fraction: each,
-        reason: `Schedule A — grandmother(s) substitute for an absent mother, sharing 1/6 equally. (Hadith of the Prophet ﷺ granting the grandmothers 1/6, narrated by Abu Dawud and Tirmidhi.)`,
-        category: 'gm',
-      });
-      totalAssigned = addFrac(totalAssigned, each);
-    });
+  // ---- GRANDMOTHERS ----
+  const gms = [];
+  if (hasPGM) gms.push(['Paternal Grandmother', "Father's mother"]);
+  if (hasMGM) gms.push(['Maternal Grandmother', "Mother's mother"]);
+  if (gms.length > 0) {
+    const each = divFrac(F(1, 6), F(gms.length));
+    gms.forEach(g => push({ name: g[0], relation: g[1], fraction: each,
+      reason: 'Qualifying grandmothers share one sixth equally; the mother excludes every grandmother (the Prophet ﷺ granted the grandmother a sixth, narrated by Abū Dāwūd and al-Tirmidhī).',
+      category: 'grandmother' }));
   }
 
-  // ---- CHILDREN share ----
-  if (hasChildren) {
-    if (hasMaleDesc) {
-      // Sons & daughters share the residue, son = 2 daughter
-      // Residue = 1 - totalAssigned (and father's residue if any)
-      const residue = subFrac({ num: 1, den: 1 }, totalAssigned);
-      // Father's residue (if applicable when no son): not applicable here because hasMaleDesc
-      const totalShares = 2 * h.sons + h.daughters;
-      if (totalShares > 0 && residue.num > 0) {
-        const sonFrac = multFrac(residue, { num: 2, den: totalShares });
-        const daughterFrac = multFrac(residue, { num: 1, den: totalShares });
-        for (let i = 1; i <= h.sons; i++) {
-          shares.push({
-            name: h.sons > 1 ? `Son ${i}` : 'Son',
-            relation: 'Son',
-            fraction: sonFrac,
-            reason: `Quran 4:11 — "for the male, what is equal to the share of two females." Sons take the residue jointly with daughters in a 2:1 ratio.`,
-            category: 'son',
-          });
-        }
-        for (let i = 1; i <= h.daughters; i++) {
-          shares.push({
-            name: h.daughters > 1 ? `Daughter ${i}` : 'Daughter',
-            relation: 'Daughter',
-            fraction: daughterFrac,
-            reason: `Quran 4:11 — daughters take half the share of a son when both are present (2:1 ratio in residue).`,
-            category: 'daughter',
-          });
-        }
-        totalAssigned = addFrac(totalAssigned, multFrac({ num: 2 * h.sons + h.daughters, den: 1 }, daughterFrac));
-      }
-    } else {
-      // Daughters only
-      const collective = h.daughters >= 2 ? { num: 2, den: 3 } : { num: 1, den: 2 };
-      const each = simplify({ num: collective.num, den: collective.den * h.daughters });
-      for (let i = 1; i <= h.daughters; i++) {
-        shares.push({
-          name: h.daughters > 1 ? `Daughter ${i}` : 'Daughter',
-          relation: 'Daughter',
-          fraction: each,
-          reason: h.daughters === 1
-            ? `Quran 4:11 — "and if there is only one [daughter], for her is half."`
-            : `Quran 4:11 — "But if there are [only] daughters, two or more, for them is two thirds." Divided equally among the daughters.`,
-          category: 'daughter',
-        });
-      }
-      totalAssigned = addFrac(totalAssigned, collective);
+  // Where the schools differ on this family, record it for the results.
+  if (pgmDisputed) {
+    schoolDifferences.push({ key: 'pgmWithFather', applied: pgmWithFather, title: 'the paternal grandmother alongside the father' });
+    if (!pgmWithFather) notes.push('The paternal grandmother is excluded by the father under the Ḥanafī, Shāfiʿī and Mālikī ruling selected for this calculation.');
+  }
+  if (jaddWithSibs) {
+    schoolDifferences.push({ key: 'jaddMuqasama', applied: jaddZayd, title: 'the grandfather with brothers and sisters' });
+  }
 
-      // Father (or grandfather) takes the residue
-      if (fatherTakesResidue || grandfatherTakesResidue) {
-        const residue = subFrac({ num: 1, den: 1 }, totalAssigned);
-        if (residue.num > 0) {
-          shares.push({
-            name: fatherTakesResidue ? 'Father (residue)' : 'Paternal Grandfather (residue)',
-            relation: fatherTakesResidue ? 'Father — residuary' : 'Paternal Grandfather — residuary',
-            fraction: residue,
-            reason: 'In addition to the fixed 1/6, the father (or in his absence the paternal grandfather) also receives the residue after the daughters\' collective share when no son exists.',
-            category: 'father-residue',
-          });
-          totalAssigned = addFrac(totalAssigned, residue);
-        }
-      }
+  // ---- FULL BROTHERS AND SISTERS: fixed shares ----
+  const fullSibsExcluded = hasSon || hasFather || hanafiJaddExcludes;
+  let sistersWithDaughters = false;
+  if (zaydCase) {
+    // handled below with the grandfather
+  } else if (!fullSibsExcluded && fullSibs > 0) {
+    const hasFB = h.fullBrothers > 0, hasFS = h.fullSisters > 0;
+    if (hasDaughter && hasFS && !hasFB) {
+      sistersWithDaughters = true;   // residuary with the daughters (ʿaṣabah maʿa al-ghayr)
+    } else if (!hasDaughter && hasFS && !hasFB) {
+      pushGroup(h.fullSisters, 'Full Sister', 'Full sister', h.fullSisters === 1 ? F(1, 2) : F(2, 3),
+        h.fullSisters === 1
+          ? 'Quran 4:176: "If a man dies leaving no child but has a sister, she shall have half of what he leaves."'
+          : 'Quran 4:176: "But if there are two sisters, they shall have two thirds of what he leaves."',
+        'full-sister');
     }
-  } else {
-    // No children case
-    if (fatherTakesResidue || grandfatherTakesResidue) {
-      const residue = subFrac({ num: 1, den: 1 }, totalAssigned);
-      if (residue.num > 0) {
-        shares.push({
-          name: fatherTakesResidue ? 'Father (residue)' : 'Paternal Grandfather (residue)',
-          relation: fatherTakesResidue ? 'Father — residuary' : 'Paternal Grandfather — residuary',
-          fraction: residue,
-          reason: 'When the deceased leaves no children, the father (or his absent substitute) takes everything that remains after the spouse\'s and mother\'s fixed shares — Schedule A Case 4.',
-          category: 'father-residue',
-        });
-        totalAssigned = addFrac(totalAssigned, residue);
-      }
+    // brothers, with or without sisters, take the remainder below
+  } else if (fullSibs > 0) {
+    notes.push(hanafiJaddExcludes
+      ? 'Full brothers and sisters are excluded by the paternal grandfather under the Ḥanafī ruling selected for this calculation.'
+      : 'Full brothers and sisters are excluded by a son or by the father.');
+  }
+
+  // ---- GRANDFATHER WITH BROTHERS AND SISTERS: Zayd ibn Thābit's method ----
+  // No other fixed-share heir: the better of sharing as a brother (he counts as
+  // two heads, a sister as one) and one third of the estate. Other fixed-share
+  // heirs present: the best of sharing in the remainder, one third of the
+  // remainder and one sixth of the estate; he never takes less than a sixth.
+  // Sisters beside him take no fixed share and share as if with a brother.
+  // Al-Akdariyyah (husband, mother, grandfather, one sister) is the exception.
+  let akdariyya = false, zayd = null;
+  if (zaydCase) {
+    const sibHeads = 2 * h.fullBrothers + h.fullSisters;
+    const oneSister = h.fullSisters === 1 && h.fullBrothers === 0;
+    const remainder = subFrac(ONE, total);
+    const otherFurud = total.num > 0;
+    if (husband && hasMother && oneSister && !hasChildren && mothersBlockingSibs < 2) {
+      akdariyya = true;
+      push({ name: 'Paternal Grandfather', relation: "Father's father", fraction: F(1, 6),
+        reason: 'Al-Akdariyyah (husband, mother, grandfather and one sister): the grandfather takes his sixth and the sister her half, the shares are reduced by ʿawl, and the two then divide their combined portion two to one (Zayd ibn Thābit (رضي الله عنه)\'s method).',
+        category: 'pgf-fixed' });
+      push({ name: 'Full Sister', relation: 'Full sister', fraction: F(1, 2),
+        reason: 'Al-Akdariyyah: the sister is first given her fixed half; after ʿawl she divides her portion with the grandfather, one share to her and two to him.',
+        category: 'full-sister', akdariyyaSister: true });
+      warnings.push('Al-Akdariyyah: with a husband, the mother, the grandfather and one sister, the sister receives her fixed half, ʿawl is applied, and the grandfather and sister divide their combined portion two to one. The final shares are husband 1/3, mother 2/9, grandfather 8/27 and sister 4/27.');
+    } else if (fracToFloat(remainder) <= 1 / 6 + 1e-12) {
+      push({ name: 'Paternal Grandfather', relation: "Father's father", fraction: F(1, 6),
+        reason: 'After the fixed shares no more than a sixth remained. The grandfather never takes less than a sixth, so he keeps it as a fixed share and the brothers and sisters receive nothing (Zayd ibn Thābit (رضي الله عنه)\'s method).',
+        category: 'pgf-fixed' });
+      notes.push('Brothers and sisters receive nothing here: after the fixed shares no more than a sixth remained, and the grandfather never takes less than a sixth (Zayd ibn Thābit (رضي الله عنه)\'s method).');
     } else {
-      // No father, no grandfather, no children. Siblings inherit (if any).
-      const sibCount = 2 * h.fullBrothers + h.fullSisters;
-      if (sibCount > 0) {
-        const residue = subFrac({ num: 1, den: 1 }, totalAssigned);
-        if (residue.num > 0) {
-          const sisterFrac = multFrac(residue, { num: 1, den: sibCount });
-          const brotherFrac = multFrac(residue, { num: 2, den: sibCount });
-          for (let i = 1; i <= h.fullBrothers; i++) {
-            shares.push({
-              name: h.fullBrothers > 1 ? `Full Brother ${i}` : 'Full Brother',
-              relation: 'Brother (same parents)',
-              fraction: brotherFrac,
-              reason: 'When the testator has no children, no father, and no grandfather, full siblings take the residue in the 2:1 ratio.',
-              category: 'sibling',
-            });
-          }
-          for (let i = 1; i <= h.fullSisters; i++) {
-            shares.push({
-              name: h.fullSisters > 1 ? `Full Sister ${i}` : 'Full Sister',
-              relation: 'Sister (same parents)',
-              fraction: sisterFrac,
-              reason: 'Sisters share with brothers in 2:1 when no closer male relative survives — Quran 4:176 (kalāla case).',
-              category: 'sibling',
-            });
-          }
-          totalAssigned = addFrac(totalAssigned, residue);
-        }
-      } else if (shares.length === 0) {
-        unhandled = true;
-        unhandledReason = 'No qualifying heirs are recorded in this inventory. Under Schedule A Case 6 (residual rule), the remainder (after debts and bequests) passes to the fixed-share heirs (ʾaṣḥāb al-furūḍ), then to residuaries (ʿaṣabah), then to distant kindred (dhawū al-arḥām), in the order established in the published doctrine of the Sunni schools — and in the complete absence of any qualifying kindred, to a registered Australian Muslim charity selected by the executor. Any question arising in the application of Schedule A is determined by the Arbitrator (Local Scholar) under Article 4.';
-      }
+      const muq = divFrac(multFrac(remainder, F(2)), F(2 + sibHeads));
+      const candidates = otherFurud
+        ? [[muq, 'sharing as a brother'], [divFrac(remainder, F(3)), 'one third of the remainder'], [F(1, 6), 'one sixth of the estate']]
+        : [[muq, 'sharing as a brother'], [F(1, 3), 'one third of the estate']];
+      let best = candidates[0];
+      candidates.forEach(c => { if (fracToFloat(c[0]) > fracToFloat(best[0]) + 1e-12) best = c; });
+      const gf = best[0];
+      const options = candidates.map(c => c[1] + ' (' + fracToString(c[0]) + ')').join(', ');
+      push({ name: 'Paternal Grandfather', relation: "Father's father", fraction: gf,
+        reason: 'With brothers and sisters alive, the grandfather takes the best of ' + options + ': here ' + best[1] + ' (Zayd ibn Thābit (رضي الله عنه)\'s method, followed by the Mālikī, Shāfiʿī and Ḥanbalī schools).',
+        category: 'pgf-residue' });
+      const portion = subFrac(remainder, gf);
+      const units = 2 * h.fullBrothers + h.fullSisters;
+      const unit = divFrac(portion, F(units));
+      pushGroup(h.fullBrothers, 'Full Brother', 'Full brother', multFrac(unit, F(2 * h.fullBrothers)),
+        'Shares the remainder with the grandfather by Zayd ibn Thābit (رضي الله عنه)\'s method, two shares to a brother and one to a sister.', 'full-brother');
+      pushGroup(h.fullSisters, 'Full Sister', 'Full sister', multFrac(unit, F(h.fullSisters)),
+        h.fullBrothers > 0
+          ? 'Shares the remainder with the grandfather and her brothers by Zayd ibn Thābit (رضي الله عنه)\'s method, one share to a sister and two to a brother.'
+          : 'Shares the remainder with the grandfather by Zayd ibn Thābit (رضي الله عنه)\'s method as if with a brother; she takes no fixed share beside him.', 'full-sister');
+      zayd = { options, best: best[1], grandfather: fracToString(gf) };
+      warnings.push('Grandfather with brothers and sisters: Zayd ibn Thābit (رضي الله عنه)\'s method applied. The grandfather took the best of ' + options + ', here ' + best[1] + ', and the brothers and sisters shared the rest.');
     }
   }
 
-  // ---- 'AWL correction (proportional reduction when shares > 1) ----
-  let awlApplied = false;
-  if (fracToFloat(totalAssigned) > 1.0000001) {
-    awlApplied = true;
-    const factor = { num: totalAssigned.den, den: totalAssigned.num };
-    shares.forEach(s => { s.fraction = multFrac(s.fraction, factor); });
-    totalAssigned = { num: 1, den: 1 };
-  }
+  // ---- RESIDUARIES (ʿaṣabah) ----
+  let residue = subFrac(ONE, total);
+  if (residue.num < 0) residue = ZERO;   // ʿawl case, handled below
+  const distributeAsabah = () => {
+    if (hasSon) {
+      const units = 2 * h.sons + h.daughters;
+      const unit = divFrac(residue, F(units));
+      pushGroup(h.sons, 'Son', 'Son', multFrac(unit, F(2 * h.sons)),
+        'Quran 4:11: "for the male, what is equal to the share of two females." Sons take the remainder, jointly with daughters at two to one.', 'son');
+      pushGroup(h.daughters, 'Daughter', 'Daughter', multFrac(unit, F(h.daughters)),
+        'Quran 4:11: with a son present the daughters become residuary heirs with him (ʿaṣabah bi\'l-ghayr) at one share to his two.', 'daughter');
+      return true;
+    }
+    if (fatherTakesResidue) {
+      if (residue.num > 0) push({ name: 'Father (residue)', relation: 'Father (residuary)', fraction: residue,
+        reason: 'The father, as the nearest male ascendant, takes whatever remains after the Quranic shares (Schedule A Case 4).',
+        category: 'father-residue' });
+      return true;
+    }
+    if (pgfTakesResidue) {
+      if (residue.num > 0) push({ name: 'Paternal Grandfather (residue)', relation: "Father's father (residuary)", fraction: residue,
+        reason: 'The paternal grandfather takes the remainder as nearest male agnate when the father is absent.'
+          + (hanafiJaddExcludes ? ' Under the Ḥanafī ruling selected for this calculation he is treated as a father and excludes the brothers and sisters.' : ''),
+        category: 'pgf-residue' });
+      return true;
+    }
+    if (sistersWithDaughters && residue.num > 0) {
+      pushGroup(h.fullSisters, 'Full Sister', 'Full sister (residuary with the daughters)', residue,
+        'Ṣaḥīḥ al-Bukhārī 6742: full sisters become residuary heirs alongside the daughters when there is no son and no father (ʿaṣabah maʿa al-ghayr); they take what remains after the fixed shares.',
+        'full-sister-residue', ' (residue)');
+      return true;
+    }
+    if (!fullSibsExcluded && h.fullBrothers > 0) {
+      const units = 2 * h.fullBrothers + h.fullSisters;
+      const unit = divFrac(residue, F(units));
+      pushGroup(h.fullBrothers, 'Full Brother', 'Full brother', multFrac(unit, F(2 * h.fullBrothers)),
+        'Quran 4:176 (kalāla): full brothers take the remainder when no son, father or grandfather survives; with sisters they share two to one.', 'full-brother');
+      pushGroup(h.fullSisters, 'Full Sister', 'Full sister', multFrac(unit, F(h.fullSisters)),
+        'Quran 4:176: full sisters share the remainder with their brothers, one share to a sister and two to a brother.', 'full-sister');
+      return true;
+    }
+    return false;
+  };
 
-  // ---- RADD (return) — if shares < 1 and no residuary, return proportionally to Quranic heirs (excluding spouse) ----
-  let raddApplied = false;
-  if (fracToFloat(totalAssigned) < 0.9999999 && shares.length > 0 && !unhandled) {
-    // Determine if there's a residuary heir among shares
-    const hasResiduary = shares.some(s =>
-      ['son','father-residue'].includes(s.category) ||
-      (s.category === 'sibling')
-    );
-    if (!hasResiduary) {
-      // Spouse does not participate in radd; everyone else does
+  // ---- RADD, or the Schedule A Case 5 charity fallback ----
+  let raddApplied = false, charityFallback = false;
+  if (!zaydCase && residue.num > 0) {
+    if (!distributeAsabah()) {
       const nonSpouse = shares.filter(s => s.category !== 'spouse');
-      const nonSpouseTotal = nonSpouse.reduce((acc, s) => addFrac(acc, s.fraction), { num: 0, den: 1 });
-      const remainder = subFrac({ num: 1, den: 1 }, totalAssigned);
-      // Scale each non-spouse share proportionally
-      if (nonSpouseTotal.num > 0) {
-        raddApplied = true;
-        nonSpouse.forEach(s => {
-          const proportion = multFrac(s.fraction, { num: nonSpouseTotal.den, den: nonSpouseTotal.num });
-          const addition = multFrac(proportion, remainder);
-          s.fraction = addFrac(s.fraction, addition);
-          s.reason += ' (Adjusted by radd — surplus returned to Quranic heirs since no residuary present.)';
+      if (nonSpouse.length > 0) {
+        const nsTotal = nonSpouse.reduce((acc, s) => addFrac(acc, s.fraction), ZERO);
+        if (nsTotal.num > 0) {
+          nonSpouse.forEach(s => {
+            s.fraction = addFrac(s.fraction, multFrac(divFrac(s.fraction, nsTotal), residue));
+            s.raddApplied = true;
+            s.reason += ' (Adjusted by radd: the surplus is returned to the Quranic heirs, the spouse excepted.)';
+          });
+          total = ONE;
+          raddApplied = true;
+          warnings.push('Radd (return) applied: the Quranic shares did not exhaust the remainder and no residuary heir survives. The surplus has been returned proportionally to the Quranic heirs, excluding the spouse. This is the Ḥanafī and Ḥanbalī position and the later fatwā of the Mālikī and Shāfiʿī schools, which Meeras follows.'
+            + ((rules.madhhab === 'maliki' || rules.madhhab === 'shafii') ? ' Your selected school classically sent this surplus to the public treasury; its later fatwā, followed here, returns it to the heirs.' : ''));
+        }
+      } else if (shares.some(s => s.category === 'spouse')) {
+        charityFallback = true;
+        push({
+          name: 'Registered Muslim charity (selected by executor)',
+          relation: 'Schedule A Case 5: no other qualifying heir',
+          fraction: residue,
+          reason: 'Schedule A Case 5: when only a spouse survives and no other heir, residuary relative or distant kindred (dhawū al-arḥām) is known, the rest of the estate passes to a registered Australian Muslim charity selected by the executor. If distant kindred do survive, consult a scholar: all four schools admit them before the treasury, the Mālikī and Shāfiʿī by their later fatwā.',
+          category: 'charity',
         });
-        totalAssigned = { num: 1, den: 1 };
       }
     }
   }
 
-  // ---- SCHEDULE A CASE 5 FALLBACK — surplus with no heir to return it to ----
-  // (e.g. spouse-only estates: radd cannot apply because the spouse is excluded
-  // from it and no other Quranic or residuary heir exists.) Schedule A Case 5
-  // directs the rest to a registered Muslim charity selected by the executor.
-  let charityFallback = false;
-  if (!unhandled && shares.length > 0 && fracToFloat(totalAssigned) < 0.9999999) {
-    charityFallback = true;
-    const surplus = subFrac({ num: 1, den: 1 }, totalAssigned);
-    shares.push({
-      name: 'Registered Muslim charity (selected by executor)',
-      relation: 'Schedule A Case 5 — no other qualifying heir',
-      fraction: surplus,
-      reason: 'Schedule A Case 5 — where only a spouse (or other non-radd heir) survives and no Quranic or residuary heir remains, the rest of the estate passes to a registered Australian Muslim charity selected by the executor.',
-      category: 'charity',
-    });
-    totalAssigned = addFrac(totalAssigned, surplus);
+  // ---- ʿAWL (proportional reduction when the fixed shares exceed the whole) ----
+  let awlApplied = false;
+  if (fracToFloat(total) > 1.0000001) {
+    const factor = divFrac(ONE, total);
+    shares.forEach(s => { s.originalFraction = s.fraction; s.fraction = multFrac(s.fraction, factor); s.awlApplied = true; });
+    total = ONE;
+    awlApplied = true;
+    if (!akdariyya) warnings.push('ʿAwl (proportional reduction) applied: the Quranic shares as initially computed exceeded the whole estate, a recognised classical scenario. All shares have been reduced in proportion so they sum exactly to the remainder.');
+  }
+  if (akdariyya) {
+    const gf = shares.find(x => x.category === 'pgf-fixed'), sis = shares.find(x => x.akdariyyaSister);
+    if (gf && sis) {
+      const pool = addFrac(gf.fraction, sis.fraction);
+      gf.fraction = multFrac(pool, F(2, 3));
+      sis.fraction = multFrac(pool, F(1, 3));
+    }
   }
 
-  // Compute percentages of remainder (i.e. after bequests are deducted)
-  const bequestPct = STATE.bequests.reduce((s, b) => s + (+b.percent || 0), 0);
-  const remainderPct = 100 - bequestPct;
+  // ---- No heir at all ----
+  let unhandled = false, unhandledReason = '';
+  if (shares.length === 0) {
+    unhandled = true;
+    unhandledReason = 'No qualifying heirs are recorded in this inventory. Under Schedule A Case 6 (residual rule), the remainder (after debts and bequests) passes to the fixed-share heirs (ʾaṣḥāb al-furūḍ), then to residuaries (ʿaṣabah), then to distant kindred (dhawū al-arḥām), in the order established in the published doctrine of the Sunni schools; distant kindred inherit only when no Quranic heir and no residuary relative survives, in all four schools (the Mālikī and Shāfiʿī by their later fatwā), and Meeras does not compute their shares. In the complete absence of any qualifying kindred the remainder passes to a registered Australian Muslim charity selected by the executor. Any question arising in the application of Schedule A is determined by the Arbitrator (Local Scholar) under Article 4.';
+  }
 
+  // ---- Percentages of the estate (after bequests) ----
+  const bequestPct = (STATE.bequests || []).reduce((s, b) => s + (+b.percent || 0), 0);
+  const remainderPct = 100 - bequestPct;
   shares.forEach(s => {
     s.percentOfRemainder = (fracToFloat(s.fraction) * 100).toFixed(2);
-    s.percentOfEstate = (fracToFloat(s.fraction) * remainderPct / 100 * 100).toFixed(2);
+    s.percentOfEstate = (fracToFloat(s.fraction) * remainderPct).toFixed(2);
   });
 
   return {
     shares,
-    total: totalAssigned,
-    totalPercent: fracToPercent(totalAssigned),
+    total,
+    totalPercent: fracToPercent(total),
     awlApplied,
     raddApplied,
     charityFallback,
+    akdariyya,
+    zayd,
+    notes,
+    warnings,
+    schoolDifferences,
+    rules,
     unhandled,
     unhandledReason,
     remainderPct,
@@ -3632,23 +3761,25 @@ function removeBequest(i) {
 screens.S13 = () => {
   const h = STATE.heirs;
   const sex = STATE.testatorSex;
+  const rules = currentRules();
+  const preselected = MADHHAB ? ', pre-selected from your ' + madhhabName(MADHHAB) + ' school' : '';
   return `
-  <div class="step-label">Step 12 of 14  ·  Article 8 — Heirs inventory</div>
+  <div class="step-label">Step 12 of 14  ·  Article 8: Heirs inventory</div>
   <h2 class="screen-title">Your surviving family</h2>
   <p class="screen-subtitle">
-    The farāʾiḍ engine needs to know who would be alive when you die, so it can calculate each person's Quranic share. Enter your <em>current</em> living family — you can update this later if circumstances change.
+    The farāʾiḍ engine needs to know who would be alive when you die, so it can calculate each person's Quranic share. Enter your <em>current</em> living family; you can update this later if circumstances change.
   </p>
 
   <div class="accent-callout" style="background:rgba(201,169,97,0.12);border-left-width:4px;padding:18px 22px;">
-    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--primary);font-weight:600;margin-bottom:8px;">⚖  Inheritance is determined at your death — not now.</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--primary);font-weight:600;margin-bottom:8px;">⚖  Inheritance is determined at your death, not now.</div>
     <p style="margin:0 0 10px 0;font-size:13px;">
       The names you record here help us <em>illustrate</em> the likely distribution, but they do not <em>bind</em> the actual outcome. Under Islamic law, the heirs are exactly those qualifying Muslim relatives who are alive at the moment of your death. What this means in practice:
     </p>
     <ul style="margin:8px 0 10px 22px;padding:0;font-size:13px;line-height:1.7;">
-      <li>A <strong>child born after today</strong> will still inherit — even if you never update this Will.</li>
+      <li>A <strong>child born after today</strong> will still inherit, even if you never update this Will.</li>
       <li>Anyone listed here who <strong>passes away before you</strong> will not inherit; their share is redistributed among the remaining qualifying heirs.</li>
       <li>A <strong>spouse you marry after writing this Will</strong> inherits even if not listed here.</li>
-      <li>If no close heir survives you, your <strong>distant kindred (dhawū al-arḥām)</strong> inherit in the order prescribed by Islamic law, even though they are not named here.</li>
+      <li>If no Quranic heir and no residuary relative survives you, your <strong>distant kindred (dhawū al-arḥām)</strong> inherit, in all four schools (the Mālikī and Shāfiʿī by their later fatwā). Meeras does not compute their shares and refers the family to a scholar.</li>
     </ul>
     <p style="margin:0;font-size:13px;color:var(--muted);">
       Your Will remains Islamically valid and legally effective even if your family changes; we still recommend updating it after major life events for clarity. This principle is recorded as <strong>Article 8.7</strong> of your Will.
@@ -3656,7 +3787,19 @@ screens.S13 = () => {
   </div>
 
   <div class="info-callout">
-    <strong>A reminder.</strong> Under Article 8.4 of your Will, a <em>non-Muslim relative cannot inherit</em> — this follows classical Sunni jurisprudence. The engine excludes them by default. Note in the field below if any of your listed family are non-Muslim.
+    <strong>A reminder.</strong> Under Article 8.4 of your Will, a <em>non-Muslim relative cannot inherit</em>; this follows classical Sunni jurisprudence. The engine excludes them by default. Note in the field below if any of your listed family are non-Muslim.
+  </div>
+
+  <!-- School of fiqh -->
+  <div class="heir-section">
+    <div class="heir-section-title">School of fiqh <span style="font-size:13px;color:var(--muted);font-weight:400;">optional</span></div>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
+      The four Sunni schools agree on the Quranic shares and differ on a few families: the paternal grandmother beside the father, and the grandfather beside brothers and sisters. Choose your school and Meeras applies its ruling. With no school selected it applies the default ruling shown under each affected relative. Your choice is remembered on this device for every Will you draft.
+    </p>
+    <select class="select" aria-label="School of fiqh" onchange="chooseMadhhab(this.value)">
+      <option value=""${MADHHAB ? '' : ' selected'}>Not selected</option>
+      ${MADHHABS.map(m => `<option value="${m.id}"${MADHHAB === m.id ? ' selected' : ''}>${m.name}</option>`).join('')}
+    </select>
   </div>
 
   <!-- Spouses -->
@@ -3728,12 +3871,42 @@ screens.S13 = () => {
         <div class="check-box">✓</div>
         <div class="check-text">My <strong>paternal grandfather</strong> (father's father) is alive. He substitutes for an absent father in inheritance.</div>
       </div>
+      ${h.paternalGrandfatherAlive && !(h.sons > 0) ? `
+      <div class="rule-row">
+        <div class="rule-row-label">Ruling when brothers or sisters also survive (optional)${preselected}</div>
+        <div class="choice-grid cols-2" style="margin-top:8px;">
+          <button class="choice ${rules.jaddMuqasama !== false ? 'selected' : ''}" onclick="setRuling('jaddMuqasama', true)">
+            <div class="choice-title">Zayd's method: he shares with them</div>
+            <div class="choice-desc">The method of Zayd ibn Thābit <span lang="ar">(رضي الله عنه)</span>, followed by the Mālikī, Shāfiʿī and Ḥanbalī schools. Applied when no school is selected.</div>
+          </button>
+          <button class="choice ${rules.jaddMuqasama === false ? 'selected' : ''}" onclick="setRuling('jaddMuqasama', false)">
+            <div class="choice-title">He excludes them</div>
+            <div class="choice-desc">The Ḥanafī school: the grandfather is treated as a father, and the brothers and sisters receive nothing.</div>
+          </button>
+        </div>
+      </div>
+      ` : ''}
     ` : ''}
     ${!h.motherAlive ? `
       <div class="checkbox-card ${h.paternalGrandmotherAlive ? 'checked' : ''}" onclick="setValue('heirs.paternalGrandmotherAlive', !STATE.heirs.paternalGrandmotherAlive); renderScreen('S13');" style="margin-bottom:8px;">
         <div class="check-box">✓</div>
         <div class="check-text">My <strong>paternal grandmother</strong> (father's mother) is alive.</div>
       </div>
+      ${h.paternalGrandmotherAlive && h.fatherAlive ? `
+      <div class="rule-row">
+        <div class="rule-row-label">Ruling when the father is also alive (optional)${preselected}</div>
+        <div class="choice-grid cols-2" style="margin-top:8px;">
+          <button class="choice ${rules.pgmWithFather !== false ? 'selected' : ''}" onclick="setRuling('pgmWithFather', true)">
+            <div class="choice-title">She inherits one sixth</div>
+            <div class="choice-desc">The Ḥanbalī school: she takes one sixth beside the father, shared with the maternal grandmother if both survive. Applied when no school is selected.</div>
+          </button>
+          <button class="choice ${rules.pgmWithFather === false ? 'selected' : ''}" onclick="setRuling('pgmWithFather', false)">
+            <div class="choice-title">The father excludes her</div>
+            <div class="choice-desc">The Ḥanafī, Shāfiʿī and Mālikī schools: she receives nothing while the father is alive.</div>
+          </button>
+        </div>
+      </div>
+      ` : ''}
       <div class="checkbox-card ${h.maternalGrandmotherAlive ? 'checked' : ''}" onclick="setValue('heirs.maternalGrandmotherAlive', !STATE.heirs.maternalGrandmotherAlive); renderScreen('S13');" style="margin-bottom:0;">
         <div class="check-box">✓</div>
         <div class="check-text">My <strong>maternal grandmother</strong> (mother's mother) is alive.</div>
@@ -3745,7 +3918,7 @@ screens.S13 = () => {
   <!-- Siblings (only relevant in specific cases) -->
   <div class="heir-section">
     <div class="heir-section-title">Full siblings (same mother and father)</div>
-    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Siblings inherit only if you have no children, no father, and no paternal grandfather. They also affect the mother's share if you have 2 or more siblings.</p>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Full brothers and sisters inherit only if you have no son and no father. Sisters alone take a fixed share (one half for one, two thirds for two or more) and share the remainder with daughters. Beside a paternal grandfather they share by Zayd's method unless the Ḥanafī ruling is selected above. Two or more siblings also reduce the mother's share.</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <div>
         <label class="field-label">Number of full brothers</label>
@@ -3823,7 +3996,7 @@ screens.S13 = () => {
   </div>
 
   <div class="warn-callout">
-    <strong>Complex cases.</strong> If you have step-children, half-siblings (paternal or maternal only), distant cousins, or unusual family configurations, the engine in this MVP may not cover your situation. Your Will explicitly instructs your executor to consult an Imam to verify shares — and your executor should do so even for "simple" cases.
+    <strong>Complex cases.</strong> If you have step-children, half-siblings (paternal or maternal only), distant cousins, or unusual family configurations, the engine in this MVP may not cover your situation. Your Will explicitly instructs your executor to consult an Imam to verify shares, and your executor should do so even for "simple" cases.
   </div>
 
   <div class="btn-row">
@@ -3839,6 +4012,19 @@ function setSpouseName(i, name) {
 }
 function adjustHeir(key, delta) {
   STATE.heirs[key] = Math.max(0, STATE.heirs[key] + delta);
+  scheduleSave();
+  renderScreen('S13');
+}
+function chooseMadhhab(id) {
+  MADHHAB = MADHHABS.some(m => m.id === id) ? id : null;
+  saveMadhhab(MADHHAB);
+  STATE.heirs.rulings = {};   // per-ruling choices follow the newly chosen school
+  scheduleSave();
+  renderScreen('S13');
+}
+function setRuling(key, value) {
+  if (!STATE.heirs.rulings) STATE.heirs.rulings = {};
+  STATE.heirs.rulings[key] = value;
   scheduleSave();
   renderScreen('S13');
 }
@@ -3963,12 +4149,14 @@ screens.S17 = () => `
 
 // ───── S18 SHARE CALCULATION ─────
 screens.S18 = () => {
-  const result = calculateFaraid();
+  const rules = currentRules();
+  const result = calculateFaraid(rules);
+  const schoolNote = rules.madhhab ? ', following the ' + madhhabName(rules.madhhab) + ' school' : '';
   return `
   <div class="step-label">Farāʾiḍ calculation</div>
-  <h2 class="screen-title">Likely heir shares <span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.65em;color:var(--accent-dark);font-weight:500;">— a snapshot today</span></h2>
+  <h2 class="screen-title">Likely heir shares <span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.65em;color:var(--accent-dark);font-weight:500;">a snapshot today</span></h2>
   <p class="screen-subtitle">
-    Based on the family you listed and Schedule A (Sunni), here is how the
+    Based on the family you listed and Schedule A (Sunni)${schoolNote}, here is how the
     <strong>remaining ${result.remainderPct.toFixed(2)}% of your estate</strong>
     (after your ${result.bequestPct.toFixed(2)}% in bequests) would be distributed by Quranic shares <em>if you died today</em>.
   </p>
@@ -3976,7 +4164,7 @@ screens.S18 = () => {
   <div class="accent-callout" style="background:rgba(201,169,97,0.12);border-left-width:4px;padding:18px 22px;">
     <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--primary);font-weight:600;margin-bottom:8px;">📌  These percentages are illustrative, not binding.</div>
     <p style="margin:0;font-size:13px;line-height:1.6;">
-      The <strong>final percentages</strong> will be calculated by your executor at the time of your death — based on whichever of your qualifying Muslim relatives are alive then. This means new children born in future, or relatives who pre-decease you, will change the actual numbers. Your Will (Article 8.7) instructs the executor to apply Schedule A to your <strong>then-living</strong> heirs, with scholarly verification (Article 8.1).
+      The <strong>final percentages</strong> will be calculated by your executor at the time of your death, based on whichever of your qualifying Muslim relatives are alive then. This means new children born in future, or relatives who pre-decease you, will change the actual numbers. Your Will (Article 8.7) instructs the executor to apply Schedule A to your <strong>then-living</strong> heirs, with scholarly verification (Article 8.1).
     </p>
   </div>
 
@@ -4000,38 +4188,34 @@ screens.S18 = () => {
           <div class="share-fraction">${fracToString(s.fraction)}</div>
           <div class="share-percent">${s.percentOfEstate}%</div>
           <button class="why-toggle" onclick="toggleWhy(this, ${idx})">Why this share?</button>
-          <div class="share-why" id="why-${idx}"><em>Reason:</em> ${escapeHtml(s.reason)}</div>
+          <div class="share-why" id="why-${idx}"><em>Reason:</em> ${withHonorifics(escapeHtml(s.reason))}</div>
         </div>
       `).join('')}
       <div class="share-row total">
         <div>Total of farāʾiḍ shares</div>
         <div class="share-fraction" style="color:var(--primary);">${fracToString(result.total)}</div>
-        <div class="share-percent" style="color:var(--primary);font-weight:700;">${result.shares.reduce((sum, s) => sum + parseFloat(s.percentOfEstate), 0).toFixed(2)}%</div>
+        <div class="share-percent" style="color:var(--primary);font-weight:700;">${(fracToFloat(result.total) * result.remainderPct).toFixed(2)}%</div>
       </div>
       ${result.bequestPct > 0 ? `
       <div class="share-row total">
         <div>Bequests (Article 7) + farāʾiḍ shares</div>
         <div class="share-fraction"></div>
-        <div class="share-percent" style="color:var(--primary);font-weight:700;">${(result.shares.reduce((sum, s) => sum + parseFloat(s.percentOfEstate), 0) + result.bequestPct).toFixed(2)}%</div>
+        <div class="share-percent" style="color:var(--primary);font-weight:700;">${(fracToFloat(result.total) * result.remainderPct + result.bequestPct).toFixed(2)}%</div>
       </div>
       ` : ''}
     </div>
 
     ${result.charityFallback ? `
       <div class="accent-callout">
-        <strong>Charity fallback (Schedule A Case 5).</strong> After the fixed spouse share, no other Quranic or residuary heir survives, so the rest of the estate passes to a <strong>registered Australian Muslim charity selected by your executor</strong> — exactly as Schedule A Case 5 of your Will directs. The charity row above shows that destination.
+        <strong>Charity fallback (Schedule A Case 5).</strong> After the fixed spouse share, no other Quranic or residuary heir survives, so the rest of the estate passes to a <strong>registered Australian Muslim charity selected by your executor</strong>, exactly as Schedule A Case 5 of your Will directs. The charity row above shows that destination.
       </div>
     ` : ''}
-    ${result.awlApplied ? `
-      <div class="accent-callout">
-        <strong>ʿAwl adjustment applied.</strong> The Quranic shares as initially computed exceeded the whole (a known classical scenario). All shares have been proportionally reduced so they sum to the remainder of the estate.
-      </div>
-    ` : ''}
-    ${result.raddApplied ? `
-      <div class="accent-callout">
-        <strong>Radd (return) applied.</strong> The Quranic shares did not exhaust the remainder and there was no residuary heir. The surplus has been returned proportionally to the Quranic heirs (excluding spouse), per classical Sunni jurisprudence.
-      </div>
-    ` : ''}
+    ${result.warnings.map(w => `
+      <div class="accent-callout">${withHonorifics(escapeHtml(w))}</div>
+    `).join('')}
+    ${result.notes.map(n => `
+      <div class="info-callout">${withHonorifics(escapeHtml(n))}</div>
+    `).join('')}
   `}
 
   <div class="warn-callout">
@@ -4039,12 +4223,12 @@ screens.S18 = () => {
   </div>
 
   <div class="warn-callout">
-    <strong>Complex cases.</strong> If you have step-children, half-siblings (paternal or maternal only), distant cousins, or unusual family configurations, the engine in this MVP may not cover your situation. Your Will explicitly instructs your executor to consult an Imam to verify shares — and your executor should do so even for "simple" cases.
+    <strong>Complex cases.</strong> If you have step-children, half-siblings (paternal or maternal only), distant cousins, or unusual family configurations, the engine in this MVP may not cover your situation. Your Will explicitly instructs your executor to consult an Imam to verify shares, and your executor should do so even for "simple" cases.
   </div>
 
   <div class="btn-row">
     <button class="btn btn-secondary" onclick="prevScreen()">← Back</button>
-    <button class="btn btn-primary" onclick="nextScreen()">${result.unhandled ? 'Continue anyway  →' : 'Looks correct — continue  →'}</button>
+    <button class="btn btn-primary" onclick="nextScreen()">${result.unhandled ? 'Continue anyway  →' : 'Looks correct, continue  →'}</button>
   </div>
   `;
 };
@@ -4106,7 +4290,7 @@ screens.S19 = () => {
 
 // ───── S20 FINAL REVIEW ─────
 screens.S20 = () => {
-  const result = calculateFaraid();
+  const result = calculateFaraid(currentRules());
   return `
   <div class="step-label">Final review</div>
   <h2 class="screen-title">A summary of your Will</h2>
@@ -4119,7 +4303,7 @@ screens.S20 = () => {
   <div class="summary-item"><span class="summary-label">Date of birth</span><span class="summary-value">${STATE.testator.dob}</span></div>
   <div class="summary-item"><span class="summary-label">Address</span><span class="summary-value">${escapeHtml(STATE.testator.address)}</span></div>
   <div class="summary-item"><span class="summary-label">Jurisdiction</span><span class="summary-value">${STATES[STATE.jurisdiction]?.name || ''}</span></div>
-  <div class="summary-item"><span class="summary-label">Inheritance rules</span><span class="summary-value">Sunni (Schedule A)</span></div>
+  <div class="summary-item"><span class="summary-label">Inheritance rules</span><span class="summary-value">Sunni (Schedule A)${MADHHAB ? ', following the ' + madhhabName(MADHHAB) + ' school' : ''}</span></div>
 
   <div class="summary-section-title">Executor</div>
   <div class="summary-item"><span class="summary-label">Primary</span><span class="summary-value">${escapeHtml(STATE.executors[0].name)}</span></div>
@@ -4957,6 +5141,11 @@ function escapeHtml(s) {
   if (s === null || s === undefined) return '';
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
+// Parenthesised Arabic honorifics inside English text, e.g. (رضي الله عنه), are
+// marked lang="ar" so they read and sound right. Call on already-escaped text.
+function withHonorifics(escaped) {
+  return String(escaped).replace(/(\([؀-ۿ\s]+\))/g, '<span lang="ar" class="honorific">$1</span>');
+}
 
 function renderScreen(id) {
   const fn = screens[id];
@@ -5036,6 +5225,9 @@ async function buildPDFBytes() {
       let s = String(text);
       // Prophet ﷺ / Jalla Jalaluhu ﷻ symbols — must run BEFORE the Arabic-block stripper
       s = s.replace(/\uFDFA/g, '(peace be upon him)').replace(/\uFDFB/g, '');
+      // Arabic honorifics are spelt out before the Arabic-block stripper runs
+      s = s.replace(/\(رضي الله عنه\)/g, '(may Allah be pleased with him)');
+      s = s.replace(/\(سبحانه وتعالى\)/g, "(Subhanahu wa Ta'ala)");
       // Strip Arabic / Arabic-Presentation-Forms blocks entirely
       s = s.replace(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+/g, '[Arabic]');
       s = s.replace(/[\u202B\u202C\u200E\u200F\u061C]/g, ''); // direction marks
@@ -5659,12 +5851,13 @@ async function buildPDFBytes() {
     // Isolated on its own page so the table + its heading stand alone,
     // with no other content above or below them on the same page.
     newPage();
-    const result = calculateFaraid();
-    drawParagraph('Computed shares as per Islamic Ruling, as at the date of signing (per clause 8.7(d), illustrative — not binding):', { bold: true });
+    const result = calculateFaraid(currentRules());
+    drawParagraph('Computed shares as per Islamic Ruling' + (result.rules.madhhab ? ', following the ' + madhhabName(result.rules.madhhab) + ' school' : '') + ', as at the date of signing (per clause 8.7(d), illustrative — not binding):', { bold: true });
     if (result.unhandled) {
       drawParagraph('— ' + result.unhandledReason, { italic: true });
     } else {
-      const sharesPctTotal = result.shares.reduce((sum, s) => sum + parseFloat(s.percentOfEstate), 0);
+      // From the exact total fraction, so rounded rows (e.g. al-Akdariyyah) still show 100.00
+      const sharesPctTotal = fracToFloat(result.total) * result.remainderPct;
       drawTable(
         [
           { label: 'Heir',                 width: 175 },
@@ -5686,6 +5879,9 @@ async function buildPDFBytes() {
       if (result.charityFallback) {
         drawParagraph('Note: no Quranic or residuary heir survives beyond the spouse, so per Schedule A Case 5 the rest of the estate passes to a registered Australian Muslim charity selected by the executor (shown in the table above).', { italic: true, size: 9.5 });
       }
+      // How any disputed or special ruling was applied, in plain words.
+      result.warnings.forEach(w => drawParagraph(w, { italic: true, size: 9.5 }));
+      result.notes.forEach(n => drawParagraph(n, { italic: true, size: 9.5 }));
     }
     drawParagraph('Engine limits: this automatically computed table covers the most common inheritance configurations. Step-children, half-siblings, distant kindred and other unusual configurations may not be covered. Per Article 8.1, the executor MUST engage a qualified Muslim scholar to verify the shares before distribution.', { italic: true, size: 9.5 });
 
