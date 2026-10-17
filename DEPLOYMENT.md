@@ -360,7 +360,7 @@ Meeras has two environments built from the same files:
 between the two builds are the Umami analytics tag (`data-domains`, and the
 Umami website id for production) and, in production, a `<link rel="canonical">`
 pointing at `https://meeras.com.au/` plus Cloudflare's `_headers` (security and
-cache headers) and `_redirects` (www → apex). No Will clause text changes, so
+cache headers). No Will clause text changes, so
 the MD5 pinned in the legal-review document refers to the repository
 `index.html`, not to `dist/index.html`.
 
@@ -385,9 +385,13 @@ the MD5 pinned in the legal-review document refers to the repository
 3. **Custom domains:** in the project → *Settings → Domains & Routes → Add →
    Custom domain* → `meeras.com.au`, then again for `www.meeras.com.au`.
    Because the zone is already on Cloudflare, the DNS records are created for
-   you and the certificate is issued automatically (a few minutes). The
-   `_redirects` file then sends `www` to the apex. The `*.workers.dev` URL can
-   stay disabled.
+   you and the certificate is issued automatically (a few minutes). Both
+   hostnames serve the site; the canonical link points search engines at the
+   apex. To redirect `www` to the apex as well, add a zone Redirect Rule:
+   Cloudflare dashboard → `meeras.com.au` → Rules → Redirect Rules → the
+   "Redirect from WWW to Root" template (Workers static assets cannot host
+   a hostname redirect in `_redirects`). The `*.workers.dev` URL can stay
+   disabled.
 4. **Check:** open https://meeras.com.au, generate the sample PDF, confirm the
    donation buttons open Stripe, and look for the production hostname in the
    Umami dashboard. `curl -sI https://meeras.com.au | grep -i content-security`

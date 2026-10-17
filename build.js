@@ -8,7 +8,7 @@
  * changes what must differ per host: the Umami analytics tag (which domains
  * it records, and which Umami website it reports to) and, for production,
  * a canonical link so search engines index meeras.com.au rather than the
- * dev copy. Production also gets Cloudflare's _headers and _redirects files.
+ * dev copy. Production also gets Cloudflare's _headers file.
  * No Will clause text is touched.
  *
  * Environment variables (optional):
@@ -83,8 +83,10 @@ if (cfg.cloudflare) {
     '  Cache-Control: max-age=300, public',
     '',
   ].join('\n'));
-  // www -> apex (both hostnames must be attached to the Pages project).
-  fs.writeFileSync(path.join(DIST, '_redirects'), 'https://www.meeras.com.au/* https://meeras.com.au/:splat 301\n');
+  // No _redirects: Workers static assets accept only relative source paths,
+  // so a www -> apex hop cannot live here. Both hostnames serve the site and
+  // the canonical link points at the apex; add a zone Redirect Rule in the
+  // Cloudflare dashboard if the hop is wanted (see DEPLOYMENT.md Part 8).
 }
 
 const crypto = require('crypto');

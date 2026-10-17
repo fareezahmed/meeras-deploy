@@ -21,4 +21,4 @@ routes = [
 directory = "./dist"
 # Serve dist/404.html (which redirects to the home page) for unknown paths.
 not_found_handling = "404-page"
-# dist/_headers and dist/_redirects are applied by the assets layer.
+# dist/_headers is applied by the assets layer.
