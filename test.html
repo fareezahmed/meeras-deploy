@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meeras — Farāʾiḍ Engine Regression Tests</title>
+<style>
+  body { font-family: -apple-system, system-ui, sans-serif; margin: 24px; max-width: 900px; }
+  h1 { font-size: 20px; }
+  .case { border: 1px solid #ccc; border-radius: 6px; padding: 10px 14px; margin-bottom: 10px; }
+  .pass { border-left: 6px solid #2d7a4f; }
+  .fail { border-left: 6px solid #b3261e; background: #fdf3f2; }
+  .case h3 { margin: 0 0 6px; font-size: 15px; }
+  .assert { font-size: 13px; margin: 2px 0; }
+  .assert.ok::before { content: "✓ "; color: #2d7a4f; }
+  .assert.bad::before { content: "✗ "; color: #b3261e; font-weight: bold; }
+  #summary { font-size: 17px; font-weight: 600; margin: 14px 0; }
+  #summary.allpass { color: #2d7a4f; } #summary.somefail { color: #b3261e; }
+  iframe { display: none; }
+</style>
+</head>
+<body>
+<h1>Meeras — Farāʾiḍ engine regression tests (Schedule A)</h1>
+<p>Serve this directory over HTTP (e.g. <code>python3 -m http.server</code>) and open
+<code>/test.html</code>. The app is loaded in a hidden iframe and
+<code>calculateFaraid()</code> is exercised against known Schedule A outcomes.</p>
+<div id="summary">Loading app…</div>
+<div id="results"></div>
+<iframe id="app" src="index.html"></iframe>
+
+<script>
+const results = document.getElementById('results');
+const summary = document.getElementById('summary');
+const EPS = 0.02; // percentage-point tolerance
+
+function freshHeirs() {
+  return {
+    spouses: [], sons: 0, daughters: 0,
+    fatherAlive: false, motherAlive: false,
+    fullBrothers: 0, fullSisters: 0,
+    paternalGrandfatherAlive: false, paternalGrandmotherAlive: false,
+    maternalGrandmotherAlive: false, sex: null,
+  };
+}
+
+function runCase(W, name, setup, checks) {
+  W.STATE.heirs = freshHeirs();
+  W.STATE.bequests = [{ recipient: '', percent: 0 }];
+  setup(W.STATE);
+  const r = W.calculateFaraid();
+
+  const div = document.createElement('div');
+  div.className = 'case';
+  const h = document.createElement('h3');
+  h.textContent = name;
+  div.appendChild(h);
+
+  let allOk = true;
+  const ctx = {
+    result: r,
+    // share lookup by substring of name or relation
+    pct(match) {
+      const s = r.shares.find(x => (x.name + ' ' + x.relation).toLowerCase().includes(match.toLowerCase()));
+      return s ? parseFloat(s.percentOfEstate) : NaN;
+    },
+    frac(match) {
+      const s = r.shares.find(x => (x.name + ' ' + x.relation).toLowerCase().includes(match.toLowerCase()));
+      return s ? (s.fraction.num + '/' + s.fraction.den) : '(missing)';
+    },
+    sumPct() {
+      return r.shares.reduce((sum, s) => sum + parseFloat(s.percentOfEstate), 0);
+    },
+  };
+
+  for (const [label, fn] of checks) {
+    let ok = false, err = '';
+    try { ok = !!fn(ctx); } catch (e) { err = ' — threw: ' + e.message; }
+    const a = document.createElement('div');
+    a.className = 'assert ' + (ok ? 'ok' : 'bad');
+    a.textContent = label + (ok ? '' : (err || ' — FAILED'));
+    div.appendChild(a);
+    if (!ok) allOk = false;
+  }
+  div.classList.add(allOk ? 'pass' : 'fail');
+  results.appendChild(div);
+  return allOk;
+}
+
+function near(a, b) { return Math.abs(a - b) <= EPS; }
+
+let __started = false;
+function startTests() {
+  if (__started) return;
+  __started = true;
+  // Give the app's init a tick to finish
+  setTimeout(() => {
+    const W = document.getElementById('app').contentWindow;
+    if (!W || typeof W.calculateFaraid !== 'function') {
+      summary.textContent = 'FAILED TO LOAD: calculateFaraid not found in iframe (serve over HTTP, not file://).';
+      summary.className = 'somefail';
+      return;
+    }
+    let pass = 0, total = 0;
+    const T = (name, setup, checks) => {
+      total++;
+      try {
+        if (runCase(W, name, setup, checks)) pass++;
+      } catch (e) {
+        const div = document.createElement('div');
+        div.className = 'case fail';
+        div.textContent = name + ' — HARNESS ERROR: ' + e.message;
+        results.appendChild(div);
+      }
+    };
+
+    // ── Fix 4 regression: spouse-only (wife) — Schedule A Case 5 ──
+    T('Spouse-only: wife, no other heirs (Schedule A Case 5)', S => {
+      S.testatorSex = 'male';
+      S.heirs.spouses = [{ name: 'Aisha' }];
+    }, [
+      ['Wife receives 1/4 = 25%', c => c.frac('Wife') === '1/4' && near(c.pct('Wife'), 25)],
+      ['Charity fallback row present, named as destination', c => c.pct('charity') === 75],
+      ['Charity row cites Schedule A Case 5', c => c.result.shares.some(s => s.category === 'charity' && s.reason.includes('Case 5'))],
+      ['charityFallback flag set', c => c.result.charityFallback === true],
+      ['radd NOT claimed (spouse excluded from radd)', c => c.result.raddApplied === false],
+      ['Total fraction is 1/1', c => c.result.total.num === 1 && c.result.total.den === 1],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+
+    // ── Spouse-only (husband) ──
+    T('Spouse-only: husband, no other heirs (Schedule A Case 5)', S => {
+      S.testatorSex = 'female';
+      S.heirs.spouses = [{ name: 'Omar' }];
+    }, [
+      ['Husband receives 1/2 = 50%', c => c.frac('Husband') === '1/2' && near(c.pct('Husband'), 50)],
+      ['Charity receives remaining 50%', c => near(c.pct('charity'), 50)],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+
+    // ── Radd case: wife + 2 daughters + mother ──
+    T('Radd: wife + 2 daughters + mother', S => {
+      S.testatorSex = 'male';
+      S.heirs.spouses = [{ name: 'Aisha' }];
+      S.heirs.daughters = 2;
+      S.heirs.motherAlive = true;
+    }, [
+      ['Wife keeps fixed 1/8 = 12.5% (excluded from radd)', c => near(c.pct('Wife'), 12.5)],
+      ['Each daughter 35% after radd (1/3 + 1/60 = 7/20)', c => near(c.pct('Daughter 1'), 35) && near(c.pct('Daughter 2'), 35)],
+      ['Mother 17.5% after radd (1/6 + 1/120 = 7/40)', c => near(c.pct('Mother'), 17.5)],
+      ['raddApplied flag set', c => c.result.raddApplied === true],
+      ['No charity fallback (surplus fully returned)', c => c.result.charityFallback === false],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+
+    // ── No surviving heirs → Case 6 residual rule ──
+    T('No surviving heirs (Schedule A Case 6 residual rule)', S => {
+      S.testatorSex = 'male';
+    }, [
+      ['Engine flags case as unhandled', c => c.result.unhandled === true],
+      ['Residual rule stated: furūḍ → ʿaṣabah → distant kindred', c => /kindred/i.test(c.result.unhandledReason) && /residuar/i.test(c.result.unhandledReason)],
+      ['Charity is the final fallback', c => /charit/i.test(c.result.unhandledReason)],
+      ['Questions of application go to the Arbitrator (Article 4)', c => /arbitrator/i.test(c.result.unhandledReason) && /Article 4/.test(c.result.unhandledReason)],
+      ['Scholar never "determines the distribution"', c => !/determines? the distribution/i.test(c.result.unhandledReason)],
+      ['No shares fabricated', c => c.result.shares.length === 0],
+    ]);
+
+    // ── Case 1: son + daughter + wife + both parents ──
+    T('Case 1: wife + son + daughter + both parents', S => {
+      S.testatorSex = 'male';
+      S.heirs.spouses = [{ name: 'Aisha' }];
+      S.heirs.sons = 1; S.heirs.daughters = 1;
+      S.heirs.fatherAlive = true; S.heirs.motherAlive = true;
+    }, [
+      ['Wife 1/8 = 12.5%', c => near(c.pct('Wife'), 12.5)],
+      ['Father fixed 1/6 ≈ 16.67%', c => near(c.pct('Father'), 16.67)],
+      ['Mother fixed 1/6 ≈ 16.67%', c => near(c.pct('Mother'), 16.67)],
+      ['Son ≈ 36.11% (2× daughter, residue 13/24)', c => near(c.pct('Son'), 36.11)],
+      ['Daughter ≈ 18.06%', c => near(c.pct('Daughter'), 18.06)],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+
+    // ── Case 2: one daughter + father ──
+    T('Case 2: one daughter + father (father takes fixed 1/6 + residue)', S => {
+      S.testatorSex = 'male';
+      S.heirs.daughters = 1;
+      S.heirs.fatherAlive = true;
+    }, [
+      ['Daughter 1/2 = 50%', c => near(c.pct('Daughter'), 50)],
+      ['Father total 50% (1/6 fixed + 1/3 residue)', c => near(c.pct('Father') + (isNaN(c.pct('residue')) ? 0 : c.pct('residue')), 50)],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+
+    // ── Case 4: both parents only ──
+    T('Case 4: both parents, no children, no spouse', S => {
+      S.testatorSex = 'male';
+      S.heirs.fatherAlive = true; S.heirs.motherAlive = true;
+    }, [
+      ['Mother 1/3 ≈ 33.33%', c => near(c.pct('Mother'), 33.33)],
+      ['Father residue 2/3 ≈ 66.67%', c => near(c.pct('Father'), 66.67)],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+
+    // ── Case 5 (third limb): spouse + siblings ──
+    T('Case 5: wife + full brother + full sister (siblings take residue 2:1)', S => {
+      S.testatorSex = 'male';
+      S.heirs.spouses = [{ name: 'Aisha' }];
+      S.heirs.fullBrothers = 1; S.heirs.fullSisters = 1;
+    }, [
+      ['Wife 1/4 = 25%', c => near(c.pct('Wife'), 25)],
+      ['Brother 1/2 = 50% (2:1 over sister)', c => near(c.pct('Brother'), 50)],
+      ['Sister 1/4 = 25%', c => near(c.pct('Sister'), 25)],
+      ['No charity fallback (residuary heirs exist)', c => c.result.charityFallback === false],
+      ['Shares sum to 100%', c => near(c.sumPct(), 100)],
+    ]);
+
+    // ── Bequest interaction: totals reconcile against remainder ──
+    T('Bequests: 20% wasiyyah + wife-only — farāʾiḍ shares + bequest = 100%', S => {
+      S.testatorSex = 'male';
+      S.heirs.spouses = [{ name: 'Aisha' }];
+      S.bequests = [{ recipient: 'Islamic Relief Australia', percent: 20 }];
+    }, [
+      ['Remainder is 80%', c => near(c.result.remainderPct, 80)],
+      ['Wife 20% of estate (1/4 of 80%)', c => near(c.pct('Wife'), 20)],
+      ['Charity fallback 60% of estate (3/4 of 80%)', c => near(c.pct('charity'), 60)],
+      ['Farāʾiḍ shares + bequest = 100%', c => near(c.sumPct() + c.result.bequestPct, 100)],
+    ]);
+
+    // NOTE — Schedule A Case 3 (children of sons, no direct children) is NOT
+    // representable: the heirs inventory has no grandchildren fields, so the
+    // engine cannot be exercised for it. Flagged in the review report.
+
+    summary.textContent = pass + ' / ' + total + ' cases passed' + (pass === total ? ' — ALL PASS' : ' — FAILURES ABOVE');
+    summary.className = pass === total ? 'allpass' : 'somefail';
+    window.__testResult = { pass, total };
+  }, 300);
+}
+const appFrame = document.getElementById('app');
+appFrame.addEventListener('load', startTests);
+// The iframe may already be loaded by the time this script runs
+if (appFrame.contentDocument && appFrame.contentDocument.readyState === 'complete'
+    && appFrame.contentWindow && typeof appFrame.contentWindow.calculateFaraid === 'function') {
+  startTests();
+}
+</script>
+</body>
+</html>

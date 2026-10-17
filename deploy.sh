@@ -140,6 +140,10 @@ aws s3 sync . "$SYNC_DEST" \
   --exclude "*.json" \
   --exclude ".*" \
   --exclude "node_modules/*" \
+  --exclude "*.docx" \
+  --exclude "test.html" \
+  --exclude "specimens/*" \
+  --exclude "cloudfront/*" \
   --cache-control "max-age=300, public" \
   --delete
 echo "✓ Files uploaded."
