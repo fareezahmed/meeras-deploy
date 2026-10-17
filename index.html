@@ -7,6 +7,16 @@
 <script async src="https://analytics.fareez.dev/script.js" data-website-id="95d7e13f-5749-4edc-a724-df39b41f5246" data-domains="fareez.dev"></script>
 <title>Meeras · Islamic Will WebApp</title>
 <meta name="description" content="A free, private web application that helps Muslims in Australia create a Shariah-compliant Last Will and Testament designed to meet the formal requirements for a valid will in every Australian State and Territory.">
+<meta name="theme-color" content="#1B4D6B">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Meeras">
+<meta property="og:title" content="Meeras: a free Islamic Will for Australia">
+<meta property="og:description" content="Write a Shariah-compliant Will in about twenty minutes. Free, private to your device, designed for every Australian State and Territory.">
+<meta property="og:url" content="https://meeras.com.au/">
+<meta property="og:locale" content="en_AU">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Meeras: a free Islamic Will for Australia">
+<meta name="twitter:description" content="Write a Shariah-compliant Will in about twenty minutes. Free, private to your device, designed for every Australian State and Territory.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Amiri:wght@400;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
@@ -753,6 +763,24 @@
   .rule-row .choice { padding: 14px 16px; }
   .honorific { font-family: 'Amiri', serif; }
 
+  /* Accessibility: skip link, visible keyboard focus, small gold text with enough contrast */
+  .skip-link {
+    position: absolute; left: 12px; top: -60px; z-index: 100;
+    background: var(--primary); color: #fff; padding: 10px 16px; border-radius: 6px;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; text-decoration: none;
+    transition: top 0.15s;
+  }
+  .skip-link:focus { top: 12px; outline: 3px solid var(--accent); outline-offset: 2px; }
+  #screenContainer:focus { outline: none; }
+  .btn:focus-visible, .choice:focus-visible, .nav-link:focus-visible, .footer-link:focus-visible,
+  .session-pill:focus-visible, .donate-btn:focus-visible, .number-btn:focus-visible,
+  .why-toggle:focus-visible, .input:focus-visible, .select:focus-visible, .bead:focus-visible,
+  .cta-start:focus-visible, .cta-resume:focus-visible, .btn-link:focus-visible, summary:focus-visible {
+    outline: 3px solid var(--accent); outline-offset: 2px;
+  }
+  :root { --accent-text: #8A6D2F; }
+  .section-label, .help-eyebrow, .footer-heading, .footer-tagline, .compare-table th, .step-label { color: var(--accent-text); }
+
   /* Informational pages: comparison table, FAQ, feature status */
   .compare-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 14px 0 22px; background: var(--white); }
   .compare-table th, .compare-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
@@ -1476,6 +1504,7 @@
 </head>
 <body>
 
+<a class="skip-link" href="#screenContainer">Skip to content</a>
 <div class="app">
 
   <!-- TOP BAR -->
@@ -1516,7 +1545,7 @@
     <div class="progress-strip" id="progressStrip"></div>
   </div>
 
-  <div id="screenContainer">
+  <div id="screenContainer" role="main" tabindex="-1">
     <div style="max-width:540px;margin:60px auto;text-align:center;padding:40px 20px;font-family:-apple-system,system-ui,sans-serif;color:#4A4543;">
       <div style="font-size:36px;color:#1B4D6B;margin-bottom:8px;font-weight:600;letter-spacing:-0.01em;">Meeras</div>
       <div style="font-size:14px;color:#8A847F;margin-bottom:24px;">Loading your draft…</div>
@@ -1549,6 +1578,8 @@
           <li><button class="footer-link" onclick="downloadSamplePDF()">Sample Will (PDF)</button></li>
           <li><button class="footer-link" onclick="goTo('S22')">Execution checklist</button></li>
           <li><button class="footer-link" onclick="goTo('S25')">Imam directory</button></li>
+          <li><button class="footer-link" onclick="goTo('S37')">Funerals</button></li>
+          <li><button class="footer-link" onclick="goTo('S36')">State guides</button></li>
         </ul>
       </div>
       <div>
@@ -2171,7 +2202,7 @@ const PROGRESS_SCREENS = [
 // reachable from the header/footer at any time and must never disturb wizard
 // state: navigating to one does not change STATE.currentScreen, so drafts
 // resume where the user actually left off and completion % is unaffected.
-const INFO_SCREENS = new Set(['S26', 'S27', 'S28', 'S29', 'S30', 'S31', 'S32', 'S33', 'S34', 'S35']);
+const INFO_SCREENS = new Set(['S26', 'S27', 'S28', 'S29', 'S30', 'S31', 'S32', 'S33', 'S34', 'S35', 'S36', 'S37']);
 
 // Deep links for the informational pages (meeras.com.au/#faq and so on).
 // S30 (feature status) is internal: reachable by its link only, never from
@@ -2187,6 +2218,8 @@ const PAGE_HASHES = {
   status: 'S30',
   launch: 'S34',
   leads: 'S35',
+  'state-guides': 'S36',
+  funerals: 'S37',
 };
 function applyHashRoute() {
   const key = (location.hash || '').replace(/^#\/?/, '').toLowerCase();
@@ -2309,6 +2342,7 @@ function renderProgress() {
     html += `<div class="${cls}" onclick="goTo('${s}')" title="${s}"></div>`;
   });
   strip.innerHTML = html;
+  enhanceToggles(strip);
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -2864,6 +2898,7 @@ screens.S01 = () => {
       }).join('')}
       <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
         <button class="btn btn-secondary" style="font-size:12px;padding:8px 14px;" onclick="newDraftFlow()">+ Start a new draft instead</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:8px 14px;" onclick="startSpouseWill()" title="A new draft for your spouse, pre-filled from this one">Start my spouse's Will</button>
         <button class="btn btn-secondary" style="font-size:12px;padding:8px 14px;" onclick="showDraftsModal()">Manage drafts…</button>
         <button class="btn btn-secondary" style="font-size:12px;padding:8px 14px;color:var(--danger);border-color:rgba(178,58,58,0.3);margin-left:auto;" onclick="showResetModal()">Delete active draft</button>
       </div>
@@ -4406,6 +4441,7 @@ screens.S18 = () => {
 function toggleWhy(btn, idx) {
   btn.classList.toggle('expanded');
   btn.textContent = btn.classList.contains('expanded') ? 'Hide explanation' : 'Why this share?';
+  btn.setAttribute('aria-expanded', btn.classList.contains('expanded') ? 'true' : 'false');
   const why = document.getElementById('why-' + idx);
   if (why) why.classList.toggle('shown');
 }
@@ -4884,6 +4920,13 @@ screens.S22 = () => `
     Follow these steps carefully. An incorrectly executed Will may be set aside by the court, leaving your estate to be distributed by intestacy.
   </p>
 
+  ${(STATE.heirs.spouses || []).some(s => s && s.name && s.name.trim()) ? `
+  <div class="accent-callout" style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;">
+    <div><strong>Does your spouse need a Will too?</strong> Start a new draft for them, pre-filled with your shared executors, guardians, children and burial arrangements. Their own details, parents, siblings, debts and bequests are left blank.</div>
+    <button class="btn btn-primary" style="white-space:nowrap;" onclick="startSpouseWill()">Start my spouse's Will →</button>
+  </div>
+  ` : ''}
+
   <div class="checkbox-card">
     <div class="check-box" style="background:var(--accent);border-color:var(--accent);color:white;font-weight:bold;">1</div>
     <div class="check-text">Print the PDF on <strong>plain white A4 paper</strong>, single-sided. At signing, <strong>staple it once, securely, top-left</strong>, then never remove that staple or attach anything else (no clips, pins, or sticky notes). Loose pages and unexplained fastener holes both invite challenge at probate.</div>
@@ -5341,7 +5384,10 @@ const FEATURE_STATUS = [
   { area: 'Next', items: [
     ['Specific-item gifts counted against the one-third', 'planned'],
     ['Curated list of registered Australian Muslim charities', 'planned'],
-    ["Start my spouse's Will from this draft", 'planned'],
+    ["Start my spouse's Will from this draft (home panel and execution checklist)", 'live'],
+    ['Funerals page: services directory and a tool to connect a funeral service with a masjid', 'live'],
+    ['State-by-State guides (Act, witness rule, probate court, Will storage)', 'live'],
+    ['Open Graph and Twitter card tags; skip link, focus styles, labelled inputs and steppers', 'live'],
     ['Executor information sheet PDF (assets, accounts, documents, last message)', 'planned'],
     ['Care of animals direction', 'planned'],
     ['Encrypted accounts with stored, updatable Wills (paid tier)', 'considering'],
@@ -5492,6 +5538,7 @@ screens.S33 = () => `
   <div class="person-card">
     <div class="person-card-title">1. Call the burial organisation first</div>
     <div style="font-size:14px;color:var(--muted);">Article 2.8 of the Will names any Muslim burial service the deceased engaged, and the cemetery or plot. Call them before anyone else so ghusl and burial can begin without delay; most Australian cities have a Muslim burial service reachable at any hour.</div>
+    <div style="margin-top:10px;"><button class="footer-link" style="color:var(--secondary);" onclick="goTo('S37')">Funerals: services and connecting with a masjid →</button></div>
   </div>
   <div class="person-card">
     <div class="person-card-title">2. Find the Will and read Article 2</div>
@@ -5556,8 +5603,8 @@ const LAUNCH_PLAN = [
     ['Seven specimen Wills regenerated from the launch build and their checksums recorded', 'live', ''],
     ['Umami website for meeras.com.au and the UMAMI_WEBSITE_ID build variable', 'planned', 'Optional; the shared dashboard already records the production hostname.'],
     ['Search: Google Search Console verified for meeras.com.au; sitemap not needed for a single page', 'planned', ''],
-    ['Social preview: Open Graph and Twitter card tags with a Meeras image', 'planned', ''],
-    ['Accessibility pass on the wizard (keyboard, screen reader, contrast)', 'progress', 'Capacity declarations and custom toggles done; full pass pending.'],
+    ['Social preview: Open Graph and Twitter card tags with a Meeras image', 'progress', 'Tags are live; a 1200x630 preview image is still to be added.'],
+    ['Accessibility pass on the wizard (keyboard, screen reader, contrast)', 'progress', 'Done: skip link, visible focus everywhere, labels linked to inputs, named stepper buttons, keyboard progress beads, expanded state on explanations, darker small gold text. Pending: a full screen-reader run-through of all 14 steps.'],
     ['Privacy Policy and Terms reviewed alongside the template', 'progress', ''],
     ['www to apex redirect rule in the Cloudflare zone', 'planned', 'Both hostnames serve the site today.'],
     ['Donation links in donation-config.js switched to live Stripe Payment Links', 'planned', ''],
@@ -5627,7 +5674,7 @@ const LEAD_CHANNELS = [
     how: 'Article 2.8 records the burial organisation; services that pre-sell plots are a natural partner. Ask them to hand clients a Meeras card and link from their sites.',
     utm: 'utm_source=burial-services&utm_medium=partner&utm_campaign=launch' },
   { channel: 'Search (SEO)', status: 'progress', owner: 'Site',
-    how: 'Target "Islamic will Australia", "Sharia will template", "wasiyyah Australia", "Muslim will NSW/VIC". The How it works, FAQ, For executors and Resources pages exist for this; add State-by-State guides next and verify Search Console.',
+    how: 'Target "Islamic will Australia", "Sharia will template", "wasiyyah Australia", "Muslim will NSW/VIC". The How it works, FAQ, For executors, Resources, Funerals and State guides pages exist for this, with Open Graph tags. Next: verify Search Console and add a preview image.',
     utm: '(organic; no tag)' },
   { channel: 'Al-Mawārīth calculator', status: 'planned', owner: 'Fareez',
     how: 'Cross-link both ways: the calculator sends people who want a Will to Meeras; Meeras links to the calculator for complex families.',
@@ -5698,6 +5745,164 @@ screens.S35 = () => {
   `;
 };
 
+// ───── S36 STATE GUIDES ─────
+// Court and trustee names only; no deep links, which change often.
+const STATE_GUIDES = {
+  NSW: { court: 'Supreme Court of New South Wales (Probate)', trustee: 'NSW Trustee & Guardian' },
+  VIC: { court: 'Supreme Court of Victoria (Probate Office)', trustee: 'State Trustees (Victoria)' },
+  QLD: { court: 'Supreme Court of Queensland (Probate Registry)', trustee: 'Public Trustee of Queensland' },
+  SA:  { court: 'Supreme Court of South Australia (Probate Registry)', trustee: 'Public Trustee (South Australia)' },
+  WA:  { court: 'Supreme Court of Western Australia (Probate)', trustee: 'Public Trustee (Western Australia)' },
+  TAS: { court: 'Supreme Court of Tasmania (Probate)', trustee: 'Public Trustee (Tasmania)' },
+  ACT: { court: 'Supreme Court of the Australian Capital Territory (Probate)', trustee: 'Public Trustee and Guardian (ACT)' },
+  NT:  { court: 'Supreme Court of the Northern Territory (Probate)', trustee: 'Public Trustee (Northern Territory)' },
+};
+screens.S36 = () => `
+  <div class="step-label">State guides</div>
+  <h2 class="screen-title">Your Will, State by State</h2>
+  <p class="screen-subtitle">
+    The Quranic shares are the same everywhere; the formalities differ a little by State and
+    Territory. Meeras builds the right signing block for your jurisdiction. This page summarises
+    what each one expects. It is general information, not legal advice.
+  </p>
+
+  <div class="info-callout">
+    <strong>Everywhere in Australia:</strong> the Will must be in writing, signed by a testator aged 18 or over with capacity, in the presence of two adult witnesses present at the same time, who then sign in the testator's presence. Sign every page with the same pen, staple once, keep the original safe and tell your executor where it is.
+  </div>
+
+  ${Object.keys(STATES).map(code => {
+    const st = STATES[code], g = STATE_GUIDES[code] || {};
+    return `
+    <h4 class="section-h">${st.name}</h4>
+    <table class="compare-table">
+      <tr><th style="width:34%;">Governing Act</th><td>${st.act}</td></tr>
+      <tr><th>Witnesses and gifts</th><td>${st.strictWitness
+        ? 'A gift to a person who witnesses the Will can be lost. Choose witnesses who are not beneficiaries and not married to one; Meeras prints this warning on your signing page.'
+        : 'An independent witness is still strongly recommended, although the interested-witness rule is relaxed here. Meeras prints a recommendation on your signing page.'}</td></tr>
+      <tr><th>Probate</th><td>${g.court || 'The State Supreme Court'}. Usually needed above modest amounts; the registry publishes forms and fees online.</td></tr>
+      <tr><th>Storing the Will</th><td>${g.trustee || 'The public trustee'} offers Will storage; a solicitor's safe custody or a fire-resistant home safe also works. Keep a note of the location with your executor.</td></tr>
+      <tr><th>Islamic burial</th><td>Major cemeteries have Muslim sections; your burial organisation knows them. Record your plot or organisation in Article 2.8 so the family can act on the first day.</td></tr>
+    </table>`;
+  }).join('')}
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo('S27')">← Resources</button>
+    <button class="btn btn-primary" onclick="beginNewWill()">Start my Will →</button>
+  </div>
+`;
+
+// ───── S37 FUNERALS ─────
+// Directory entries name organisations and their websites only. Add entries
+// as they are verified; never publish a phone number without checking it.
+const FUNERAL_SERVICES = [
+  { state: 'National', name: 'Australian National Imams Council (ANIC)', role: 'Find a masjid or Imam anywhere in Australia; burial guidance; arbitration under Article 2.9', site: 'https://anic.org.au' },
+  { state: 'NSW', name: 'Lebanese Muslim Association, Funeral Services (Lakemba)', role: 'Ghusl, janāzah and burial arrangements in Sydney', site: 'https://www.lma.org.au' },
+  { state: 'VIC', name: 'Islamic Council of Victoria', role: 'Referrals to Muslim funeral services and masājid across Victoria', site: 'https://www.icv.org.au' },
+];
+screens.S37 = () => `
+  <div class="step-label">Funerals</div>
+  <h2 class="screen-title">A funeral by the Sunnah, without delay</h2>
+  <p class="screen-subtitle">
+    When a Muslim dies, burial should follow as soon as possible. This page helps the family
+    reach a Muslim funeral service, and helps the service and the local masjid coordinate the
+    ghusl, the janāzah prayer and the burial. Nothing entered here is stored or sent by Meeras.
+  </p>
+
+  <h4 class="section-h">The first hours</h4>
+  <div class="steps">
+    <div class="step-card"><div class="step-num">1</div><div class="step-name">Call the funeral service</div><div class="step-desc">The deceased's Will (Article 2.8) may name one. They collect the body, arrange ghusl and kafan, and book the cemetery.</div></div>
+    <div class="step-card"><div class="step-num">2</div><div class="step-name">Tell the masjid</div><div class="step-desc">The Imam leads the janāzah prayer and announces it after a congregational prayer so the community can attend.</div></div>
+    <div class="step-card"><div class="step-num">3</div><div class="step-name">Bury the same or next day</div><div class="step-desc">Article 2 asks for burial before sunset on the day of death or the following day, in the country of death, in a Muslim section.</div></div>
+  </div>
+
+  <h4 class="section-h">Connect a funeral service with a masjid</h4>
+  <p class="screen-subtitle" style="margin-bottom:12px;">Fill in what you know; Meeras writes a short message the funeral service and the masjid can exchange. Copy it, email it, or send it by WhatsApp from your own phone.</p>
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:16px;">
+    <div class="field-row">
+      <div class="field"><label class="field-label">Name of the deceased (optional)</label><input class="input" id="fnDeceased" placeholder="e.g. Fatima Specimen" oninput="updateFuneralMessage()"></div>
+      <div class="field"><label class="field-label">Funeral service and phone</label><input class="input" id="fnService" placeholder="e.g. LMA Funeral Services, 02 0000 0000" oninput="updateFuneralMessage()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label class="field-label">Masjid and suburb</label><input class="input" id="fnMasjid" placeholder="e.g. Lakemba Mosque, Lakemba" oninput="updateFuneralMessage()"></div>
+      <div class="field"><label class="field-label">Proposed janāzah prayer time</label><input class="input" id="fnTime" placeholder="e.g. after Dhuhr tomorrow, 1:15 pm" oninput="updateFuneralMessage()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label class="field-label">Cemetery and section</label><input class="input" id="fnCemetery" placeholder="e.g. Rookwood, Muslim section" oninput="updateFuneralMessage()"></div>
+      <div class="field"><label class="field-label">Family contact (name and phone)</label><input class="input" id="fnContact" placeholder="e.g. Ahmed, 04 0000 0000" oninput="updateFuneralMessage()"></div>
+    </div>
+    <div class="field">
+      <label class="field-label">Message</label>
+      <textarea class="input" id="fnMessage" rows="9" style="font-family:inherit;line-height:1.5;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="copyFuneralMessage(this)">Copy message</button>
+      <button class="btn btn-secondary" onclick="sendFuneralMessage('email')">Send by email</button>
+      <button class="btn btn-secondary" onclick="sendFuneralMessage('whatsapp')">Send by WhatsApp</button>
+    </div>
+  </div>
+
+  <h4 class="section-h">Muslim funeral services and councils</h4>
+  <p class="screen-subtitle" style="margin-bottom:12px;">Organisations listed by their websites; confirm current phone numbers there. Listings are added as they are verified.</p>
+  ${FUNERAL_SERVICES.map(f => `
+    <div class="person-card">
+      <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+        <div class="person-card-title">${f.name}</div>
+        <span class="status-badge status-planned">${f.state}</span>
+      </div>
+      <div style="font-size:14px;color:var(--muted);margin-top:4px;">${f.role}</div>
+      <div style="margin-top:10px;"><a href="${f.site}" target="_blank" rel="noopener" class="nav-link" style="color:var(--secondary);">${f.site.replace(/^https?:\/\/(www\.)?/, '')} →</a></div>
+    </div>
+  `).join('')}
+
+  <div class="info-callout">
+    <strong>Planning ahead?</strong> Record your chosen funeral service, plot and preferences in your own Will (Article 2.8) so your family does not have to search on the day.
+    <div style="margin-top:8px;"><button class="footer-link" style="color:var(--secondary);" onclick="beginNewWill()">Start my Will →</button></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo('S33')">← For executors</button>
+    <button class="btn btn-primary" onclick="goTo('S25')">Find an Imam →</button>
+  </div>
+`;
+function buildFuneralMessage() {
+  const v = id => (document.getElementById(id) || {}).value || '';
+  const d = v('fnDeceased').trim(), svc = v('fnService').trim(), m = v('fnMasjid').trim(), t = v('fnTime').trim(), c = v('fnCemetery').trim(), fam = v('fnContact').trim();
+  const lines = [
+    'Assalamu alaykum,',
+    '',
+    'Inna lillahi wa inna ilayhi raji\'un. ' + (d ? d + ' has passed away.' : 'A member of our community has passed away.'),
+    'We are arranging the funeral and would like to coordinate the ghusl, the janazah prayer and the burial.',
+    '',
+    svc ? 'Funeral service: ' + svc : null,
+    m ? 'Masjid: ' + m : null,
+    t ? 'Proposed janazah prayer: ' + t : null,
+    c ? 'Burial: ' + c : null,
+    fam ? 'Family contact: ' + fam : null,
+    '',
+    'Please confirm the prayer time and announce it to the congregation. JazakAllahu khayran.',
+    '',
+    'Prepared with Meeras (meeras.com.au), free Islamic Wills for Australia.',
+  ].filter(l => l !== null);
+  return lines.join('\n');
+}
+function updateFuneralMessage() {
+  const box = document.getElementById('fnMessage');
+  if (box) box.value = buildFuneralMessage();
+}
+function copyFuneralMessage(btn) {
+  updateFuneralMessage();
+  const text = document.getElementById('fnMessage').value;
+  const done = () => { btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = 'Copy message'; }, 2000); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => { document.getElementById('fnMessage').select(); });
+  else { document.getElementById('fnMessage').select(); }
+}
+function sendFuneralMessage(channel) {
+  updateFuneralMessage();
+  const text = document.getElementById('fnMessage').value;
+  if (channel === 'whatsapp') window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+  else window.location.href = 'mailto:?subject=' + encodeURIComponent('Janazah arrangements') + '&body=' + encodeURIComponent(text);
+}
+
 // ────────────────────────────────────────────────────────────────────────────
 // 6.  RENDERING
 // ────────────────────────────────────────────────────────────────────────────
@@ -5730,16 +5935,49 @@ function renderScreen(id) {
 // .checkbox-card divs become operable ARIA checkboxes (keyboard + screen
 // reader), and every ✓ glyph box is marked decorative. S02's capacity
 // declarations use native <input type="checkbox"> instead and are skipped.
+let _a11yId = 0;
 function enhanceToggles(root) {
   root.querySelectorAll('.check-box').forEach(b => b.setAttribute('aria-hidden', 'true'));
+  const keyClick = el => el.addEventListener('keydown', e => {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); el.click(); }
+  });
   root.querySelectorAll('.checkbox-card[onclick]').forEach(card => {
     card.setAttribute('role', 'checkbox');
     card.setAttribute('tabindex', '0');
     card.setAttribute('aria-checked', card.classList.contains('checked') ? 'true' : 'false');
-    card.addEventListener('keydown', e => {
-      if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); card.click(); }
+    keyClick(card);
+  });
+  // Progress beads are clickable divs: make them buttons for the keyboard.
+  root.querySelectorAll('.bead[onclick]').forEach(bead => {
+    bead.setAttribute('role', 'button');
+    bead.setAttribute('tabindex', '0');
+    if (!bead.getAttribute('aria-label')) bead.setAttribute('aria-label', 'Go to step ' + (bead.getAttribute('title') || ''));
+    if (bead.classList.contains('active')) bead.setAttribute('aria-current', 'step');
+    keyClick(bead);
+  });
+  // Field labels are not linked to their inputs in the markup; link them here so
+  // screen readers announce the label when the input is focused.
+  root.querySelectorAll('label.field-label').forEach(label => {
+    if (label.htmlFor) return;
+    const scope = label.parentElement;
+    if (!scope) return;
+    const control = scope.querySelector('input, select, textarea');
+    if (!control || control.hasAttribute('aria-label')) return;
+    if (!control.id) control.id = 'f-' + (++_a11yId);
+    label.htmlFor = control.id;
+  });
+  // Stepper buttons read as "Increase number of sons", not "+".
+  root.querySelectorAll('.number-control').forEach(ctl => {
+    let label = null, el = ctl;
+    while (el && !label) { label = el.querySelector && el.querySelector('.field-label'); el = el.parentElement; if (el === root) break; }
+    const text = label ? label.textContent.trim() : 'value';
+    ctl.querySelectorAll('.number-btn').forEach(b => {
+      if (b.getAttribute('aria-label')) return;
+      const t = b.textContent.trim();
+      b.setAttribute('aria-label', (t.startsWith('−') || t.startsWith('-') ? 'Decrease ' : 'Increase ') + text.toLowerCase() + (t.length > 1 ? ' by ' + t.replace(/[^0-9]/g, '') : ''));
     });
   });
+  root.querySelectorAll('.why-toggle').forEach(b => { if (!b.getAttribute('aria-expanded')) b.setAttribute('aria-expanded', 'false'); });
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -6870,6 +7108,51 @@ async function newDraftFlow() {
   renderDraftsList();
   hideDraftsModal();
   goTo('S01');
+}
+
+// Start my spouse's Will: a new draft for the spouse, pre-filled from this one
+// with the roles swapped. Shared facts carry over (address, jurisdiction,
+// executors and their payment, arbitrators, alternative guardians, children,
+// the burial organisation, the foetus clause); facts personal to the spouse
+// are left blank (identity, parents, grandparents, siblings, debts, bequests,
+// organ donation, superannuation, capacity declarations).
+async function startSpouseWill() {
+  const me = (STATE.testator.fullName || '').trim();
+  const spouse = (STATE.heirs.spouses || []).map(s => (s && s.name ? s.name.trim() : '')).find(Boolean) || '';
+  if (!me || !spouse) {
+    alert("Enter your own name (Step 3) and your spouse's name (Step 12, your surviving family) first.");
+    return;
+  }
+  const src = STATE;
+  const copy = v => JSON.parse(JSON.stringify(v));
+  const s = DEFAULT_STATE();
+  s.testatorSex = src.testatorSex === 'male' ? 'female' : (src.testatorSex === 'female' ? 'male' : null);
+  s.testator = { fullName: spouse, dob: '', idNumber: '', address: src.testator.address || '', email: '' };
+  s.jurisdiction = src.jurisdiction;
+  s.madhhab = src.madhhab;
+  s.executors = copy(src.executors);
+  s.executorPayment = src.executorPayment;
+  s.arbitrators = copy(src.arbitrators);
+  s.guardianSpouse = { name: me, dob: src.testator.dob || '', idNumber: '', email: src.testator.email || '' };
+  s.altGuardians = copy(src.altGuardians);
+  s.heirs = Object.assign(DEFAULT_STATE().heirs, { spouses: [{ name: me }], sons: src.heirs.sons || 0, daughters: src.heirs.daughters || 0 });
+  s.foetusClause = Object.assign({}, src.foetusClause);
+  s.funeral = Object.assign(DEFAULT_STATE().funeral, {
+    hasEngagedOrganisation: !!src.funeral.hasEngagedOrganisation,
+    burialOrganisation: src.funeral.burialOrganisation || '',
+    burialOrgContact: src.funeral.burialOrgContact || '',
+    preferLahd: !!src.funeral.preferLahd,
+  });
+  s.currentScreen = 'S02';
+  const id = await Sessions.create('Will of ' + spouse);
+  await dbSet(DRAFT_PREFIX + id, s);
+  const entry = Sessions.index.find(d => d.id === id);
+  if (entry) { entry.testatorName = spouse; await dbSet(DRAFTS_INDEX_KEY, Sessions.index); }
+  await Sessions.switchTo(id);
+  refreshSessionIndicator();
+  Analytics.track('spouse-will-started');
+  goTo('S02');
+  alert('A new draft, "Will of ' + spouse + '", is open. Shared details were copied; check the children and enter ' + spouse.split(' ')[0] + "'s own details, parents and siblings.");
 }
 
 async function switchDraft(id) {
