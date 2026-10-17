@@ -99,37 +99,74 @@
     display: block;
     margin-top: 3px;
   }
-  .top-bar-actions { display: flex; gap: 14px; align-items: center; margin-left: auto; }
-
-  /* ── Top bar: tablet ── */
-  @media (max-width: 980px) {
-    .top-bar-inner { padding: 0 20px; gap: 12px; }
-    .top-bar-actions { gap: 10px; }
-    .session-pill { max-width: 170px; }
+  .top-bar-inner { flex-wrap: nowrap; }
+  /* Primary navigation (desktop): How it works · Guides ▾ · About */
+  .top-nav { display: flex; align-items: center; gap: 2px; margin-left: 16px; }
+  .top-nav > button, .nav-dd-btn {
+    background: none; border: none; font-family: inherit; font-size: 14px; font-weight: 500;
+    color: var(--text); padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
   }
-  /* ── Top bar: mobile — two deliberate rows:
-       row 1: brand (left) + Donate (right)
-       row 2: About Us · Resources · drafts pill · Reset, spread full-width ── */
-  @media (max-width: 700px) {
-    .top-bar { padding: 10px 0 12px; }
-    .top-bar-inner { padding: 0 16px; row-gap: 10px; }
-    .brand { order: 1; }
-    .top-bar-inner > .donate-btn { order: 2; margin-left: auto; }
-    .top-bar-actions {
-      order: 3;
-      flex-basis: 100%;
-      margin-left: 0;
-      justify-content: space-between;
-      gap: 8px;
-    }
+  .top-nav > button:hover, .nav-dd-btn:hover, .nav-dd.open .nav-dd-btn { background: rgba(27,77,107,0.07); color: var(--primary); }
+  .nav-dd { position: relative; }
+  .nav-dd-btn::after { content: '▾'; margin-left: 6px; font-size: 11px; opacity: 0.7; }
+  .nav-dd-menu {
+    position: absolute; top: calc(100% + 8px); left: 0; min-width: 230px;
+    background: var(--white); border: 1px solid var(--border); border-radius: 8px;
+    box-shadow: 0 12px 32px rgba(27,77,107,0.16); padding: 8px; display: none; z-index: 60;
+  }
+  .nav-dd.open .nav-dd-menu { display: block; }
+  .nav-dd-menu button {
+    display: block; width: 100%; text-align: left; background: none; border: none; font-family: inherit;
+    font-size: 14px; color: var(--text); padding: 9px 12px; border-radius: 6px; cursor: pointer;
+  }
+  .nav-dd-menu button:hover, .nav-dd-menu button:focus-visible { background: rgba(27,77,107,0.07); color: var(--primary); }
+  .nav-dd-menu .nav-dd-note { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-text); padding: 6px 12px 4px; font-weight: 700; }
+  .top-bar-actions { display: flex; gap: 12px; align-items: center; margin-left: auto; }
+  .cta-nav {
+    background: var(--primary); color: #fff; border: none; border-radius: 6px;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; padding: 10px 18px;
+    cursor: pointer; white-space: nowrap; box-shadow: 0 2px 8px rgba(27,77,107,0.25);
+    transition: filter 0.15s, transform 0.15s;
+  }
+  .cta-nav:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .nav-toggle {
+    display: none; background: none; border: 1px solid var(--border); border-radius: 6px;
+    width: 42px; height: 38px; cursor: pointer; align-items: center; justify-content: center; flex-direction: column; gap: 4px;
+  }
+  .nav-toggle span { display: block; width: 18px; height: 2px; background: var(--primary); border-radius: 1px; transition: transform 0.2s, opacity 0.2s; }
+  .nav-toggle.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+  .nav-toggle.open span:nth-child(2) { opacity: 0; }
+  .nav-toggle.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+  /* Mobile menu panel, below the bar (Willed-style full-width list) */
+  .mobile-menu { display: none; border-top: 1px solid var(--border); background: var(--white); padding: 12px 16px 22px; max-height: calc(100vh - 70px); overflow-y: auto; }
+  .mobile-menu.open { display: block; }
+  .mm-cta { display: block; width: 100%; margin: 8px 0 6px; background: var(--primary); color: #fff; border: none; border-radius: 8px; padding: 15px; font-family: 'Inter', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .mm-section { font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-text); font-weight: 700; margin: 18px 0 4px; }
+  .mm-item {
+    display: flex; justify-content: space-between; align-items: center; width: 100%;
+    background: none; border: none; border-bottom: 1px solid var(--border); font-family: inherit;
+    font-size: 16px; color: var(--text); padding: 13px 2px; cursor: pointer; text-align: left;
+  }
+  .mm-item::after { content: '→'; color: var(--muted); font-size: 14px; }
+  .mm-item.donate { color: var(--accent-dark); font-weight: 600; }
+  @media (max-width: 1120px) {
+    .top-bar-actions .nav-link { display: none; }
+    .session-pill { max-width: 150px; }
+    .top-bar-inner { padding: 0 20px; }
+  }
+  @media (max-width: 980px) {
+    .top-bar { padding: 10px 0; }
+    .top-bar-inner { padding: 0 16px; gap: 10px; }
+    .top-nav { display: none; }
+    .nav-toggle { display: flex; }
+    .top-bar-actions { gap: 8px; }
+    .top-bar-actions .donate-btn, .top-bar-actions .cta-nav, .top-bar-actions .nav-link, .save-indicator { display: none; }
+    .session-pill-meta { display: none; }
     .brand-mark { width: 30px; height: 30px; }
     .brand-name { font-size: 19px; }
-    .session-pill { max-width: 145px; }
-    .session-pill-meta { display: none; }
-    /* Transient "✓ Saved" chip: hidden on phones to keep row 2 on one line
-       (saving itself is unaffected — it is automatic). */
-    .save-indicator { display: none; }
   }
+  @media (max-width: 420px) { .session-pill { max-width: 125px; } .brand-tag { display: none; } }
   .nav-link {
     color: var(--muted);
     text-decoration: none;
@@ -171,6 +208,7 @@
   }
   .save-indicator {
     font-size: 11px;
+    white-space: nowrap;
     color: var(--success);
     opacity: 0;
     transition: opacity 0.3s;
@@ -1525,9 +1563,24 @@
           <span class="brand-tag">Islamic Will</span>
         </div>
       </a>
+      <nav class="top-nav" aria-label="Primary">
+        <button onclick="goTo('S31')">How it works</button>
+        <div class="nav-dd" id="navGuides">
+          <button class="nav-dd-btn" aria-haspopup="true" aria-expanded="false" aria-controls="navGuidesMenu" onclick="toggleNavDropdown(event)">Guides</button>
+          <div class="nav-dd-menu" id="navGuidesMenu" role="menu" aria-label="Guides">
+            <div class="nav-dd-note">Learn</div>
+            <button role="menuitem" onclick="goTo('S32')">FAQ</button>
+            <button role="menuitem" onclick="goTo('S27')">Resources</button>
+            <button role="menuitem" onclick="goTo('S36')">State guides</button>
+            <div class="nav-dd-note">When a loved one has died</div>
+            <button role="menuitem" onclick="goTo('S37')">Funerals</button>
+            <button role="menuitem" onclick="goTo('S33')">For executors</button>
+            <button role="menuitem" onclick="goTo('S25')">Imam directory</button>
+          </div>
+        </div>
+        <button onclick="goTo('S26')">About</button>
+      </nav>
       <div class="top-bar-actions">
-        <button class="nav-link" onclick="goTo('S26')">About Us</button>
-        <button class="nav-link" onclick="goTo('S27')">Resources</button>
         <button class="session-pill" id="sessionPill" onclick="showDraftsModal()" title="Manage drafts">
           <span class="session-pill-dot"></span>
           <span>
@@ -1537,10 +1590,31 @@
         </button>
         <span class="save-indicator" id="saveIndicator">✓ Saved</span>
         <button class="nav-link" onclick="showResetModal()">Reset</button>
+        <button class="donate-btn" onclick="goTo('S24')" aria-label="Donate to support Meeras">Donate</button>
+        <button class="cta-nav" id="navCta" onclick="navPrimaryAction()">Begin your Will</button>
+        <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobileMenu(event)"><span></span><span></span><span></span></button>
       </div>
-      <button class="donate-btn" onclick="goTo('S24')" aria-label="Donate to support Meeras">
-        Donate
-      </button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+      <button class="mm-cta" id="mmCta" onclick="navPrimaryAction()">Begin your Will</button>
+      <div class="mm-section">Your Will</div>
+      <button class="mm-item" onclick="closeMobileMenu(); showDraftsModal();">Manage drafts</button>
+      <button class="mm-item" onclick="closeMobileMenu(); downloadSamplePDF();">Download the sample Will</button>
+      <button class="mm-item" onclick="closeMobileMenu(); showResetModal();">Reset this draft</button>
+      <div class="mm-section">Learn</div>
+      <button class="mm-item" onclick="goTo('S31')">How it works</button>
+      <button class="mm-item" onclick="goTo('S32')">FAQ</button>
+      <button class="mm-item" onclick="goTo('S27')">Resources</button>
+      <button class="mm-item" onclick="goTo('S36')">State guides</button>
+      <div class="mm-section">When a loved one has died</div>
+      <button class="mm-item" onclick="goTo('S37')">Funerals</button>
+      <button class="mm-item" onclick="goTo('S33')">For executors</button>
+      <button class="mm-item" onclick="goTo('S25')">Imam directory</button>
+      <div class="mm-section">More</div>
+      <button class="mm-item" onclick="goTo('S26')">About Meeras</button>
+      <button class="mm-item donate" onclick="goTo('S24')">Donate</button>
+      <button class="mm-item" onclick="goTo('S28')">Privacy Policy</button>
+      <button class="mm-item" onclick="goTo('S29')">Terms of Service</button>
     </div>
     <div class="progress-strip" id="progressStrip"></div>
   </div>
@@ -2230,6 +2304,51 @@ function hashForScreen(id) {
   return Object.keys(PAGE_HASHES).find(k => PAGE_HASHES[k] === id) || null;
 }
 
+// ---- Header: Guides dropdown, mobile menu, primary button ------------------
+function closeNavDropdowns() {
+  document.querySelectorAll('.nav-dd.open').forEach(d => {
+    d.classList.remove('open');
+    const b = d.querySelector('.nav-dd-btn');
+    if (b) b.setAttribute('aria-expanded', 'false');
+  });
+}
+function toggleNavDropdown(e) {
+  e.stopPropagation();
+  const dd = e.currentTarget.parentElement;
+  const open = !dd.classList.contains('open');
+  closeNavDropdowns();
+  if (open) { dd.classList.add('open'); e.currentTarget.setAttribute('aria-expanded', 'true'); }
+}
+function toggleMobileMenu(e) {
+  if (e) e.stopPropagation();
+  const menu = document.getElementById('mobileMenu');
+  const toggle = document.getElementById('navToggle');
+  if (!menu || !toggle) return;
+  const open = !menu.classList.contains('open');
+  menu.classList.toggle('open', open);
+  toggle.classList.toggle('open', open);
+  toggle.setAttribute('aria-expanded', String(open));
+  toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+}
+function closeMobileMenu() {
+  const menu = document.getElementById('mobileMenu');
+  if (menu && menu.classList.contains('open')) toggleMobileMenu();
+}
+// The header button reads "Continue your Will" once a draft has moved past
+// the landing page, otherwise "Begin your Will"; both buttons share it.
+function navPrimaryAction() {
+  closeMobileMenu();
+  const started = !!(Sessions.activeId && STATE.currentScreen && STATE.currentScreen !== 'S01');
+  if (started) resumeDraft(Sessions.activeId); else beginNewWill();
+}
+function updateNavCta() {
+  const started = !!(Sessions.activeId && STATE.currentScreen && STATE.currentScreen !== 'S01');
+  const label = started ? 'Continue your Will' : 'Begin your Will';
+  ['navCta', 'mmCta'].forEach(id => { const el = document.getElementById(id); if (el) el.textContent = label; });
+}
+document.addEventListener('click', closeNavDropdowns);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeNavDropdowns(); closeMobileMenu(); } });
+
 // Shared helper text for every identification field (see privacy note: probated
 // wills become public documents, so ID numbers should not be encouraged).
 const ID_OPTIONAL_HINT = `<div style="font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45;">Optional: a Will identifies people by full name and address; ID numbers are not required and a probated Will becomes a public document.</div>`;
@@ -2285,6 +2404,9 @@ function goTo(screenId) {
   renderScreen(screenId);
   window.scrollTo({ top: 0, behavior: 'smooth' });
   renderProgress();
+  closeMobileMenu();
+  closeNavDropdowns();
+  updateNavCta();
   Analytics.screen(screenId);
   // Keep the address bar in step with the informational pages so links can be shared.
   try {
@@ -7365,6 +7487,7 @@ async function init() {
   refreshSessionIndicator();
   applyHashRoute();   // a shared link such as /#faq opens that page directly
   window.addEventListener('hashchange', applyHashRoute);
+  updateNavCta();
 
   setTimeout(() => {
     pendingFlushPromise = Sessions.flushPendingWrites().catch(e => {
