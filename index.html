@@ -774,6 +774,60 @@
     .compare-table th, .compare-table td { padding: 8px 6px; }
   }
 
+  /* Home page: "how we help" cards, guide cards, closing call to action */
+  .help-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .help-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 22px 20px 18px;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .help-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(201,169,97,0.18); }
+  .help-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .help-eyebrow { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent-dark); font-weight: 700; }
+  .help-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--primary); line-height: 1.2; }
+  .help-desc { font-size: 13px; color: var(--muted); line-height: 1.55; flex: 1; }
+  .help-link { font-size: 13px; font-weight: 600; color: var(--secondary); }
+  .guides-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .guide-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    border-radius: 8px;
+    padding: 18px 20px;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .guide-card:hover { box-shadow: 0 6px 18px rgba(27,77,107,0.12); }
+  .guide-card:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .guide-meta { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+  .guide-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--primary); margin-bottom: 6px; line-height: 1.25; }
+  .guide-desc { font-size: 13px; color: var(--muted); line-height: 1.55; }
+  .cta-band {
+    background: linear-gradient(135deg, var(--primary) 0%, #163F58 100%);
+    color: #fff;
+    border-radius: 10px;
+    padding: 36px 32px;
+    text-align: center;
+    margin: 44px 0 8px;
+  }
+  .cta-band-title { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 600; margin-bottom: 8px; }
+  .cta-band-text { font-size: 14px; opacity: 0.88; max-width: 560px; margin: 0 auto 20px; line-height: 1.6; }
+  .cta-band-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .cta-band .btn-light { background: #fff; color: var(--primary); border: none; padding: 12px 22px; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .cta-band .btn-ghost { background: transparent; color: #fff; border: 1.5px solid rgba(255,255,255,0.6); padding: 12px 22px; border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .cta-band .btn-light:hover { filter: brightness(0.95); }
+  .cta-band .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+  @media (max-width: 980px) { .help-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 700px) { .help-grid, .guides-grid { grid-template-columns: 1fr; } .cta-band { padding: 28px 20px; } }
+
   /* ========== BUTTONS ========== */
   .btn-row {
     display: flex;
@@ -2117,7 +2171,7 @@ const PROGRESS_SCREENS = [
 // reachable from the header/footer at any time and must never disturb wizard
 // state: navigating to one does not change STATE.currentScreen, so drafts
 // resume where the user actually left off and completion % is unaffected.
-const INFO_SCREENS = new Set(['S26', 'S27', 'S28', 'S29', 'S30', 'S31', 'S32', 'S33']);
+const INFO_SCREENS = new Set(['S26', 'S27', 'S28', 'S29', 'S30', 'S31', 'S32', 'S33', 'S34', 'S35']);
 
 // Deep links for the informational pages (meeras.com.au/#faq and so on).
 // S30 (feature status) is internal: reachable by its link only, never from
@@ -2131,6 +2185,8 @@ const PAGE_HASHES = {
   privacy: 'S28',
   terms: 'S29',
   status: 'S30',
+  launch: 'S34',
+  leads: 'S35',
 };
 function applyHashRoute() {
   const key = (location.hash || '').replace(/^#\/?/, '').toLowerCase();
@@ -2856,8 +2912,8 @@ screens.S01 = () => {
     </div>
     <div class="guarantee">
       <svg class="guarantee-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
-      <div class="guarantee-title">Legally valid</div>
-      <div class="guarantee-desc">Adapts to the Wills Act / Succession Act of your State or Territory. Witness rules and execution guidance included.</div>
+      <div class="guarantee-title">Designed for every State</div>
+      <div class="guarantee-desc">Follows the Wills Act or Succession Act of your State or Territory, with its witness rules and signing guidance built in. The template is under independent legal review.</div>
     </div>
     <div class="guarantee">
       <svg class="guarantee-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -2873,6 +2929,69 @@ screens.S01 = () => {
       <div class="step-card"><div class="step-num">1</div><div class="step-name">Answer questions</div><div class="step-desc">A guided wizard walks you through executors, guardians, bequests, heirs, and burial wishes.</div></div>
       <div class="step-card"><div class="step-num">2</div><div class="step-name">We calculate</div><div class="step-desc">The Farāʾiḍ engine computes each heir's share under Schedule A (Sunni).</div></div>
       <div class="step-card"><div class="step-num">3</div><div class="step-name">Print, sign, witness</div><div class="step-desc">Download your Will as a PDF. Sign in the presence of two witnesses (per your State's rules).</div></div>
+    </div>
+  </div>
+
+  <div style="margin:44px 0 16px;">
+    <div class="section-label">What we do</div>
+    <h2 class="section-title">Four ways we help</h2>
+    <div class="help-grid">
+      <button class="help-card" onclick="void beginNewWill()">
+        <div class="help-eyebrow">Your Will</div>
+        <div class="help-title">Write your Will</div>
+        <div class="help-desc">Executors, guardians, burial wishes, bequests and the Quranic shares, in about twenty minutes.</div>
+        <div class="help-link">Begin your Will →</div>
+      </button>
+      <button class="help-card" onclick="goTo('S31')">
+        <div class="help-eyebrow">Before you start</div>
+        <div class="help-title">How it works</div>
+        <div class="help-desc">What is in the twelve Articles and Schedule A, and how Meeras compares with a solicitor or a kit.</div>
+        <div class="help-link">See what is included →</div>
+      </button>
+      <button class="help-card" onclick="goTo('S32')">
+        <div class="help-eyebrow">Questions</div>
+        <div class="help-title">FAQ</div>
+        <div class="help-desc">Witnesses, superannuation, the one-third rule, non-Muslim relatives, schools of fiqh, and more.</div>
+        <div class="help-link">Read the answers →</div>
+      </button>
+      <button class="help-card" onclick="goTo('S33')">
+        <div class="help-eyebrow">When a loved one has died</div>
+        <div class="help-title">For executors</div>
+        <div class="help-desc">The first day, the executor's duties in the Will's order, probate, and where to get help.</div>
+        <div class="help-link">Open the guide →</div>
+      </button>
+    </div>
+  </div>
+
+  <div style="margin:44px 0 16px;">
+    <div class="section-label">Guides</div>
+    <h2 class="section-title">Short reads</h2>
+    <div class="guides-grid">
+      <button class="guide-card" onclick="goTo('S27')">
+        <div class="guide-meta">2 min read</div>
+        <div class="guide-title">Why every Muslim adult in Australia needs a Will</div>
+        <div class="guide-desc">Without one, your State's intestacy formula decides, and it does not follow the Quranic shares.</div>
+      </button>
+      <button class="guide-card" onclick="goTo('S27')">
+        <div class="guide-meta">2 min read</div>
+        <div class="guide-title">What makes a Will valid in Australia</div>
+        <div class="guide-desc">Writing, capacity, and two witnesses present at the same time. The details differ by State.</div>
+      </button>
+      <button class="guide-card" onclick="goTo('S27')">
+        <div class="guide-meta">3 min read</div>
+        <div class="guide-title">Understanding farāʾiḍ: the fixed shares</div>
+        <div class="guide-desc">Who inherits what under Surah an-Nisāʾ, and why the binding shares are fixed at death.</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="cta-band">
+    <div class="cta-band-title">Not sure where to start?</div>
+    <div class="cta-band-text">Download the sample Will to see exactly what you will end up with, read the answers to common questions, or find an Imam who can review your farāʾiḍ shares.</div>
+    <div class="cta-band-actions">
+      <button class="btn-light" onclick="downloadSamplePDF()">Download the sample Will</button>
+      <button class="btn-ghost" onclick="goTo('S32')">Read the FAQ</button>
+      <button class="btn-ghost" onclick="goTo('S25')">Find an Imam</button>
     </div>
   </div>
 
@@ -5215,7 +5334,8 @@ const FEATURE_STATUS = [
     ['Production at meeras.com.au (Cloudflare)', 'live'],
     ['Dev environment at fareez.dev/meeras (AWS)', 'live'],
     ['Anonymous, cookie-free analytics (Umami)', 'live'],
-    ['About, Resources, FAQ, For executors, Privacy and Terms pages', 'live'],
+    ['How it works, FAQ, For executors, About, Resources, Privacy and Terms pages with deep links', 'live'],
+    ['Internal pages: feature status (#status), launch plan (#launch), lead generation (#leads)', 'live'],
     ['Responsive header and footer', 'live'],
   ]},
   { area: 'Next', items: [
@@ -5424,6 +5544,159 @@ screens.S33 = () => `
     <button class="btn btn-primary" onclick="goTo('S32')">Read the FAQ →</button>
   </div>
 `;
+
+// ───── S34 LAUNCH PLAN (internal page: /#launch, not linked anywhere) ─────
+// Status values: live, progress, planned, considering (see STATUS_LABELS).
+const LAUNCH_UPDATED = '17 October 2026';
+const LAUNCH_PLAN = [
+  { phase: 'Before launch', items: [
+    ['Production at meeras.com.au with HTTPS, security headers and the canonical link', 'live', ''],
+    ['Engine tests and the Al-Mawārīth cross-check pass (npm test)', 'live', ''],
+    ['Independent legal review of the template signed off (Part F of the review request)', 'progress', 'Launch messaging must say "under review" until the certificate is signed.'],
+    ['Seven specimen Wills regenerated from the launch build and their checksums recorded', 'live', ''],
+    ['Umami website for meeras.com.au and the UMAMI_WEBSITE_ID build variable', 'planned', 'Optional; the shared dashboard already records the production hostname.'],
+    ['Search: Google Search Console verified for meeras.com.au; sitemap not needed for a single page', 'planned', ''],
+    ['Social preview: Open Graph and Twitter card tags with a Meeras image', 'planned', ''],
+    ['Accessibility pass on the wizard (keyboard, screen reader, contrast)', 'progress', 'Capacity declarations and custom toggles done; full pass pending.'],
+    ['Privacy Policy and Terms reviewed alongside the template', 'progress', ''],
+    ['www to apex redirect rule in the Cloudflare zone', 'planned', 'Both hostnames serve the site today.'],
+    ['Donation links in donation-config.js switched to live Stripe Payment Links', 'planned', ''],
+    ['Dev environment refreshed to the launch build (./deploy.sh)', 'planned', ''],
+  ]},
+  { phase: 'Launch week', items: [
+    ['Announcement to the Australian National Imams Council and State Islamic councils', 'planned', 'Ask for a listing on their resource pages and a khutbah mention.'],
+    ['Posts to Muslim community groups and mosque notice boards (Melbourne, Sydney first)', 'planned', ''],
+    ['Short explainer video: why every Muslim adult needs a Will', 'planned', ''],
+    ['Al-Mawārīth calculator links to Meeras for the Will step', 'planned', ''],
+    ['Feedback channel open (email on the About page) and triage routine', 'planned', ''],
+  ]},
+  { phase: 'After launch (first 90 days)', items: [
+    ['Weekly review of the Umami funnel: visits, wizard started, PDF generated, donation clicks', 'planned', ''],
+    ['Fix list from user feedback, prioritised by frequency', 'planned', ''],
+    ['Second content batch: State-by-State guides, superannuation nominations, executor sheet', 'planned', ''],
+    ['Decide on the paid encrypted-account tier from observed demand', 'considering', ''],
+  ]},
+];
+screens.S34 = () => {
+  const badge = s => { const [label, cls] = STATUS_LABELS[s] || STATUS_LABELS.planned; return `<span class="status-badge ${cls}">${label}</span>`; };
+  const counts = { live: 0, progress: 0, planned: 0, considering: 0 };
+  LAUNCH_PLAN.forEach(p => p.items.forEach(i => { counts[i[1]] = (counts[i[1]] || 0) + 1; }));
+  const total = Object.values(counts).reduce((a, b) => a + b, 0);
+  return `
+  <div class="step-label">Internal</div>
+  <h2 class="screen-title">Launch plan</h2>
+  <p class="screen-subtitle">An internal page, not linked from the site. Last updated ${LAUNCH_UPDATED}. Edit <code>LAUNCH_PLAN</code> in index.html to change it.</p>
+
+  <div class="info-callout">
+    <strong>Readiness.</strong> ${counts.live} of ${total} items done, ${counts.progress} in progress, ${counts.planned} planned, ${counts.considering} under consideration. The one gate that blocks public promotion is the legal review sign-off; everything else can proceed in parallel.
+  </div>
+
+  <h4 class="section-h">Goals for the first year</h4>
+  <table class="compare-table">
+    <tr><th>Measure</th><th>Target</th><th>How it is measured</th></tr>
+    <tr><td>Reach</td><td>5% of the roughly 480,000 Muslim adults in Australia visit (about 24,000 unique visitors)</td><td>Umami unique visitors, production hostname</td></tr>
+    <tr><td>Completion</td><td>1 in 4 visitors who start the wizard generate a PDF</td><td>Umami events: wizard-started to pdf-generated</td></tr>
+    <tr><td>Wills made</td><td>5,000 generated Wills</td><td>Umami pdf-generated count</td></tr>
+    <tr><td>Trust</td><td>Legal review certificate published; ANIC listing</td><td>Manual</td></tr>
+    <tr><td>Sustainability</td><td>Hosting and development covered by contributions</td><td>Stripe payouts against costs</td></tr>
+  </table>
+
+  ${LAUNCH_PLAN.map(group => `
+    <h4 class="section-h">${group.phase}</h4>
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 16px;margin-bottom:18px;">
+      ${group.items.map(([text, status, note]) => `
+        <div class="status-row"><span>${text}${note ? `<br><span style="font-size:12px;color:var(--muted);">${note}</span>` : ''}</span>${badge(status)}</div>
+      `).join('')}
+    </div>
+  `).join('')}
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo('S30')">← Feature status</button>
+    <button class="btn btn-primary" onclick="goTo('S35')">Lead generation →</button>
+  </div>
+  `;
+};
+
+// ───── S35 LEAD GENERATION (internal page: /#leads, not linked anywhere) ─────
+const LEADS_UPDATED = '17 October 2026';
+const LEAD_CHANNELS = [
+  { channel: 'Imams and Islamic councils', status: 'planned', owner: 'Fareez',
+    how: 'Ask ANIC and the State councils (ICV, AFIC, ISRA and others) to list Meeras on their resource pages and mention it in a Friday khutbah about wills. Offer the Imam directory listing in return.',
+    utm: 'utm_source=anic&utm_medium=referral&utm_campaign=launch' },
+  { channel: 'Muslim funeral and burial services', status: 'planned', owner: 'Fareez',
+    how: 'Article 2.8 records the burial organisation; services that pre-sell plots are a natural partner. Ask them to hand clients a Meeras card and link from their sites.',
+    utm: 'utm_source=burial-services&utm_medium=partner&utm_campaign=launch' },
+  { channel: 'Search (SEO)', status: 'progress', owner: 'Site',
+    how: 'Target "Islamic will Australia", "Sharia will template", "wasiyyah Australia", "Muslim will NSW/VIC". The How it works, FAQ, For executors and Resources pages exist for this; add State-by-State guides next and verify Search Console.',
+    utm: '(organic; no tag)' },
+  { channel: 'Al-Mawārīth calculator', status: 'planned', owner: 'Fareez',
+    how: 'Cross-link both ways: the calculator sends people who want a Will to Meeras; Meeras links to the calculator for complex families.',
+    utm: 'utm_source=mawarith&utm_medium=referral&utm_campaign=cross-link' },
+  { channel: 'Community social media', status: 'planned', owner: 'Fareez',
+    how: 'Short videos and carousels: "what happens without a Will", "the one-third rule", "who can witness". Post in community Facebook groups and on Instagram; invite mosques to repost.',
+    utm: 'utm_source=instagram&utm_medium=social&utm_campaign=launch' },
+  { channel: 'Seasonal campaigns', status: 'considering', owner: 'Fareez',
+    how: 'Ramadan (reflection, sadaqah jāriyah bequests) and Dhul-Hijjah (Hajj badal in Article 6) are natural moments to write a Will.',
+    utm: 'utm_source=ramadan&utm_medium=social&utm_campaign=ramadan' },
+  { channel: 'Lawyer partners', status: 'considering', owner: 'Fareez',
+    how: 'Practitioners who review Islamic wills can refer clients to Meeras for the draft and receive review referrals back once the lawyer-referral feature exists.',
+    utm: 'utm_source=lawyer&utm_medium=partner&utm_campaign=review' },
+  { channel: 'Word of mouth in the app', status: 'live', owner: 'Site',
+    how: 'The share step sends the finished Will to executors and family, who see Meeras in the email and the PDF footer. Add "Start your own Will" to that email.',
+    utm: 'utm_source=share&utm_medium=email&utm_campaign=referral' },
+];
+screens.S35 = () => {
+  const badge = s => { const [label, cls] = STATUS_LABELS[s] || STATUS_LABELS.planned; return `<span class="status-badge ${cls}">${label}</span>`; };
+  const origin = (location.origin && location.origin !== 'null') ? location.origin : 'https://meeras.com.au';
+  return `
+  <div class="step-label">Internal</div>
+  <h2 class="screen-title">Lead generation</h2>
+  <p class="screen-subtitle">An internal page, not linked from the site. Last updated ${LEADS_UPDATED}. Edit <code>LEAD_CHANNELS</code> in index.html to change it.</p>
+
+  <div class="info-callout">
+    <strong>What a lead is here.</strong> Meeras has no accounts and collects no names, so a lead is a measurable step in the Umami funnel, not a contact record: a visit, a started wizard, a generated PDF, a share, or a donation click. Growth means more of each, attributed to a channel through UTM-tagged links.
+  </div>
+
+  <h4 class="section-h">The funnel (Umami events)</h4>
+  <table class="compare-table">
+    <tr><th>Stage</th><th>Event</th><th>What to watch</th></tr>
+    <tr><td>Visit</td><td>page view</td><td>Unique visitors by referrer and UTM source</td></tr>
+    <tr><td>Interest</td><td>info-page, sample-downloaded</td><td>Which pages and the sample PDF convert into starts</td></tr>
+    <tr><td>Start</td><td>wizard-started</td><td>Share of visitors who begin</td></tr>
+    <tr><td>Progress</td><td>wizard-step (screen and step number)</td><td>Where people stop; the heirs step and the share calculation are the likely drop-offs</td></tr>
+    <tr><td>Conversion</td><td>pdf-generated (with State)</td><td>Completed Wills, by State</td></tr>
+    <tr><td>Advocacy</td><td>draft-exported, share step</td><td>Wills sent on to executors and family</td></tr>
+    <tr><td>Support</td><td>donation-click (tier)</td><td>Contributions per completed Will</td></tr>
+  </table>
+
+  <h4 class="section-h">Channels</h4>
+  ${LEAD_CHANNELS.map(c => `
+    <div class="person-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+        <div class="person-card-title">${c.channel}</div>
+        ${badge(c.status)}
+      </div>
+      <div style="font-size:14px;color:var(--text);line-height:1.6;margin-top:6px;">${c.how}</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:8px;">Owner: ${c.owner} · Link: <code style="font-size:12px;">${c.utm.startsWith('(') ? c.utm : origin + '/?' + c.utm}</code></div>
+    </div>
+  `).join('')}
+
+  <h4 class="section-h">Rules for every campaign</h4>
+  <div class="info-callout">
+    <ul style="margin:0 0 0 18px;padding:0;line-height:1.7;font-size:14px;">
+      <li>Tag every external link with utm_source, utm_medium and utm_campaign; Umami reports them without any change to the site.</li>
+      <li>Never collect names or email addresses on the site until a privacy-reviewed opt-in exists; the Privacy Policy promises it.</li>
+      <li>Say "designed to meet the formal requirements" and "under independent legal review", never "legally valid" or "lawyer approved", until the certificate is signed.</li>
+      <li>Every message leads with the problem (dying intestate) and the price (free), then the privacy promise.</li>
+    </ul>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="goTo('S34')">← Launch plan</button>
+    <button class="btn btn-primary" onclick="goTo('S30')">Feature status →</button>
+  </div>
+  `;
+};
 
 // ────────────────────────────────────────────────────────────────────────────
 // 6.  RENDERING
