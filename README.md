@@ -21,6 +21,10 @@ meeras-deploy/
 ├── deploy.sh               ← One-command AWS CLI deploy script
 ├── 404.html                ← Fallback page that redirects to the SPA
 ├── robots.txt              ← Search-engine indexing rules
+├── test.html               ← Browser tests for the inheritance engine (serve, then open)
+├── tests/faraid-engine.test.js ← Node tests + cross-check against Al-Mawārīth (npm test)
+├── package.json            ← `npm test` only; no dependencies
+├── specimens/              ← Seven specimen Wills (fictional names) for the legal review
 └── .gitignore              ← Standard ignores if you put this in version control
 ```
 
@@ -165,6 +169,61 @@ aws cloudfront create-invalidation \
 ```
 
 CloudFront invalidations for the first 1,000 paths each month are free.
+
+---
+
+## Inheritance engine, school of fiqh, and tests
+
+The farāʾiḍ engine is `calculateFaraid(rules)` in `index.html` (section 3). It is
+kept in step with the Al-Mawārīth calculator's `calcSunni`, the reference engine,
+for every family the Meeras heir model can express: spouses, sons, daughters,
+parents, paternal grandfather, both grandmothers, full brothers and sisters.
+
+Where the four Sunni schools differ, `rulesForMadhhab(id)` supplies the ruling
+(`{ madhhab, pgmWithFather, jaddMuqasama, raddToHeirs: true, distantKindred: true }`):
+
+| Family | No school selected | Ḥanafī | Mālikī, Shāfiʿī | Ḥanbalī |
+|---|---|---|---|---|
+| Paternal grandmother beside the father (mother absent) | takes 1/6 | excluded by the father | excluded by the father | takes 1/6 |
+| Grandfather beside full brothers and sisters (father absent, no son) | Zayd ibn Thābit's method | excludes them | Zayd's method | Zayd's method |
+
+Zayd ibn Thābit's method: with no other fixed-share heir the grandfather takes
+the better of sharing as a brother (two heads to a sister's one) and one third
+of the estate; with other fixed-share heirs, the best of sharing in the
+remainder, one third of the remainder and one sixth of the estate, never less
+than a sixth. Sisters beside him take no fixed share. Al-Akdariyyah (husband,
+mother, grandfather, one full sister) gives husband 1/3, mother 2/9, grandfather
+8/27, sister 4/27. Meeras has no paternal half-siblings, so muʿādda never arises.
+
+Radd (the surplus when the fixed shares do not exhaust the estate and no
+residuary survives) goes to the Quranic heirs excluding the spouse in every
+school: the Ḥanafī and Ḥanbalī position and the later fatwā of the Mālikī and
+Shāfiʿī schools. Distant kindred (dhawū al-arḥām) inherit only when no Quranic
+heir and no residuary relative survives, in all four schools; Meeras does not
+compute their shares and refers the family to a scholar.
+
+The **School of fiqh** selector sits at the top of the heirs step (S13) and is
+remembered in `localStorage` under `meeras:madhhab`, so starting a new Will keeps
+it. Two optional per-ruling choices appear only when relevant, under the paternal
+grandmother (father alive, mother not) and under the paternal grandfather (father
+absent, no son); they are pre-set from the school, say so, and are stored in the
+draft as `heirs.rulings`. The results screen, the summary and the PDF name the
+school only when one was selected ("following the Shāfiʿī school").
+
+### Running the tests
+
+```bash
+npm test          # = node tests/faraid-engine.test.js, no dependencies
+```
+
+The script slices the engine out of `index.html`, runs the worked examples
+(al-Akdariyyah, Zayd's method, ʿUmariyyatān, sisters with and without daughters,
+radd, the charity fallback), sweeps 5,000 random families under the default and
+Ḥanafī rules (every distribution must sum to exactly one with no negative share)
+and, when `../mawarith/Mawarith-Calculator.html` exists (or `MAWARITH=path` is
+set), asserts that every heir's fraction equals Al-Mawārīth's for all of them.
+Browser tests: serve the folder (`python3 -m http.server 8000`) and open
+`http://localhost:8000/test.html`.
 
 ---
 

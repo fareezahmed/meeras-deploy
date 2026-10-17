@@ -2,7 +2,7 @@
 
 **Application:** Meeras (Islamic Will wizard, static SPA)  
 **Document purpose:** Step-by-step scenarios for a human tester to execute and record **Pass / Fail / Blocked** with notes.  
-**Last updated:** 2026-05-15  
+**Last updated:** 2026-10-17  
 
 ---
 
@@ -11,7 +11,8 @@
 | In scope | Out of scope (unless agreed) |
 |----------|------------------------------|
 | UI flows, navigation, drafts, session behaviour | Legal correctness of generated Will text |
-| Landing, wizard screens **S01–S25**, modals | Stripe Dashboard reconciliation / payouts |
+| Landing, wizard screens **S01–S29**, modals | Stripe Dashboard reconciliation / payouts |
+| Inheritance engine behaviour on S18 and in the PDF (TC-014 to TC-018) | Legal correctness of generated Will text |
 | Export/import `.wasiyyah.json`, sample PDF | Automated load/performance testing |
 | Donation step (S24) when links are configured | Third-party font CDN outages |
 
@@ -31,6 +32,7 @@
 | **Browsers** | At least **Chrome** + one of **Firefox / Safari / Edge**. |
 | **Profiles** | Run critical storage tests in **normal** window and **private/incognito** (expectations may differ if storage is blocked). |
 | **Donations** | If testing Stripe: use **Stripe test mode** Payment Links in `donation-config.js` only on a non-production build if possible. |
+| **Engine tests** | Before manual testing run `npm test` (Node 18+). It slices the engine out of `index.html`, runs the worked examples and, when `../mawarith/Mawarith-Calculator.html` is present, cross-checks 5,000 random families against Al-Mawārīth. Browser tests: serve the folder and open `test.html`. |
 
 **Artifacts to attach per defect:** URL, browser + version, screenshot, console errors (F12 → Console), steps to reproduce.
 
@@ -196,6 +198,61 @@ Execute in order for a **first-time regression**; use **TC-xxx** IDs in your tes
 
 ---
 
+### TC-014 — School of fiqh selector (S13) is remembered across drafts
+
+| Field | Content |
+|-------|---------|
+| **Preconditions** | Fresh session; reach **S13** (heirs inventory). |
+| **Steps** | 1. Under **School of fiqh** choose **Ḥanafī**.<br>2. Tick **father alive**, leave **mother** unticked, tick **paternal grandmother**.<br>3. Read the ruling row under the grandmother.<br>4. Reload the page, then also start a **new draft**, and return to S13. |
+| **Expected** | • The ruling row reads "pre-selected from your Ḥanafī school" and **The father excludes her** is selected.<br>• After the reload and in the new draft the selector still shows **Ḥanafī** (`localStorage` key `meeras:madhhab`).<br>• Choosing **Not selected** clears it; the default option **She inherits one sixth** becomes selected. |
+| **Result** | ☐ Pass ☐ Fail ☐ Blocked — **Notes:** |
+
+---
+
+### TC-015 — Grandfather with brothers and sisters (S13 → S18), both rulings
+
+| Field | Content |
+|-------|---------|
+| **Preconditions** | Male testator; **father not alive**; no sons; school **Not selected**. |
+| **Steps** | 1. Tick **paternal grandfather**; set **full brothers = 1**.<br>2. Continue to **S18**.<br>3. Back to S13; under the grandfather choose **He excludes them**; continue to S18. |
+| **Expected** | • Step 2: Paternal Grandfather **1/2**, Full Brother **1/2**; a callout says Zayd ibn Thābit's method was applied, that the grandfather took the best of the listed options ("here sharing as a brother") and that the brothers and sisters shared the rest; **no school is named** anywhere on the screen.<br>• Step 3: Paternal Grandfather **1** (100%), no brother row, and an info note that the siblings are excluded "under the Ḥanafī ruling selected".<br>• Both tables total 100%. |
+| **Result** | ☐ Pass ☐ Fail ☐ Blocked — **Notes:** |
+
+---
+
+### TC-016 — Al-Akdariyyah (female testator), results and PDF
+
+| Field | Content |
+|-------|---------|
+| **Preconditions** | Female testator; husband named; **mother alive**, father not; **paternal grandfather** ticked; **full sisters = 1**. |
+| **Steps** | 1. Continue to S18 with school **Not selected**.<br>2. Under the grandfather choose **He excludes them** and return to S18.<br>3. Reset the choice, complete the wizard and **generate the PDF**. |
+| **Expected** | • Step 1: Husband **1/3**, Mother **2/9**, Paternal Grandfather **8/27**, Full Sister **4/27**; callout headed "Al-Akdariyyah"; total 100%.<br>• Step 2: Husband 1/2, Mother 1/3, Grandfather 1/6, no sister row.<br>• PDF: the share table shows the step-1 fractions, the Al-Akdariyyah explanation is printed under the table, and the text is Latin-only ("may Allah be pleased with him", no Arabic placeholders). |
+| **Result** | ☐ Pass ☐ Fail ☐ Blocked — **Notes:** |
+
+---
+
+### TC-017 — Paternal grandmother beside the father
+
+| Field | Content |
+|-------|---------|
+| **Preconditions** | Male testator; **father alive**, mother not; **paternal grandmother** ticked; **sons = 1**. |
+| **Steps** | 1. Continue to S18 with school **Not selected**.<br>2. Back on S13 choose **The father excludes her**; return to S18.<br>3. Set the school to **Shāfiʿī** and return to S18. |
+| **Expected** | • Step 1: Paternal Grandmother **1/6**, Father **1/6**, Son **2/3**; no school named.<br>• Step 2: no grandmother row, Son **5/6**, info note naming the "Ḥanafī, Shāfiʿī and Mālikī ruling selected".<br>• Step 3: the ruling row is pre-selected to exclusion, and the S18 subtitle reads "following the Shāfiʿī school". |
+| **Result** | ☐ Pass ☐ Fail ☐ Blocked — **Notes:** |
+
+---
+
+### TC-018 — Sisters: fixed share with radd, and residuary with daughters
+
+| Field | Content |
+|-------|---------|
+| **Preconditions** | Male testator; no father, no grandfather, no sons. |
+| **Steps** | Run three families through S18:<br>(a) mother alive + 1 full sister;<br>(b) 1 daughter + 1 full sister;<br>(c) 2 daughters + 1 full sister. |
+| **Expected** | • (a) Mother **2/5**, Full Sister **3/5**; the radd callout says the surplus returns to the Quranic heirs excluding the spouse, "the Ḥanafī and Ḥanbalī position and the later fatwā of the Mālikī and Shāfiʿī schools".<br>• (b) Daughter **1/2**, Full Sister (residue) **1/2**.<br>• (c) Daughters **1/3** each, Full Sister (residue) **1/3**.<br>• Every table totals 100%. |
+| **Result** | ☐ Pass ☐ Fail ☐ Blocked — **Notes:** |
+
+---
+
 ## 5. Smoke checklist (quick release sign-off)
 
 Use after small fixes; ~15 minutes.
@@ -209,6 +266,7 @@ Use after small fixes; ~15 minutes.
 | 5 | Sample PDF downloads | ☐ |
 | 6 | No storage diagnostic strip on landing | ☐ |
 | 7 | Donation step: configured **or** “not set up” behaves as expected | ☐ |
+| 8 | `npm test` passes (engine examples, sweep, and the Al-Mawārīth cross-check with 0 differences) | ☐ |
 
 ---
 
