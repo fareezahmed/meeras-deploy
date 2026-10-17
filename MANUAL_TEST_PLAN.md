@@ -181,8 +181,8 @@ Execute in order for a **first-time regression**; use **TC-xxx** IDs in your tes
 | Field | Content |
 |-------|---------|
 | **Preconditions** | Desktop browser. |
-| **Steps** | 1. Resize window to ~375px width (or use device toolbar).<br>2. Walk through **S01** and one inner screen. |
-| **Expected** | • No horizontal scroll **clipping** critical buttons.<br>• CTAs remain tappable/readable. |
+| **Steps** | 1. Resize window to ~375px width (or use device toolbar), then ~768px, then ≥1200px.<br>2. Walk through **S01**, one inner screen, and the FAQ page. |
+| **Expected** | • No horizontal scroll **clipping** critical buttons.<br>• CTAs remain tappable/readable.<br>• ≤980px: header shows brand, drafts pill and a hamburger; the menu opens with a **Begin / Continue your Will** button at the top and closes when a link is chosen.<br>• ≥1200px: header shows How it works, Guides (dropdown), About, the drafts pill, Donate and the primary button; the home page fills the wide container while wizard steps stay in a narrower column.<br>• Headings render in Fraunces and body text in DM Sans (no fallback serif/sans). |
 | **Result** | ☐ Pass ☐ Fail ☐ Blocked — **Notes:** |
 
 ---
