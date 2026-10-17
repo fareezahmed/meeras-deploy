@@ -8,6 +8,15 @@
 name = "meeras-deploy"
 compatibility_date = "2026-10-01"
 
+# Production hostnames. With the meeras.com.au zone on the same Cloudflare
+# account, `wrangler deploy` creates the DNS records and certificate itself.
+# The *.workers.dev URL stays off.
+workers_dev = false
+routes = [
+  { pattern = "meeras.com.au", custom_domain = true },
+  { pattern = "www.meeras.com.au", custom_domain = true },
+]
+
 [assets]
 directory = "./dist"
 # Serve dist/404.html (which redirects to the home page) for unknown paths.
