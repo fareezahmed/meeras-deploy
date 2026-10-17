@@ -347,14 +347,14 @@ This is optional. The defaults work fine for most deployments.
 
 ---
 
-## Part 8 — Production on Cloudflare Pages (meeras.com.au)
+## Part 8 — Production on Cloudflare (meeras.com.au)
 
 Meeras has two environments built from the same files:
 
 | Environment | URL | Host | Deploy |
 |---|---|---|---|
 | **Dev** | https://fareez.dev/meeras/ | AWS S3 + CloudFront (Parts 2–3 above) | `./deploy.sh` with `BUCKET_NAME=fareez.dev S3_PREFIX=meeras` |
-| **Production** | https://meeras.com.au | Cloudflare Pages (this part) | `git push` to `main` (Git integration) or `npm run deploy:prod` |
+| **Production** | https://meeras.com.au | Cloudflare Worker with static assets, project `meeras-deploy` (this part) | `git push` to `main` (Workers Builds) or `npm run deploy:prod` |
 
 `node build.js` assembles `dist/` for one environment. The only differences
 between the two builds are the Umami analytics tag (`data-domains`, and the
@@ -371,21 +371,23 @@ the MD5 pinned in the legal-review document refers to the repository
    separate Umami websites keeps the dashboards separate. (If you prefer one
    combined dashboard, skip this: the build falls back to the shared id, and
    `data-domains` already lists both hosts.)
-2. **Create the Pages project (Git integration, recommended):** Cloudflare
-   dashboard → Workers & Pages → Create → Pages → *Connect to Git* →
-   repository `fareezahmed/meeras-deploy`.
+2. **The Worker project (Git integration):** Cloudflare dashboard → Workers &
+   Pages → Create → *Import a repository* → `fareezahmed/meeras-deploy`. The
+   project is named `meeras-deploy` (it must match `name` in `wrangler.toml`).
+   In *Settings → Build*:
    - Production branch: `main`
    - Build command: `npm run build`
-   - Build output directory: `dist`
-   - Environment variable (Production): `UMAMI_WEBSITE_ID` = the id from step 1
-   - Node version: 18 or later (the build has no dependencies)
-   Every push to `main` then deploys production; every other branch or pull
-   request gets a preview URL on `*.meeras.pages.dev`.
-3. **Custom domains:** in the project → *Custom domains* → add
-   `meeras.com.au`, then add `www.meeras.com.au`. Because the zone is already on
-   Cloudflare, the CNAME records are created for you and the certificate is
-   issued automatically (a few minutes). The `_redirects` file then sends
-   `www` to the apex.
+   - Deploy command: `npx wrangler deploy` (the default)
+   - Build variable: `UMAMI_WEBSITE_ID` = the id from step 1
+   `wrangler.toml` declares `[assets] directory = "./dist"`, so the deploy
+   uploads `dist/` as static assets with no Worker script. Every push to `main`
+   deploys production; other branches build preview versions.
+3. **Custom domains:** in the project → *Settings → Domains & Routes → Add →
+   Custom domain* → `meeras.com.au`, then again for `www.meeras.com.au`.
+   Because the zone is already on Cloudflare, the DNS records are created for
+   you and the certificate is issued automatically (a few minutes). The
+   `_redirects` file then sends `www` to the apex. The `*.workers.dev` URL can
+   stay disabled.
 4. **Check:** open https://meeras.com.au, generate the sample PDF, confirm the
    donation buttons open Stripe, and look for the production hostname in the
    Umami dashboard. `curl -sI https://meeras.com.au | grep -i content-security`
@@ -398,14 +400,14 @@ npx --yes wrangler login        # once; opens the browser
 npm run deploy:prod             # runs the tests, builds dist/, uploads
 ```
 
-The first run creates the Pages project `meeras` if it does not exist. Custom
-domains are still attached in the dashboard (step 3 above).
+This deploys to the same Worker (`meeras-deploy`) as the Git integration.
+Custom domains are still attached in the dashboard (step 3 above).
 
 ### 8.3 Day to day
 
 - Dev first, then production: `./deploy.sh` (dev on AWS) → review at
   https://fareez.dev/meeras/ → `git push` (or `npm run deploy:prod`).
-- Rollback: Pages keeps every deployment; *Deployments* → pick an earlier one
+- Rollback: every deployment is kept; *Deployments* → pick an earlier version
   → *Rollback*.
 - The content-security policy in `_headers` allows exactly what the app loads:
   Google Fonts, pdf-lib from cdnjs, the self-hosted Umami script, and

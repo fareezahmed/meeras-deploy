@@ -6,6 +6,6 @@
     "test": "node tests/faraid-engine.test.js",
     "build": "node build.js --env production",
     "build:dev": "node build.js --env dev",
-    "deploy:prod": "npm test && npm run build && npx --yes wrangler pages deploy dist --project-name meeras --branch main"
+    "deploy:prod": "npm test && npm run build && npx --yes wrangler deploy"
   }
 }

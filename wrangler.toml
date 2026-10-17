@@ -1,7 +1,15 @@
-# Cloudflare Pages project for the production site, meeras.com.au.
-# Used by `npm run deploy:prod` (direct upload). If the Pages project is
-# connected to the GitHub repository instead, Cloudflare runs `npm run build`
-# itself and this file is only read for the output directory.
-name = "meeras"
+# Cloudflare Worker (static assets) for the production site, meeras.com.au.
+#
+# The Worker project "meeras-deploy" is connected to the GitHub repository
+# (Workers Builds). On every push to main Cloudflare runs `npm run build`,
+# which writes dist/, and then `npx wrangler deploy`, which uploads dist/ as
+# the Worker's static assets. There is no Worker script: assets only.
+# `npm run deploy:prod` does the same from this machine after `wrangler login`.
+name = "meeras-deploy"
 compatibility_date = "2026-10-01"
-pages_build_output_dir = "dist"
+
+[assets]
+directory = "./dist"
+# Serve dist/404.html (which redirects to the home page) for unknown paths.
+not_found_handling = "404-page"
+# dist/_headers and dist/_redirects are applied by the assets layer.

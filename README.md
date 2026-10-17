@@ -22,7 +22,7 @@ meeras-deploy/
 ├── 404.html                ← Fallback page that redirects to the SPA
 ├── robots.txt              ← Search-engine indexing rules
 ├── build.js                ← Assembles dist/ per environment (npm run build; see DEPLOYMENT.md Part 8)
-├── wrangler.toml           ← Cloudflare Pages project for production (meeras.com.au)
+├── wrangler.toml           ← Cloudflare Worker (static assets) for production (meeras.com.au)
 ├── test.html               ← Browser tests for the inheritance engine (serve, then open)
 ├── tests/faraid-engine.test.js ← Node tests + cross-check against Al-Mawārīth (npm test)
 ├── package.json            ← `npm test` only; no dependencies
@@ -127,8 +127,9 @@ to the production setup in `DEPLOYMENT.md`.
 
 ## Environments
 
-- **Production:** https://meeras.com.au on Cloudflare Pages, deployed on every
-  push to `main` (or `npm run deploy:prod`). Setup in `DEPLOYMENT.md` Part 8.
+- **Production:** https://meeras.com.au on a Cloudflare Worker (static assets,
+  project `meeras-deploy`), deployed on every push to `main` (or
+  `npm run deploy:prod`). Setup in `DEPLOYMENT.md` Part 8.
 - **Dev:** https://fareez.dev/meeras/ on AWS S3 + CloudFront, deployed with
   `./deploy.sh` (the sections below).
 

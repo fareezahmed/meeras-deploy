@@ -67,7 +67,7 @@ for (const f of ['donation-config.js', 'robots.txt']) {
 }
 
 if (cfg.cloudflare) {
-  // Security and cache headers (Cloudflare Pages reads _headers from the output).
+  // Security and cache headers (Cloudflare's static-assets layer reads _headers from the output).
   // 'unsafe-inline' is needed: the app keeps its CSS and JS inline by design.
   fs.writeFileSync(path.join(DIST, '_headers'), [
     '/*',
