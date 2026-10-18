@@ -1482,6 +1482,10 @@
   }
   .footer-blurb { line-height: 1.7; margin: 0 0 12px; }
   .footer-note { font-size: 12px; line-height: 1.6; margin: 0; }
+  .footer-partner { display: flex; align-items: center; gap: 14px; margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.14); text-decoration: none; color: inherit; max-width: 440px; }
+  .footer-partner img { height: 40px; width: auto; flex: none; background: #FBF8F1; border-radius: 8px; padding: 4px 8px; }
+  .footer-partner span { font-size: 12px; line-height: 1.55; opacity: 0.9; }
+  .footer-partner:hover span { text-decoration: underline; }
   .footer-heading {
     font-size: 12px;
     font-weight: 700;
@@ -1717,10 +1721,10 @@
     <div class="top-bar-inner">
       <a class="brand" onclick="goTo('S01')" aria-label="Meeras, Islamic Will: home">
         <picture class="brand-logo-full">
-          <source srcset="assets/logo/logo-flat.webp" type="image/webp">
-          <img src="assets/logo/logo-flat.png" alt="Meeras, Islamic Will" width="800" height="336">
+          <source srcset="assets/logo/logo-3d.webp" type="image/webp">
+          <img src="assets/logo/logo-3d.png" alt="Meeras, Islamic Will" width="800" height="336">
         </picture>
-        <img class="brand-logo-mark" src="assets/logo/mark-flat.png" alt="Meeras" width="256" height="256">
+        <img class="brand-logo-mark" src="assets/logo/mark-3d.png" alt="Meeras" width="128" height="128">
       </a>
       <nav class="top-nav" aria-label="Primary">
         <button onclick="goTo('S31')">How it works</button>
@@ -1801,6 +1805,10 @@
           Community-maintained, free and open-source. Your answers never leave your device; we
           collect only anonymous page-view statistics on our own server.
         </p>
+        <a class="footer-partner" href="https://almawarith.com/?utm_source=meeras&amp;utm_medium=referral&amp;utm_campaign=partners" target="_blank" rel="noopener">
+          <img src="assets/logo/almawarith-horizontal.png" alt="Al-Mawārīth" width="720" height="223">
+          <span>Inheritance shares in Meeras follow the Al-Mawārīth engine. Work out your family's shares, with the evidence for every rule, and have them reviewed by a scholar.</span>
+        </a>
       </div>
       <div>
         <div class="footer-heading">Explore</div>
