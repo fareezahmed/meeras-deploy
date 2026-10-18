@@ -21,3 +21,4 @@ build/
 
 # Cloudflare Pages (wrangler) local state
 .wrangler/
+.claude/

@@ -65,6 +65,8 @@ fs.writeFileSync(path.join(DIST, '404.html'), notFound.replace(UMAMI_TAG, umamiT
 for (const f of ['donation-config.js', 'robots.txt']) {
   fs.copyFileSync(path.join(ROOT, f), path.join(DIST, f));
 }
+// Web assets (logo, icons, social image). Sources in brand/ are not deployed.
+fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
 
 if (cfg.cloudflare) {
   // Security and cache headers (Cloudflare's static-assets layer reads _headers from the output).
@@ -96,5 +98,5 @@ console.log(`Built dist/ for ${env}`);
 console.log(`  analytics domains : ${cfg.domains}`);
 console.log(`  umami website id  : ${cfg.websiteId}`);
 console.log(`  canonical         : ${cfg.canonical || '(none)'}`);
-console.log(`  files             : ${fs.readdirSync(DIST).join(', ')}`);
+console.log(`  files             : ${fs.readdirSync(DIST).join(', ')} (+ ${fs.readdirSync(path.join(DIST, 'assets', 'logo')).length} logo assets)`);
 console.log(`  dist/index.html   : ${md5('index.html')}`);

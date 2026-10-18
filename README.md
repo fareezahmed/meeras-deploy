@@ -21,6 +21,8 @@ meeras-deploy/
 ├── deploy.sh               ← One-command AWS CLI deploy script
 ├── 404.html                ← Fallback page that redirects to the SPA
 ├── robots.txt              ← Search-engine indexing rules
+├── assets/logo/            ← Web logo files: header/footer PNG+WebP, favicons, og-image.jpg, pdf-logo.jpg (deployed)
+├── brand/                  ← Logo sources (AI, EPS, PDF, master PNG/JPG); not deployed
 ├── build.js                ← Assembles dist/ per environment (npm run build; see DEPLOYMENT.md Part 8)
 ├── wrangler.toml           ← Cloudflare Worker (static assets) for production (meeras.com.au)
 ├── test.html               ← Browser tests for the inheritance engine (serve, then open)
