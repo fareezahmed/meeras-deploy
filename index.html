@@ -6134,8 +6134,14 @@ const SHOW_FUNERAL_CONNECT = false;
 const FUNERAL_SERVICES = [
   { state: 'National', name: 'Australian National Imams Council (ANIC)', role: 'Find a masjid or Imam anywhere in Australia; burial guidance; arbitration under Article 2.9', site: 'https://anic.org.au' },
   { state: 'NSW', name: 'Lebanese Muslim Association, Funeral Services (Lakemba)', role: 'Ghusl, janāzah and burial arrangements in Sydney', site: 'https://www.lma.org.au' },
-  { state: 'VIC', name: 'Islamic Council of Victoria', role: 'Referrals to Muslim funeral services and masājid across Victoria', site: 'https://www.icv.org.au' },
+  { state: 'VIC', name: 'Islamic Council of Victoria (ICV)', role: 'AskICV keeps a checked list of janāzah services in Victoria, including after-hours contacts', site: 'https://www.icv.org.au/askicv/religious-and-spiritual-life/a-loved-one-has-passed-away-and-i-need-to-arrange-the-janazah', phone: '(03) 9328 2067' },
+  // Victorian services below are from the AskICV janāzah directory (last reviewed by ICV 7 September 2026).
+  // Main service lines only; the named volunteers' mobiles are left on the ICV page.
+  { state: 'VIC', name: 'Islamic Society of Victoria (Preston Mosque), Islamic Funeral Services', role: 'Statewide janāzah service: death certificate, transport, ghusl, the funeral prayer and burial. Burials at the Muslim sections of Northern Memorial Park (Fawkner) or Maddingley Park (Bacchus Marsh).', area: 'All of Victoria', site: 'https://isv.org.au/islamic-funeral-services/', phone: '0417 889 956', phoneNote: 'funeral director', phone2: '(03) 9470 2424', phone2Note: 'mosque office', email: 'info@isv.org.au', address: '90 Cramer St, Preston VIC 3072' },
+  { state: 'VIC', name: 'ISOMER (Islamic Society of Melbourne Eastern Region), Janaza Burial Service', role: 'Janāzah service for Muslims of any background in the south-east since 1986. Burials at Springvale Botanical Cemetery.', area: "Melbourne's south-east", site: 'https://isomer.com.au/', phone: '(03) 9752 7248', email: 'info@isomer.org.au', address: 'Lot 37 Wellington Rd, Lysterfield VIC 3156' },
+  { state: 'VIC', name: 'Werribee Islamic Centre (Melbourne Grand Mosque), Janazah Services', role: 'Ghusl, kafan, the funeral prayer and burial arrangements. Not a 24-hour service: there are after-hours numbers, but no overnight pickups.', area: "Melbourne's west", site: 'https://mgm.org.au/janazah-funeral-services/', phone: '(03) 8087 2323', address: '70 Wootten Rd, Tarneit VIC 3029' },
 ];
+const telHref = n => 'tel:' + String(n).replace(/[^0-9+]/g, '');
 screens.S37 = () => `
   <div class="step-label">Funerals</div>
   <h2 class="screen-title">A funeral by the Sunnah, without delay</h2>
@@ -6178,7 +6184,7 @@ screens.S37 = () => `
   </div>` : ''}
 
   <h4 class="section-h">Muslim funeral services and councils</h4>
-  <p class="screen-subtitle" style="margin-bottom:12px;">Organisations listed by their websites; confirm current phone numbers there. Listings are added as they are verified.</p>
+  <p class="screen-subtitle" style="margin-bottom:12px;">Call the service before travelling; availability changes, especially after hours. Victorian details are from the Islamic Council of Victoria's AskICV directory. Listings for other states are added as they are verified.</p>
   ${FUNERAL_SERVICES.map(f => `
     <div class="person-card">
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
@@ -6186,7 +6192,13 @@ screens.S37 = () => `
         <span class="status-badge status-planned">${f.state}</span>
       </div>
       <div style="font-size:14px;color:var(--muted);margin-top:4px;">${f.role}</div>
-      <div style="margin-top:10px;"><a href="${f.site}" target="_blank" rel="noopener" class="nav-link" style="color:var(--secondary);">${f.site.replace(/^https?:\/\/(www\.)?/, '')} →</a></div>
+      ${f.area || f.address ? `<div style="font-size:13px;color:var(--muted);margin-top:6px;">${[f.area, f.address].filter(Boolean).join(' · ')}</div>` : ''}
+      <div style="display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:14px;">
+        ${f.phone ? `<a href="${telHref(f.phone)}" class="nav-link" style="color:var(--secondary);">${f.phone}${f.phoneNote ? ` (${f.phoneNote})` : ''}</a>` : ''}
+        ${f.phone2 ? `<a href="${telHref(f.phone2)}" class="nav-link" style="color:var(--secondary);">${f.phone2}${f.phone2Note ? ` (${f.phone2Note})` : ''}</a>` : ''}
+        ${f.email ? `<a href="mailto:${f.email}" class="nav-link" style="color:var(--secondary);">${f.email}</a>` : ''}
+        <a href="${f.site}" target="_blank" rel="noopener" class="nav-link" style="color:var(--secondary);">${f.site.includes('/askicv/') ? 'AskICV janāzah directory' : f.site.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '').split('/')[0]} →</a>
+      </div>
     </div>
   `).join('')}
 
