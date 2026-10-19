@@ -28,7 +28,7 @@
 <meta name="twitter:description" content="Write a Shariah-compliant Will in about twenty minutes. Free, private to your device, designed for every Australian State and Territory.">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
- {"@type":"Organization","@id":"https://meeras.com.au/#org","name":"Meeras","url":"https://meeras.com.au/","logo":"https://meeras.com.au/assets/logo/logo-flat.png","description":"A free, community-maintained Islamic Will generator for Muslims in Australia.","areaServed":"AU"},
+ {"@type":"Organization","@id":"https://meeras.com.au/#org","name":"Meeras","legalName":"WIZINSIGHTS PTY LTD","taxID":"ABN 48 669 478 497","url":"https://meeras.com.au/","logo":"https://meeras.com.au/assets/logo/logo-flat.png","description":"A free, community-maintained Islamic Will generator for Muslims in Australia.","areaServed":"AU"},
  {"@type":"WebSite","@id":"https://meeras.com.au/#site","url":"https://meeras.com.au/","name":"Meeras","publisher":{"@id":"https://meeras.com.au/#org"},"inLanguage":"en-AU"},
  {"@type":"SoftwareApplication","name":"Meeras Islamic Will","applicationCategory":"LegalService","operatingSystem":"Web browser","url":"https://meeras.com.au/","offers":{"@type":"Offer","price":"0","priceCurrency":"AUD"},"description":"Guided wizard that produces a Shariah-compliant Last Will and Testament for Australia, with Quranic inheritance shares, Islamic burial wishes, guardians and executors. Generated on the user's device; nothing is uploaded.","featureList":["Quranic inheritance shares (Sunni farāʾiḍ)","Islamic funeral and burial instructions","Executors, guardians and bequests","Signing block for every Australian State and Territory","Private: generated on your device"]},
  {"@type":"HowTo","name":"How to write an Islamic Will with Meeras","totalTime":"PT20M","estimatedCost":{"@type":"MonetaryAmount","currency":"AUD","value":"0"},"step":[
@@ -1837,6 +1837,7 @@
     <div class="footer-divider">
       <div class="footer-verse" lang="ar" dir="rtl">وَآخِرُ دَعْوَاهُمْ أَنِ الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ</div>
       <div class="footer-legal">© 2026 Meeras · A free community guide, not legal advice. For advice on your circumstances, consult an Australian legal practitioner and a qualified Imam.</div>
+      <div class="footer-legal">Meeras is operated by WIZINSIGHTS PTY LTD, an Australian company · <a href="https://abr.business.gov.au/ABN/View?abn=48669478497" target="_blank" rel="noopener" style="color:inherit;">ABN 48 669 478 497</a></div>
       <div class="footer-policy">
         <button class="footer-link" onclick="goTo('S28')">Privacy Policy</button>
         <span class="footer-dot">·</span>
@@ -5375,8 +5376,16 @@ screens.S24 = () => {
       You will be redirected to <strong>buy.stripe.com</strong> to complete your contribution. Card details never touch this device or any Meeras server.
     </div>
 
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin:10px 0;font-size:13px;color:var(--muted);line-height:1.6;">
+      <strong style="color:var(--text);">Who receives your contribution.</strong>
+      Meeras is run by <strong style="color:var(--text);">WIZINSIGHTS PTY LTD</strong>, an Australian company
+      (ABN 48 669 478 497). Stripe's checkout page and your receipt show the business as
+      <strong style="color:var(--text);">wizinsights</strong>: that is us.
+      <a href="https://abr.business.gov.au/ABN/View?abn=48669478497" target="_blank" rel="noopener" style="color:var(--secondary);">Check our ABN on the Australian Business Register →</a>
+    </div>
+
     <div style="background:rgba(178,58,58,0.05);border:1px solid rgba(178,58,58,0.2);border-radius:6px;padding:12px 14px;margin:10px 0 14px;font-size:12px;color:var(--muted);line-height:1.55;">
-      <strong style="color:var(--text);">Important:</strong> Meeras is <strong>not</strong> a registered charity, non-profit, or Deductible Gift Recipient (DGR). Contributions are <strong>not tax-deductible</strong>. They are voluntary support for keeping the platform online, nothing more.
+      <strong style="color:var(--text);">Important:</strong> Meeras is <strong>not</strong> a registered charity, non-profit, or Deductible Gift Recipient (DGR). Contributions are <strong>not tax-deductible</strong>. They are voluntary support for keeping the platform online, received by WIZINSIGHTS PTY LTD, nothing more.
     </div>
 
     <div class="donation-equal-buttons">
@@ -5580,7 +5589,7 @@ screens.S27 = () => `
 screens.S28 = () => `
   <div class="step-label">Legal</div>
   <h2 class="screen-title">Privacy Policy</h2>
-  <p class="screen-subtitle">Effective 1 October 2026 · Applies to the Meeras web application.</p>
+  <p class="screen-subtitle">Effective 1 October 2026 · Applies to the Meeras web application, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497).</p>
 
   <h4 class="section-h">Your will data stays on your device</h4>
   <p class="screen-subtitle" style="margin-bottom:16px;">
@@ -5634,6 +5643,14 @@ screens.S29 = () => `
   <h2 class="screen-title">Terms of Service</h2>
   <p class="screen-subtitle">Effective 1 October 2026 · By using Meeras you agree to these terms.</p>
 
+  <h4 class="section-h">Who we are</h4>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Meeras is operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497, ACN 669 478 497), a company
+    registered in Australia with its main business location in Victoria. "We" and "the
+    maintainers" in these terms and in the Privacy Policy mean WIZINSIGHTS PTY LTD.
+    <a href="https://abr.business.gov.au/ABN/View?abn=48669478497" target="_blank" rel="noopener" style="color:var(--secondary);">View our ABN record →</a>
+  </p>
+
   <h4 class="section-h">A free guide, not legal advice</h4>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Meeras is a free educational tool. The documents it produces are intended as a guide and do
@@ -5662,8 +5679,9 @@ screens.S29 = () => `
 
   <h4 class="section-h">Donations</h4>
   <p class="screen-subtitle" style="margin-bottom:16px;">
-    Contributions are voluntary, processed by Stripe on its own pages, and are not
-    tax-deductible. Meeras is not a registered charity.
+    Contributions are voluntary, are received by WIZINSIGHTS PTY LTD, and are processed by
+    Stripe on its own pages; Stripe shows the business as "wizinsights". They are not
+    tax-deductible: Meeras is not a registered charity or a Deductible Gift Recipient.
   </p>
 
   <h4 class="section-h">General</h4>
