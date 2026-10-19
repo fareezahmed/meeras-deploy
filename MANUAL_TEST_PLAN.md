@@ -253,6 +253,26 @@ Execute in order for a **first-time regression**; use **TC-xxx** IDs in your tes
 
 ---
 
+### TC-019 — Membership: sign in, pay, encrypt, restore (staging, Stripe test mode)
+
+| Field | Content |
+|-------|---------|
+| **Preconditions** | Staging Worker with Stripe **test** keys and the test webhook. A draft with a testator name on this device. A second browser (or private window). |
+| **Steps** | 1. Home: membership band visible; header shows **Sign in**.<br>2. **#account** → **Choose yearly** → enter email → open the sign-in link (email, or on-screen link on staging).<br>3. Stripe checkout opens; pay with `4242 4242 4242 4242`.<br>4. Back on **My account**: set a passphrase, tick both boxes, save the recovery code, **Encrypt and save my Wills**.<br>5. In the second browser: sign in with the same email, unlock with the passphrase, **Open on this device**.<br>6. Lock; unlock with the **recovery code**; set a new passphrase.<br>7. **Manage billing** → cancel the subscription at once (test mode); reload My account. |
+| **Expected** | • Link works once; the address bar loses `?signin=`.<br>• After payment: "Yearly member, renews …" and the passphrase step.<br>• D1 `vaults.blob` contains no readable names (check with `wrangler d1 execute`).<br>• Second browser restores the same draft (name, answers, screen).<br>• Wrong passphrase: "That passphrase does not match."<br>• After cancellation: saved Wills still open; **Save** is replaced by a renew message; the API refuses saves (402).<br>• **Delete my account** removes the account; local drafts remain. |
+| **Result** | ☐ Pass ☐ Fail ☐ Blocked — **Notes:** |
+
+### TC-020 — Membership hidden until ready
+
+| Field | Content |
+|-------|---------|
+| **Preconditions** | (a) AWS dev copy (no API); (b) production before the Stripe and Resend secrets are set. |
+| **Steps** | Load the home page, the PDF screen (S22), the footer and the mobile menu; open **#account**. |
+| **Expected** | • No membership band, **Sign in**, **Membership** footer link, "Save to my account" prompt or "Open from my account" button.<br>• **#account** shows "Membership is available at meeras.com.au" (a) or "Coming soon" (b). |
+| **Result** | ☐ Pass ☐ Fail ☐ Blocked — **Notes:** |
+
+---
+
 ## 5. Smoke checklist (quick release sign-off)
 
 Use after small fixes; ~15 minutes.

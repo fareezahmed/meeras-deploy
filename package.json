@@ -3,9 +3,12 @@
   "private": true,
   "description": "Meeras Islamic Will WebApp: single-file static site; the tests slice the farāʾiḍ engine out of index.html",
   "scripts": {
-    "test": "node tests/faraid-engine.test.js",
+    "test": "node tests/faraid-engine.test.js && node tests/worker.test.mjs",
     "build": "node build.js --env production",
     "build:dev": "node build.js --env dev",
-    "deploy:prod": "npm test && npm run build && npx --yes wrangler deploy"
+    "deploy:prod": "npm test && npm run build && npx --yes wrangler deploy",
+    "build:staging": "node build.js --env staging",
+    "deploy:staging": "npm test && npm run build:staging && npx --yes wrangler deploy --env staging",
+    "dev:api": "node build.js --env staging && npx --yes wrangler dev --env staging --local --port 8787"
   }
 }

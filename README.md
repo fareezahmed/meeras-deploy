@@ -24,7 +24,9 @@ meeras-deploy/
 ├── assets/logo/            ← Web logo files: header/footer PNG+WebP, favicons, og-image.jpg, pdf-logo.jpg (deployed)
 ├── brand/                  ← Logo sources (AI, EPS, PDF, master PNG/JPG); not deployed
 ├── build.js                ← Assembles dist/ per environment (npm run build; see DEPLOYMENT.md Part 8)
-├── wrangler.toml           ← Cloudflare Worker (static assets) for production (meeras.com.au)
+├── wrangler.toml           ← Cloudflare Worker for production (meeras.com.au) and staging
+├── worker/index.mjs        ← Member API on /api/*: email sign-in, encrypted vault, Stripe membership, consultation requests
+├── migrations/             ← D1 database schema for the member API (DEPLOYMENT.md Part 9)
 ├── test.html               ← Browser tests for the inheritance engine (serve, then open)
 ├── tests/faraid-engine.test.js ← Node tests + cross-check against Al-Mawārīth (npm test)
 ├── package.json            ← `npm test` only; no dependencies

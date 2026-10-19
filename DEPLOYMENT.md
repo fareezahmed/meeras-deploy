@@ -423,6 +423,89 @@ Custom domains are still attached in the dashboard (step 3 above).
 
 ---
 
+## Part 9 — Membership: accounts, encrypted storage and payments
+
+Membership is optional and paid (A$15 a year, or A$79 once). It adds an
+encrypted copy of the member's Will drafts in their account. Making a Will stays
+free and on-device. The API is `worker/index.mjs`, running on the same Worker
+as the site for `/api/*` only; data is in Cloudflare D1 (`migrations/`).
+
+**Privacy design.** Drafts are encrypted in the browser (AES-256-GCM) with a
+data key wrapped twice: by a key derived from the member's passphrase
+(PBKDF2-SHA256, 600,000 rounds) and by one derived from a recovery code shown
+once at set-up. The server stores only ciphertext and cannot read or recover it.
+Sign-in is by single-use emailed link; sessions are HttpOnly cookies, and only
+SHA-256 hashes of tokens are stored.
+
+**Safe by default.** The site shows membership only when `/api/config` reports
+`ready`, which needs both `STRIPE_SECRET_KEY` and `RESEND_API_KEY`. Without
+them, production shows no membership links, and `/#account` says "Coming soon".
+The AWS dev copy has no API, so it never shows membership.
+
+### Environments
+
+| | Production | Staging |
+|---|---|---|
+| Worker | `meeras-deploy` (meeras.com.au) | `meeras-staging` (`*.workers.dev`, noindex) |
+| D1 | `meeras-prod` (Oceania) | `meeras-staging` (Oceania) |
+| Stripe | live keys | **test** keys |
+| Deploy | push to `main`, or `npm run deploy:prod` | `npm run deploy:staging` |
+| Sign-in links | emailed (Resend) | shown on screen if no Resend key (`DEV_EXPOSE_LINKS = "1"`) |
+
+### One-time set-up (do staging first with Stripe test mode)
+
+1. **Database schema**
+   ```bash
+   npx wrangler d1 migrations apply meeras-staging --remote --env staging
+   npx wrangler d1 migrations apply meeras-prod --remote
+   ```
+2. **Email (Resend).** Create an account at resend.com, add the domain
+   `meeras.com.au`, and add the DNS records it lists in the Cloudflare
+   dashboard (DNS → Records) until Resend shows the domain as verified. Create
+   an API key with "sending access" only.
+3. **Stripe.** In the dashboard, set the public business name and statement
+   descriptor (Settings → Business → Public details). Activate the customer
+   portal once in each mode (Settings → Billing → Customer portal → Save) so
+   "Manage billing" works. Then add a webhook endpoint (Developers → Webhooks):
+   - URL: `https://meeras.com.au/api/stripe/webhook` (staging: the workers.dev URL + `/api/stripe/webhook`)
+   - Events: `checkout.session.completed`, `checkout.session.async_payment_succeeded`,
+     `customer.subscription.created`, `customer.subscription.updated`,
+     `customer.subscription.deleted`, `invoice.paid`
+   - Copy its signing secret (`whsec_...`).
+   No products need to be created: the Worker sends the price with each
+   checkout (`PRICE_YEARLY_CENTS`, `PRICE_LIFETIME_CENTS` in `wrangler.toml`).
+4. **Secrets** (type them at the prompt; they are never stored in the repo):
+   ```bash
+   npx wrangler secret put STRIPE_SECRET_KEY --env staging      # sk_test_...
+   npx wrangler secret put STRIPE_WEBHOOK_SECRET --env staging  # whsec_... (test endpoint)
+   npx wrangler secret put RESEND_API_KEY --env staging
+   npx wrangler secret put STRIPE_SECRET_KEY                    # sk_live_... (or a restricted key)
+   npx wrangler secret put STRIPE_WEBHOOK_SECRET                # whsec_... (live endpoint)
+   npx wrangler secret put RESEND_API_KEY
+   ```
+5. **Test on staging** with Stripe's test card `4242 4242 4242 4242`: sign in,
+   buy yearly, set a passphrase, save, sign in on another browser, unlock,
+   open; then cancel from Manage billing and check saving stops (TC-019).
+
+### Consultation requests
+
+The request form (`/#consultation`) is built but hidden. To launch it once a
+lawyer has agreed: set `SHOW_CONSULT = true` in `index.html`, and in
+`wrangler.toml` set `CONSULT_ENABLED = "1"` and `CONSULT_NOTIFY_TO` to the
+address that should receive requests. The lawyer agrees the fee with the family
+and bills them directly; Meeras only passes the request on.
+
+### Local development
+
+```bash
+npx wrangler d1 migrations apply meeras-staging --local --env staging
+npm run dev:api        # builds dist/ and serves site + API on http://127.0.0.1:8787
+```
+Put a test `STRIPE_WEBHOOK_SECRET=...` in `.dev.vars.staging` (git-ignored) to
+send signed test events. `npm test` runs the API unit tests.
+
+---
+
 ## Need to back out?
 
 To completely remove the deployment:

@@ -1,11 +1,23 @@
-# Cloudflare Worker (static assets) for the production site, meeras.com.au.
+# Cloudflare Worker for the production site, meeras.com.au.
 #
-# The Worker project "meeras-deploy" is connected to the GitHub repository
-# (Workers Builds). On every push to main Cloudflare runs `npm run build`,
-# which writes dist/, and then `npx wrangler deploy`, which uploads dist/ as
-# the Worker's static assets. There is no Worker script: assets only.
-# `npm run deploy:prod` does the same from this machine after `wrangler login`.
+# The Worker serves the static site from dist/ (built by `npm run build`) and,
+# for /api/* only, runs worker/index.mjs: member sign-in, the encrypted Will
+# vault, Stripe membership payments and (when enabled) consultation requests.
+# Every other path goes straight to the static assets, exactly as before.
+#
+# The project "meeras-deploy" is connected to the GitHub repository (Workers
+# Builds): on every push to main Cloudflare runs `npm run build` and then
+# `npx wrangler deploy`. `npm run deploy:prod` does the same from this machine.
+#
+# Secrets (set once per environment, never committed):
+#   npx wrangler secret put STRIPE_SECRET_KEY        [--env staging]
+#   npx wrangler secret put STRIPE_WEBHOOK_SECRET    [--env staging]
+#   npx wrangler secret put RESEND_API_KEY           [--env staging]
+# Database schema:
+#   npx wrangler d1 migrations apply meeras-prod --remote
+#   npx wrangler d1 migrations apply meeras-staging --remote --env staging
 name = "meeras-deploy"
+main = "worker/index.mjs"
 compatibility_date = "2026-10-01"
 
 # Production hostnames. With the meeras.com.au zone on the same Cloudflare
@@ -19,6 +31,56 @@ routes = [
 
 [assets]
 directory = "./dist"
+binding = "ASSETS"
 # Serve dist/404.html (which redirects to the home page) for unknown paths.
 not_found_handling = "404-page"
+# Only the API runs the Worker script; pages and files are served directly.
+run_worker_first = ["/api/*"]
 # dist/_headers is applied by the assets layer.
+
+[[d1_databases]]
+binding = "DB"
+database_name = "meeras-prod"
+database_id = "30bbd6b5-2e17-48c3-ab03-70850a8793e6"
+migrations_dir = "migrations"
+
+[vars]
+EMAIL_FROM = "Meeras <no-reply@meeras.com.au>"
+PRICE_YEARLY_CENTS = "1500"
+PRICE_LIFETIME_CENTS = "7900"
+# Consultation requests stay off until a lawyer has agreed to take them.
+CONSULT_ENABLED = "0"
+CONSULT_NOTIFY_TO = ""
+DEV_EXPOSE_LINKS = "0"
+
+[observability]
+enabled = true
+
+# Staging: same code on a *.workers.dev address with its own database and
+# Stripe *test* keys. Deploy with `npm run deploy:staging`.
+[env.staging]
+name = "meeras-staging"
+workers_dev = true
+routes = []
+
+[env.staging.assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "404-page"
+run_worker_first = ["/api/*"]
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "meeras-staging"
+database_id = "b07d8374-cd2f-4ac6-83b8-113d39c5b170"
+migrations_dir = "migrations"
+
+[env.staging.vars]
+EMAIL_FROM = "Meeras <no-reply@meeras.com.au>"
+PRICE_YEARLY_CENTS = "1500"
+PRICE_LIFETIME_CENTS = "7900"
+CONSULT_ENABLED = "1"
+CONSULT_NOTIFY_TO = ""
+# Staging shows the sign-in link on screen when no email key is set, so the
+# flow can be tested before Resend is configured. Never set this in production.
+DEV_EXPOSE_LINKS = "1"

@@ -37,8 +37,8 @@
   {"@type":"HowToStep","name":"Sign with two witnesses","text":"Print it, sign before two adult witnesses present at the same time, staple it once and keep the original safe."}]},
  {"@type":"FAQPage","mainEntity":[
   {"@type":"Question","name":"Is a Will made with Meeras legally valid in Australia?","acceptedAnswer":{"@type":"Answer","text":"The document is designed to meet the formal requirements for a valid will in every Australian State and Territory: in writing, signed by an adult with capacity before two adult witnesses present at the same time, who then sign in the testator's presence. Validity depends on executing it correctly. The template is under independent legal review."}},
-  {"@type":"Question","name":"Is Meeras free?","acceptedAnswer":{"@type":"Answer","text":"Yes. There is no account, no fee and no advertising. Contributions are voluntary and not tax-deductible."}},
-  {"@type":"Question","name":"Where is my information stored?","acceptedAnswer":{"@type":"Answer","text":"Only in your browser tab on your own device. The PDF is generated locally. Meeras has no server that receives your answers; it collects only anonymous page-view statistics."}},
+  {"@type":"Question","name":"Is Meeras free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Making your Will is free, with no account and no advertising. Optional membership (A$15 a year or A$79 once) adds encrypted storage so you can keep and update your Will drafts on any device. Contributions are voluntary and not tax-deductible."}},
+  {"@type":"Question","name":"Where is my information stored?","acceptedAnswer":{"@type":"Answer","text":"Unless you choose membership, only in your browser tab on your own device, and the PDF is generated locally. Members can save their drafts to their account; they are encrypted on the member's device first, so Meeras stores only data it cannot read."}},
   {"@type":"Question","name":"Who can witness an Islamic Will in Australia?","acceptedAnswer":{"@type":"Answer","text":"Two adults who watch you sign at the same time and then sign themselves. Choose people who are not beneficiaries: in New South Wales, Queensland, Tasmania and the Northern Territory a gift to a witness can be lost."}},
   {"@type":"Question","name":"What is the one-third rule in an Islamic Will?","acceptedAnswer":{"@type":"Answer","text":"A Muslim may give away up to one third of the estate by bequest (wasiyyah) to people or causes who are not already heirs. At least two thirds pass to the heirs by their Quranic shares."}},
   {"@type":"Question","name":"Can I leave something to a non-Muslim relative?","acceptedAnswer":{"@type":"Answer","text":"Not as an heir, but you can provide for a non-Muslim relative with a bequest within the one third. Specialist advice is sensible because family provision laws also apply."}},
@@ -1355,6 +1355,33 @@
     margin-top: 16px;
   }
   @media (max-width: 600px) { .donation-equal-buttons { grid-template-columns: 1fr; } }
+  body:not(.membership-on) .member-only { display: none !important; }
+  .member-band { display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; align-items: center; background: var(--parchment); border: 1px solid var(--border); border-radius: var(--radius-card, 24px); padding: 36px 40px; }
+  .member-band .section-title, .member-band .section-label { text-align: left; }
+  .member-band .section-title { margin-bottom: 14px; }
+  .member-band-text { font-size: 16px; line-height: 1.7; color: var(--muted); margin: 0 0 20px; max-width: 620px; }
+  .member-band-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .member-band-prices { display: grid; gap: 14px; }
+  .member-price { background: var(--white); border: 1px solid var(--border); border-radius: 18px; padding: 18px 22px; }
+  .member-price .plan-price { font-size: 32px; margin: 2px 0 0; }
+  .member-price-best { border: 2px solid var(--accent); }
+  @media (max-width: 860px) { .member-band { grid-template-columns: 1fr; padding: 26px 22px; } }
+  .member-nudge { display: flex; justify-content: space-between; gap: 16px; align-items: center; flex-wrap: wrap; border-color: var(--accent); }
+  .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 18px 0 8px; }
+  @media (max-width: 700px) { .plan-grid { grid-template-columns: 1fr; } }
+  .plan-card { position: relative; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-card, 24px); padding: 26px 24px; display: flex; flex-direction: column; }
+  .plan-featured { border: 2px solid var(--accent); box-shadow: 0 10px 30px rgba(27,77,107,0.08); }
+  .plan-badge { position: absolute; top: -12px; right: 20px; background: var(--accent); color: var(--primary-dark); font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; }
+  .plan-name { font-family: var(--font-body); font-size: 13px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent-text); }
+  .plan-price { font-family: var(--font-display); font-size: 40px; color: var(--primary); margin: 6px 0 10px; }
+  .plan-price span { font-family: var(--font-body); font-size: 15px; color: var(--muted); }
+  .plan-list { margin: 0 0 18px; padding-left: 18px; font-size: 14px; color: var(--text); line-height: 1.7; flex: 1; }
+  .plan-btn { width: 100%; justify-content: center; }
+  .plan-current { text-align: center; font-weight: 600; color: var(--secondary); padding: 10px; border: 1px dashed var(--border); border-radius: 999px; }
+  .plan-small { font-size: 12px; color: var(--muted); line-height: 1.6; margin: 6px 0 18px; }
+  .recovery-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 20px; letter-spacing: 0.06em; background: var(--parchment); border: 1px dashed var(--accent); border-radius: 12px; padding: 16px; text-align: center; word-break: break-all; color: var(--primary); }
+  .consent-row { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.55; margin-top: 10px; color: var(--text); }
+  .consent-row input { margin-top: 4px; flex: none; }
   .donate-go { width: 100%; justify-content: center; font-size: 17px; padding-top: 16px; padding-bottom: 16px; }
   .donate-opened:not(:empty) { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: rgba(46,125,90,0.08); color: var(--text); font-size: 13px; line-height: 1.5; text-align: center; }
   .donate-opened a { color: var(--secondary); }
@@ -1756,6 +1783,7 @@
         </button>
         <span class="save-indicator" id="saveIndicator">✓ Saved</span>
         <button class="nav-link" onclick="showResetModal()">Reset</button>
+        <button class="nav-link member-only" id="navAccount" onclick="goTo('S38')">Sign in</button>
         <button class="donate-btn" onclick="goTo('S24')" aria-label="Donate to support Meeras">Donate</button>
         <button class="cta-nav" id="navCta" onclick="navPrimaryAction()">Begin your Will</button>
         <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobileMenu(event)"><span></span><span></span><span></span></button>
@@ -1765,6 +1793,7 @@
       <button class="mm-cta" id="mmCta" onclick="navPrimaryAction()">Begin your Will</button>
       <div class="mm-section">Your Will</div>
       <button class="mm-item" onclick="closeMobileMenu(); showDraftsModal();">Manage drafts</button>
+      <button class="mm-item member-only" id="mmAccount" onclick="goTo('S38')">Membership and sign in</button>
       <button class="mm-item" onclick="closeMobileMenu(); downloadSamplePDF();">Download the sample Will</button>
       <button class="mm-item" onclick="closeMobileMenu(); showResetModal();">Reset this draft</button>
       <div class="mm-section">Learn</div>
@@ -1833,6 +1862,7 @@
           <li><button class="footer-link" onclick="goTo('S32')">FAQ</button></li>
           <li><button class="footer-link" onclick="goTo('S33')">For executors</button></li>
           <li><button class="footer-link" onclick="goTo('S27')">Resources</button></li>
+          <li class="member-only"><button class="footer-link" onclick="goTo('S38')">Membership</button></li>
           <li><button class="footer-link" onclick="goTo('S24')">Donate</button></li>
         </ul>
       </div>
@@ -1895,7 +1925,8 @@
 <script>
 // =============================================================================
 //  MEERAS — Islamic Will WebApp
-//  Single-file privacy-first SPA. No server. All state in browser.
+//  Single-file privacy-first SPA. All Will state lives in the browser; the optional
+//  member vault (section S38) stores only ciphertext encrypted on the device.
 // =============================================================================
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -2447,7 +2478,7 @@ const PROGRESS_SCREENS = [
 // reachable from the header/footer at any time and must never disturb wizard
 // state: navigating to one does not change STATE.currentScreen, so drafts
 // resume where the user actually left off and completion % is unaffected.
-const INFO_SCREENS = new Set(['S26', 'S27', 'S28', 'S29', 'S30', 'S31', 'S32', 'S33', 'S34', 'S35', 'S36', 'S37']);
+const INFO_SCREENS = new Set(['S26', 'S27', 'S28', 'S29', 'S30', 'S31', 'S32', 'S33', 'S34', 'S35', 'S36', 'S37', 'S38', 'S39']);
 
 // Deep links for the informational pages (meeras.com.au/#faq and so on).
 // S30 (feature status) is internal: reachable by its link only, never from
@@ -2465,6 +2496,9 @@ const PAGE_HASHES = {
   leads: 'S35',
   'state-guides': 'S36',
   funerals: 'S37',
+  account: 'S38',
+  membership: 'S38',
+  consultation: 'S39',
 };
 function applyHashRoute() {
   const key = (location.hash || '').replace(/^#\/?/, '').toLowerCase();
@@ -2482,6 +2516,8 @@ const PAGE_TITLES = {
   S33: 'For executors: when a Muslim has died | Meeras',
   S36: 'Islamic Wills State by State | Meeras',
   S37: 'Muslim funerals in Australia | Meeras',
+  S38: 'Membership and my account | Meeras',
+  S39: 'Legal consultation | Meeras',
   S26: 'About Meeras: free Islamic Wills for Australia',
   S27: 'Resources and guides | Meeras',
   S28: 'Privacy Policy | Meeras',
@@ -3216,6 +3252,7 @@ screens.S01 = () => {
         <button class="btn btn-secondary" style="font-size:12px;padding:8px 14px;" onclick="newDraftFlow()">+ Start a new draft instead</button>
         <button class="btn btn-secondary" style="font-size:12px;padding:8px 14px;" onclick="startSpouseWill()" title="A new draft for your spouse, pre-filled from this one">Start my spouse's Will</button>
         <button class="btn btn-secondary" style="font-size:12px;padding:8px 14px;" onclick="showDraftsModal()">Manage drafts…</button>
+        <button class="btn btn-secondary member-only" style="font-size:12px;padding:8px 14px;" onclick="goTo('S38')">Open from my account</button>
         <button class="btn btn-secondary" style="font-size:12px;padding:8px 14px;color:var(--danger);border-color:rgba(178,58,58,0.3);margin-left:auto;" onclick="showResetModal()">Delete active draft</button>
       </div>
     </div>
@@ -3272,7 +3309,7 @@ screens.S01 = () => {
     <div class="guarantee">
       <svg class="guarantee-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
       <div class="guarantee-title">Private by design</div>
-      <div class="guarantee-desc">Your answers never leave your device. No accounts, no cookies; we collect only anonymous page-view statistics on our own server. Closing this tab clears your draft.</div>
+      <div class="guarantee-desc">Your answers stay on your device, with no account needed. If you choose membership, your drafts are encrypted on your device before they are saved, so we cannot read them. We collect only anonymous page-view statistics.</div>
     </div>
   </div>
 
@@ -3345,6 +3382,25 @@ screens.S01 = () => {
         <div class="guide-title">Understanding farāʾiḍ: the fixed shares</div>
         <div class="guide-desc">Who inherits what under Surah an-Nisāʾ, and why the binding shares are fixed at death.</div>
       </button>
+    </div>
+  </div>
+
+  </div></section>
+
+  <section class="band band-white member-only"><div class="band-inner">
+  <div class="member-band">
+    <div>
+      <div class="section-label">Membership</div>
+      <h2 class="section-title">Keep your Will safe, and up to date</h2>
+      <p class="member-band-text">Making your Will is free. Members also keep an encrypted copy of their drafts in their account, to open and update on any device when life changes: a new child, a move, a marriage. Encrypted on your device first, so we cannot read it.</p>
+      <div class="member-band-actions">
+        <button class="btn btn-primary" onclick="goTo('S38')">See membership →</button>
+        <button class="btn btn-secondary" onclick="goTo('S38')">Sign in</button>
+      </div>
+    </div>
+    <div class="member-band-prices">
+      <div class="member-price"><div class="plan-name">Yearly</div><div class="plan-price">A$15<span>/year</span></div></div>
+      <div class="member-price member-price-best"><div class="plan-name">Lifetime</div><div class="plan-price">A$79<span> once</span></div></div>
     </div>
   </div>
 
@@ -4925,6 +4981,14 @@ screens.S21 = () => `
     <button class="cta-start" style="background:var(--accent);color:var(--primary-dark);" id="generateBtn" onclick="generatePDF()">⬇  Generate &amp; download PDF</button>
   </div>
 
+  <div class="person-card member-nudge member-only">
+    <div>
+      <div class="person-card-title">Keep this Will safe for next time</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.6;">Closing this tab clears your draft. Members save an encrypted copy to their account and can update it on any device. A$15 a year or A$79 once.</div>
+    </div>
+    <button class="btn btn-primary" style="white-space:nowrap;" onclick="goTo('S38')">Save to my account →</button>
+  </div>
+
   <div class="info-callout">
     <strong>Next steps after download.</strong> Print on plain A4 paper, sign in the presence of two adult witnesses (per your State's rules), and store the signed original safely. The next screen explains.
   </div>
@@ -5534,9 +5598,10 @@ screens.S26 = () => `
 
   <h4 class="section-h">Privacy by design</h4>
   <p class="screen-subtitle" style="margin-bottom:16px;">
-    Your answers never leave your device. There are no accounts and no cookies; drafts live in
-    your browser tab and the PDF is generated locally. We collect only anonymous page-view
-    statistics on our own server. Read the full <button class="footer-link" style="font-size:inherit;color:var(--secondary);" onclick="goTo('S28')">Privacy Policy</button>.
+    Your answers stay on your device: drafts live in your browser tab and the PDF is generated
+    locally, with no account needed. Members can also keep an encrypted copy in their account;
+    it is encrypted on their device first, so we cannot read it. We collect only anonymous
+    page-view statistics on our own server. Read the full <button class="footer-link" style="font-size:inherit;color:var(--secondary);" onclick="goTo('S28')">Privacy Policy</button>.
   </p>
 
   <h4 class="section-h">What Meeras is not</h4>
@@ -5623,15 +5688,36 @@ screens.S27 = () => `
 screens.S28 = () => `
   <div class="step-label">Legal</div>
   <h2 class="screen-title">Privacy Policy</h2>
-  <p class="screen-subtitle">Effective 1 October 2026 · Applies to the Meeras web application, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497).</p>
+  <p class="screen-subtitle">Effective 19 October 2026 · Applies to the Meeras web application, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497).</p>
 
   <h4 class="section-h">Your will data stays on your device</h4>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Everything you type into Meeras (names, family details, debts, bequests, burial wishes)
     is stored only in your own browser and processed only on your own device. By default, drafts
     live in this browser tab's session storage and are cleared when the tab closes. The PDF of
-    your Will is generated locally and downloaded straight to your device. Meeras has no
-    accounts, no login, and no server that ever receives, stores, or can access your answers.
+    your Will is generated locally and downloaded straight to your device. Unless you choose
+    membership, no server receives, stores, or can access your answers.
+  </p>
+
+  <h4 class="section-h">If you become a member</h4>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Membership is optional. If you sign up we hold: your email address (to send sign-in links);
+    your membership plan, status and renewal date; the Stripe customer and subscription
+    references for your payments; and, if you choose to save your drafts, one encrypted record.
+    That record is encrypted in your browser with a key made from your passphrase before it is
+    sent, so it may contain sensitive information (such as your religion and your family's
+    details) but we cannot read it, and we cannot recover it if you lose both your passphrase
+    and your recovery code. We ask for your express consent before the first save. A sign-in
+    cookie keeps you signed in for up to 30 days; it is used only for your account.
+  </p>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Service providers: accounts and the encrypted records are stored with Cloudflare (we ask for
+    storage in the Oceania region, but Cloudflare may process data elsewhere); sign-in emails are
+    sent through Resend; payments are handled by Stripe, which receives your card details and
+    email directly. You can delete your account and everything saved in it at any time from
+    <button class="footer-link" style="font-size:inherit;color:var(--secondary);" onclick="goTo('S38')">My account</button>;
+    a yearly membership is cancelled at the same time. Stripe keeps its own payment records as the
+    law requires.
   </p>
 
   <h4 class="section-h">Anonymous usage statistics</h4>
@@ -5648,16 +5734,17 @@ screens.S28 = () => `
     On first load your browser fetches fonts from Google Fonts and the PDF library (pdf-lib)
     from the cdnjs content delivery network. Those services receive the standard metadata of any
     web request (such as your IP address and browser type) but never any of your answers.
-    Optional donations are processed entirely on Stripe's own checkout pages (buy.stripe.com);
-    card details never touch Meeras.
+    Optional donations and membership payments are processed entirely on Stripe's own checkout
+    pages; card details never touch Meeras.
   </p>
 
   <h4 class="section-h">Your choices</h4>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     You can use Meeras without providing any identification numbers (all ID fields are
     optional). You can export your draft to a file you control, and clear all local data at any
-    time with the Reset button or by clearing your browser's site data. Because we hold no
-    personal data about you, there is nothing for us to access, correct, or delete on a server.
+    time with the Reset button or by clearing your browser's site data. If you are not a member,
+    we hold no personal data about you. Members can see, update or delete what we hold from My
+    account.
   </p>
 
   <div class="info-callout">
@@ -5675,7 +5762,7 @@ screens.S28 = () => `
 screens.S29 = () => `
   <div class="step-label">Legal</div>
   <h2 class="screen-title">Terms of Service</h2>
-  <p class="screen-subtitle">Effective 1 October 2026 · By using Meeras you agree to these terms.</p>
+  <p class="screen-subtitle">Effective 19 October 2026 · By using Meeras you agree to these terms.</p>
 
   <h4 class="section-h">Who we are</h4>
   <p class="screen-subtitle" style="margin-bottom:16px;">
@@ -5704,11 +5791,34 @@ screens.S29 = () => `
 
   <h4 class="section-h">No warranty</h4>
   <p class="screen-subtitle" style="margin-bottom:16px;">
-    Meeras is provided free of charge, "as is" and "as available", without warranties of any
-    kind. To the maximum extent permitted by law, the maintainers accept no liability for any
+    Meeras's Will generator is provided free of charge, "as is" and "as available", without
+    warranties of any kind. To the maximum extent permitted by law, the maintainers accept no liability for any
     loss or dispute arising from the use of Meeras or of any document it produces. Nothing in
     these terms excludes guarantees or rights that cannot be excluded under the Australian
     Consumer Law.
+  </p>
+
+  <h4 class="section-h">Membership</h4>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Membership is optional and adds encrypted storage of your Will drafts in your account. Making
+    a Will on Meeras stays free. Prices are in Australian dollars and paid through Stripe to
+    WIZINSIGHTS PTY LTD; we are not registered for GST, so no GST is charged.
+  </p>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    <strong>Yearly (A$15 a year)</strong> renews automatically each year until you cancel. You can
+    cancel at any time from My account (Manage billing); you keep membership until the end of the
+    year you have paid for, and there is a short grace period if a renewal payment fails.
+    <strong>Lifetime (A$79 once)</strong> is a single payment for membership for as long as
+    Meeras offers the storage service. If we ever stop offering it, we will give members at least
+    90 days' notice by email so they can open and download their saved Wills.
+  </p>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    If your membership ends, you can still sign in and open your saved Wills; saving changes needs
+    an active membership. We will email you before deleting a lapsed account's saved record.
+    You are responsible for keeping your passphrase and recovery code: they encrypt your Wills
+    and we cannot reset or recover them. A saved draft is not a Will; only the printed copy
+    signed in front of two witnesses is. Nothing in these terms limits your rights under the
+    Australian Consumer Law.
   </p>
 
   <h4 class="section-h">Donations</h4>
@@ -5776,7 +5886,8 @@ const FEATURE_STATUS = [
     ['SEO and answer-engine data: keyword-first page titles, en-AU, descriptive H1, JSON-LD (Organization, WebSite, SoftwareApplication, HowTo, FAQPage)', 'live'],
     ['Executor information sheet PDF (assets, accounts, documents, last message)', 'planned'],
     ['Care of animals direction', 'planned'],
-    ['Encrypted accounts with stored, updatable Wills (paid tier)', 'considering'],
+    ['Membership: encrypted storage of Will drafts (A$15 yearly, A$79 lifetime), sign-in by email link, Stripe payments', 'progress', 'Built and tested on staging; needs Stripe and Resend keys before launch.'],
+    ['Consultation requests with a legal expert (lawyer bills directly)', 'planned', 'Built; hidden until a lawyer confirms (SHOW_CONSULT and CONSULT_ENABLED).'],
     ['Enduring Power of Attorney and Advance Care Directive', 'considering'],
     ['Lawyer review referral by State', 'considering'],
     ['Arabic, Urdu, Turkish, Indonesian and Somali versions', 'considering'],
@@ -5900,8 +6011,8 @@ screens.S32 = () => `
 
   <h4 class="section-h">About Meeras</h4>
   <div class="faq">
-    <details><summary>Is it really free?</summary><p>Yes. No account, no fee, no advertising. Contributions through the Donate page help cover hosting and development; they are voluntary and not tax-deductible.</p></details>
-    <details><summary>Where is my information stored?</summary><p>Only in your browser tab, on your device. The PDF is generated locally. Meeras has no server that receives your answers; we collect only anonymous page-view statistics. Closing the tab clears the draft, so export it if you want to come back later.</p></details>
+    <details><summary>Is it really free?</summary><p>Yes. Making your Will is free, with no account and no advertising. Optional <button class="footer-link" style="font-size:inherit;color:var(--secondary);" onclick="goTo('S38')">membership</button> (A$15 a year, or A$79 once for life) adds encrypted storage so you can keep and update your drafts on any device. Contributions through the Donate page help cover hosting and development; they are voluntary and not tax-deductible.</p></details>
+    <details><summary>Where is my information stored?</summary><p>Unless you choose membership, only in your browser tab, on your device, and the PDF is generated locally. Closing the tab clears the draft, so export it if you want to come back later. Members can save drafts to their account instead: they are encrypted on the member's device with a passphrase we never see, so we store only data we cannot read. We collect only anonymous page-view statistics.</p></details>
     <details><summary>Is Meeras a law firm?</summary><p>No. It is a free community tool. Nothing it produces is legal advice, and using it creates no solicitor-client relationship. For advice on your circumstances, consult an Australian legal practitioner and a qualified Imam.</p></details>
   </div>
 
@@ -6087,7 +6198,7 @@ screens.S35 = () => {
   <p class="screen-subtitle">An internal page, not linked from the site. Last updated ${LEADS_UPDATED}. Edit <code>LEAD_CHANNELS</code> in index.html to change it.</p>
 
   <div class="info-callout">
-    <strong>What a lead is here.</strong> Meeras has no accounts and collects no names, so a lead is a measurable step in the Umami funnel, not a contact record: a visit, a started wizard, a generated PDF, a share, or a donation click. Growth means more of each, attributed to a channel through UTM-tagged links.
+    <strong>What a lead is here.</strong> Meeras collects no names except members' sign-in emails, so a lead is a measurable step in the Umami funnel, not a contact record: a visit, a started wizard, a generated PDF, a share, or a donation click. Growth means more of each, attributed to a channel through UTM-tagged links.
   </div>
 
   <h4 class="section-h">The funnel (Umami events)</h4>
@@ -6301,6 +6412,650 @@ function sendFuneralMessage(channel) {
   const text = document.getElementById('fnMessage').value;
   if (channel === 'whatsapp') window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
   else window.location.href = 'mailto:?subject=' + encodeURIComponent('Janazah arrangements') + '&body=' + encodeURIComponent(text);
+}
+
+// ───── S38 MY ACCOUNT: MEMBERSHIP AND THE ENCRYPTED VAULT ─────
+// Making a Will stays free and on-device. Membership (yearly or lifetime) adds
+// one thing: an encrypted copy of your drafts stored in your account, so you can
+// open and update them on any device. The drafts are encrypted in this browser
+// with a key that only your passphrase (or your recovery code) can unlock; the
+// server stores ciphertext it cannot read. See worker/index.mjs for the API.
+//
+// Vault format (JSON, stored as-is by the server):
+//   { format:'meeras-vault', v:1, iv, ct,                 AES-256-GCM of the payload
+//     keys: { pass:     { kdf:'PBKDF2-SHA256', iter, salt, iv, wrapped },
+//             recovery: { kdf:'PBKDF2-SHA256', iter, salt, iv, wrapped } } }
+// The payload is { format:'meeras-vault-payload', v:1, savedAt, drafts:{ id: {meta, state} } }.
+const VAULT_PASS_ITER = 600000;
+const VAULT_RECOVERY_ITER = 100000;
+const RECOVERY_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';   // no 0/O, 1/I
+
+const Vault = {
+  _b64(bytes) { let s = ''; for (const b of new Uint8Array(bytes)) s += String.fromCharCode(b); return btoa(s); },
+  _unb64(str) { const s = atob(str); const out = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i); return out; },
+  _rand(n) { return crypto.getRandomValues(new Uint8Array(n)); },
+
+  async _kek(secret, salt, iter) {
+    const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), 'PBKDF2', false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', hash: 'SHA-256', salt, iterations: iter }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+  },
+  async _wrap(rawKey, secret, iter) {
+    const salt = this._rand(16), iv = this._rand(12);
+    const kek = await this._kek(secret, salt, iter);
+    const wrapped = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, kek, rawKey);
+    return { kdf: 'PBKDF2-SHA256', iter, salt: this._b64(salt), iv: this._b64(iv), wrapped: this._b64(wrapped) };
+  },
+  async _unwrap(slot, secret) {
+    const kek = await this._kek(secret, this._unb64(slot.salt), slot.iter);
+    try {
+      return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: this._unb64(slot.iv) }, kek, this._unb64(slot.wrapped)));
+    } catch (e) { return null; }   // wrong passphrase or code
+  },
+
+  newRecoveryCode() {
+    const bytes = this._rand(20);
+    let code = '';
+    for (const b of bytes) code += RECOVERY_ALPHABET[b % 32];
+    return code.match(/.{4}/g).join('-');
+  },
+  normaliseRecovery(code) { return String(code || '').toUpperCase().replace(/[^A-Z0-9]/g, ''); },
+
+  // Encrypt a payload with a data key; wrap the key for the passphrase and the recovery code.
+  async seal(payload, rawKey, slots) {
+    const dk = await crypto.subtle.importKey('raw', rawKey, 'AES-GCM', false, ['encrypt']);
+    const iv = this._rand(12);
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, dk, new TextEncoder().encode(JSON.stringify(payload)));
+    return { format: 'meeras-vault', v: 1, iv: this._b64(iv), ct: this._b64(ct), keys: slots };
+  },
+  async open(vault, rawKey) {
+    const dk = await crypto.subtle.importKey('raw', rawKey, 'AES-GCM', false, ['decrypt']);
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: this._unb64(vault.iv) }, dk, this._unb64(vault.ct));
+    return JSON.parse(new TextDecoder().decode(pt));
+  },
+};
+
+const Account = {
+  checked: false,       // init() has run
+  available: false,     // the /api is reachable (meeras.com.au and staging; not the AWS dev copy)
+  config: null,
+  me: null,             // { signedIn, email, membership, vault, canManageBilling }
+  rawKey: null,         // the vault's data key, in memory only while unlocked
+  slots: null,          // the wrapped-key slots, reused when re-sealing
+  payload: null,        // decrypted { drafts }
+  version: null,
+  view: null,           // transient UI state: 'sent', 'setup', 'recovery', 'recover', 'changepass'
+  pending: {},          // e.g. { devLink, recoveryCode, plan, error, notice }
+
+  async api(method, path, body) {
+    const res = await fetch('/api/' + path, {
+      method,
+      credentials: 'same-origin',
+      headers: body ? { 'Content-Type': 'application/json' } : {},
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    let data = null;
+    try { data = await res.json(); } catch (e) { /* not JSON */ }
+    if (!res.ok) {
+      const err = new Error((data && data.error) || 'Request failed (' + res.status + ')');
+      err.status = res.status;
+      throw err;
+    }
+    return data;
+  },
+
+  async init() {
+    try {
+      const res = await fetch('/api/config', { credentials: 'same-origin' });
+      const type = res.headers.get('Content-Type') || '';
+      if (res.ok && type.includes('application/json')) {
+        this.config = await res.json();
+        this.available = !!(this.config && this.config.accounts);
+      }
+    } catch (e) { this.available = false; }
+    this.checked = true;
+    // Membership entry points (class "member-only") appear only once the service is ready.
+    document.body.classList.toggle('membership-on', !!(this.available && this.config.ready));
+    if (!this.available) { updateAccountNav(); this.rerender(); return false; }
+
+    const qs = new URLSearchParams(location.search);
+    let landOnAccount = false;
+    if (qs.get('signin')) {
+      landOnAccount = true;
+      try {
+        await this.api('POST', 'auth/verify', { token: qs.get('signin') });
+        this.pending.notice = 'You are signed in.';
+        Analytics.track('account-signed-in');
+      } catch (e) { this.pending.error = e.message; }
+    }
+    try { this.me = await this.api('GET', 'me'); } catch (e) { this.me = { signedIn: false }; }
+    if (qs.get('checkout') === 'success' && qs.get('session_id') && this.me.signedIn) {
+      landOnAccount = true;
+      try {
+        const fresh = await this.api('POST', 'billing/confirm', { sessionId: qs.get('session_id') });
+        this.me = { signedIn: true, ...fresh };
+        this.pending.notice = 'Thank you. Your membership is active, JazakAllahu khayran.';
+        Analytics.track('membership-paid', { plan: this.me.membership.plan || 'unknown' });
+      } catch (e) { this.pending.error = e.message; }
+    } else if (qs.get('checkout') === 'cancelled') {
+      landOnAccount = true;
+      this.pending.notice = 'Payment cancelled. Nothing was charged.';
+    }
+    if (qs.has('signin') || qs.has('checkout')) {
+      try { history.replaceState(null, '', location.pathname + (location.hash || '')); } catch (e) {}
+    }
+    updateAccountNav();
+    // A pending plan choice made before signing in carries straight on to payment.
+    if (this.me.signedIn && !this.me.membership.active) {
+      let plan = null;
+      try { plan = sessionStorage.getItem('meeras:pendingPlan'); sessionStorage.removeItem('meeras:pendingPlan'); } catch (e) {}
+      if (plan && this.config.billing) { this.checkout(plan); return true; }
+    }
+    if (landOnAccount || SHOWN_SCREEN === 'S38') goTo('S38');
+    return landOnAccount;
+  },
+
+  async refresh() {
+    try { this.me = await this.api('GET', 'me'); } catch (e) { this.me = { signedIn: false }; }
+    updateAccountNav();
+  },
+
+  rerender() { if (SHOWN_SCREEN === 'S38') renderScreen('S38'); },
+  fail(e) { this.pending.error = e && e.message ? e.message : String(e); this.pending.notice = null; this.rerender(); },
+  note(msg) { this.pending.notice = msg; this.pending.error = null; this.rerender(); },
+
+  async requestLink(email) {
+    try {
+      const r = await this.api('POST', 'auth/request', { email });
+      this.view = 'sent';
+      this.pending = { sentTo: email, devLink: r.devLink || null };
+      Analytics.track('account-link-requested');
+      this.rerender();
+    } catch (e) { this.fail(e); }
+  },
+
+  async signOut() {
+    try { await this.api('POST', 'auth/logout', {}); } catch (e) {}
+    this.lock();
+    this.me = { signedIn: false };
+    this.view = null;
+    this.pending = { notice: 'You are signed out.' };
+    updateAccountNav();
+    this.rerender();
+  },
+
+  lock() { this.rawKey = null; this.slots = null; this.payload = null; this.version = null; },
+
+  choosePlan(plan) {
+    if (!this.me || !this.me.signedIn) {
+      try { sessionStorage.setItem('meeras:pendingPlan', plan); } catch (e) {}
+      this.pending = { notice: 'Enter your email first. After you sign in you will go straight to payment.' };
+      this.rerender();
+      setTimeout(() => { const el = document.getElementById('acctEmail'); if (el) el.focus(); }, 50);
+      return;
+    }
+    this.checkout(plan);
+  },
+
+  async checkout(plan) {
+    try {
+      Analytics.track('membership-checkout', { plan });
+      const r = await this.api('POST', 'billing/checkout', { plan });
+      location.href = r.url;
+    } catch (e) { this.fail(e); }
+  },
+
+  async manageBilling() {
+    try { const r = await this.api('POST', 'billing/portal', {}); location.href = r.url; }
+    catch (e) { this.fail(e); }
+  },
+
+  // ─── Vault ───
+  async fetchVault() {
+    const r = await this.api('GET', 'vault');
+    return r.vault ? { vault: r.vault, version: r.version } : null;
+  },
+
+  async unlock(secret, useRecovery) {
+    try {
+      const got = await this.fetchVault();
+      if (!got) { this.fail(new Error('There is nothing saved in your account yet.')); return; }
+      const slot = useRecovery ? got.vault.keys.recovery : got.vault.keys.pass;
+      const raw = await Vault._unwrap(slot, useRecovery ? Vault.normaliseRecovery(secret) : secret);
+      if (!raw) { this.fail(new Error(useRecovery ? 'That recovery code does not match.' : 'That passphrase does not match.')); return; }
+      this.rawKey = raw;
+      this.slots = got.vault.keys;
+      this.payload = await Vault.open(got.vault, raw);
+      this.version = got.version;
+      this.pending = {};
+      this.view = useRecovery ? 'changepass' : null;
+      if (useRecovery) this.pending.notice = 'Recovery code accepted. Choose a new passphrase now.';
+      this.rerender();
+    } catch (e) { this.fail(e); }
+  },
+
+  // Collect every draft on this device (the active one from memory).
+  async localDrafts() {
+    if (Sessions.activeId) await dbSet(DRAFT_PREFIX + Sessions.activeId, STATE);
+    const out = {};
+    for (const d of Sessions.index) {
+      const state = d.id === Sessions.activeId ? STATE : await dbGet(DRAFT_PREFIX + d.id);
+      if (state) out[d.id] = { meta: { name: d.name, createdAt: d.createdAt, lastSavedAt: d.lastSavedAt, completionPct: d.completionPct, testatorName: d.testatorName }, state: JSON.parse(JSON.stringify(state)) };
+    }
+    return out;
+  },
+
+  async firstSave(passphrase, recoveryCode) {
+    try {
+      const raw = Vault._rand(32);
+      const slots = {
+        pass: await Vault._wrap(raw, passphrase, VAULT_PASS_ITER),
+        recovery: await Vault._wrap(raw, Vault.normaliseRecovery(recoveryCode), VAULT_RECOVERY_ITER),
+      };
+      const payload = { format: 'meeras-vault-payload', v: 1, savedAt: new Date().toISOString(), drafts: await this.localDrafts() };
+      const vault = await Vault.seal(payload, raw, slots);
+      const r = await this.api('PUT', 'vault', { vault, consent: true });
+      this.rawKey = raw; this.slots = slots; this.payload = payload; this.version = r.version;
+      this.view = null;
+      this.pending = { notice: 'Your Wills are encrypted and saved to your account.' };
+      Analytics.track('vault-saved', { first: 'yes' });
+      await this.refresh();
+      this.rerender();
+    } catch (e) { this.fail(e); }
+  },
+
+  async saveAll() {
+    if (!this.rawKey) return;
+    try {
+      const drafts = Object.assign({}, this.payload.drafts, await this.localDrafts());
+      await this._reseal(drafts, this.slots);
+      this.pending = { notice: 'Saved. Your account now has ' + Object.keys(drafts).length + ' Will draft' + (Object.keys(drafts).length === 1 ? '' : 's') + '.' };
+      Analytics.track('vault-saved', { first: 'no' });
+      this.rerender();
+    } catch (e) { this.fail(e); }
+  },
+
+  async _reseal(drafts, slots) {
+    const payload = { format: 'meeras-vault-payload', v: 1, savedAt: new Date().toISOString(), drafts };
+    const vault = await Vault.seal(payload, this.rawKey, slots);
+    const r = await this.api('PUT', 'vault', { vault, baseVersion: this.version });
+    this.payload = payload; this.slots = slots; this.version = r.version;
+    await this.refresh();
+  },
+
+  async removeSaved(id) {
+    if (!this.rawKey || !this.payload.drafts[id]) return;
+    if (!confirm('Remove "' + (this.payload.drafts[id].meta.name || 'this draft') + '" from your account? Copies on your devices are not affected.')) return;
+    try {
+      const drafts = Object.assign({}, this.payload.drafts); delete drafts[id];
+      await this._reseal(drafts, this.slots);
+      this.note('Removed from your account.');
+    } catch (e) { this.fail(e); }
+  },
+
+  async openSaved(id) {
+    const d = this.payload && this.payload.drafts[id];
+    if (!d) return;
+    try {
+      const existing = Sessions.index.find(x => x.id === id);
+      if (existing) {
+        if (!confirm('"' + (existing.name || 'This draft') + '" is already on this device. Replace it with the copy from your account?')) return;
+        await dbSet(DRAFT_PREFIX + id, d.state);
+        Object.assign(existing, d.meta, { lastSavedAt: new Date().toISOString() });
+        await dbSet(DRAFTS_INDEX_KEY, Sessions.index);
+      } else {
+        Sessions.index.push(Object.assign({ id }, d.meta));
+        await dbSet(DRAFTS_INDEX_KEY, Sessions.index);
+        await dbSet(DRAFT_PREFIX + id, d.state);
+      }
+      await Sessions.switchTo(id);
+      refreshSessionIndicator();
+      Analytics.track('vault-opened');
+      goTo(STATE.currentScreen && STATE.currentScreen !== 'S38' ? STATE.currentScreen : 'S01');
+    } catch (e) { this.fail(e); }
+  },
+
+  async changePassphrase(passphrase) {
+    if (!this.rawKey) return;
+    try {
+      const slots = Object.assign({}, this.slots, { pass: await Vault._wrap(this.rawKey, passphrase, VAULT_PASS_ITER) });
+      await this._reseal(this.payload.drafts, slots);
+      this.view = null;
+      this.note('Your passphrase is changed.');
+    } catch (e) { this.fail(e); }
+  },
+
+  async newRecovery(code) {
+    if (!this.rawKey) return;
+    try {
+      const slots = Object.assign({}, this.slots, { recovery: await Vault._wrap(this.rawKey, Vault.normaliseRecovery(code), VAULT_RECOVERY_ITER) });
+      await this._reseal(this.payload.drafts, slots);
+      this.view = null;
+      this.note('Your new recovery code is active. The old one no longer works.');
+    } catch (e) { this.fail(e); }
+  },
+
+  async deleteAccount() {
+    const typed = prompt('This permanently deletes your account and everything saved in it, and cancels a yearly membership. Drafts on your devices are not affected.\n\nType DELETE to confirm.');
+    if (typed !== 'DELETE') return;
+    try {
+      await this.api('DELETE', 'account');
+      this.lock();
+      this.me = { signedIn: false };
+      this.view = null;
+      this.pending = { notice: 'Your account and its saved Wills have been deleted.' };
+      updateAccountNav();
+      this.rerender();
+    } catch (e) { this.fail(e); }
+  },
+};
+
+function updateAccountNav() {
+  const label = !Account.available ? 'Membership' : Account.me && Account.me.signedIn ? 'My account' : 'Sign in';
+  for (const id of ['navAccount', 'mmAccount']) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = id === 'mmAccount' ? (label === 'Sign in' ? 'Membership and sign in' : label) : label;
+  }
+}
+
+const fmtAud = cents => 'A$' + (cents / 100).toFixed(cents % 100 ? 2 : 0);
+function accountPrices() {
+  const p = (Account.config && Account.config.prices) || { yearly: 1500, lifetime: 7900 };
+  return { yearly: fmtAud(p.yearly), lifetime: fmtAud(p.lifetime) };
+}
+
+function membershipPlansHtml(current) {
+  const pr = accountPrices();
+  const btn = (plan, label) => current && current.active && (current.plan === 'lifetime' || current.plan === plan)
+    ? `<div class="plan-current">Your plan</div>`
+    : `<button class="btn btn-primary plan-btn" onclick="Account.choosePlan('${plan}')">${label}</button>`;
+  return `
+  <div class="plan-grid">
+    <div class="plan-card">
+      <div class="plan-name">Yearly</div>
+      <div class="plan-price">${pr.yearly}<span>/year</span></div>
+      <ul class="plan-list"><li>Encrypted storage for all your Will drafts</li><li>Open and update them on any device</li><li>Cancel any time; renews yearly until you do</li></ul>
+      ${btn('yearly', 'Choose yearly')}
+    </div>
+    <div class="plan-card plan-featured">
+      <div class="plan-badge">Best value</div>
+      <div class="plan-name">Lifetime</div>
+      <div class="plan-price">${pr.lifetime}<span> once</span></div>
+      <ul class="plan-list"><li>Everything in yearly</li><li>One payment, no renewals</li><li>Supports Meeras for everyone</li></ul>
+      ${btn('lifetime', current && current.active && current.plan === 'yearly' ? 'Upgrade to lifetime' : 'Choose lifetime')}
+    </div>
+  </div>
+  <p class="plan-small">Prices in Australian dollars. Paid securely through Stripe to WIZINSIGHTS PTY LTD (ABN 48 669 478 497); Stripe shows the business as "wizinsights". Not registered for GST, so no GST is charged.</p>`;
+}
+
+screens.S38 = () => {
+  const A = Account, me = A.me || { signedIn: false }, pend = A.pending || {};
+  const msg = `${pend.error ? `<div class="warn-callout" role="alert">${escapeHtml(pend.error)}</div>` : ''}${pend.notice ? `<div class="info-callout" role="status">${escapeHtml(pend.notice)}</div>` : ''}`;
+  const intro = `
+  <div class="step-label">Membership</div>
+  <h2 class="screen-title">Keep your Will safe, and up to date</h2>
+  <p class="screen-subtitle">
+    Making your Will on Meeras is free and always will be. Membership adds secure storage: your drafts are
+    encrypted on your device before they are saved to your account, so you can open and update them on any
+    phone or computer. We cannot read them.
+  </p>`;
+  const notWill = `<div class="accent-callout"><strong>A saved draft is not a Will.</strong> Only the printed copy you sign in front of two witnesses is your Will. After you change a saved draft, print and sign the new version.</div>`;
+
+  if (!A.checked) return intro + '<p class="screen-subtitle"><span class="loader"></span> Loading your account…</p>';
+  if (A.available && !A.config.ready && !(me && me.signedIn)) {
+    return intro + `<div class="info-callout"><strong>Coming soon.</strong> Membership is being set up. Making your Will stays free in the meantime.</div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="goTo('S01')">← Back to home</button><button class="btn btn-primary" onclick="beginNewWill()">Begin your Will →</button></div>`;
+  }
+  if (!A.available) {
+    return intro + membershipPlansHtml(null).replace(/onclick="Account\.choosePlan\('\w+'\)"/g, 'disabled') + `
+    <div class="info-callout">Membership is available at <a href="https://meeras.com.au/#account" style="color:var(--secondary);">meeras.com.au</a>. This copy of Meeras cannot reach the account service.</div>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="goTo('S01')">← Back to home</button></div>`;
+  }
+
+  if (!me.signedIn) {
+    if (A.view === 'sent') {
+      return intro + msg + `
+      <div class="person-card">
+        <div class="person-card-title">Check your email</div>
+        <p style="font-size:14px;color:var(--muted);line-height:1.6;">We sent a sign-in link to <strong>${escapeHtml(pend.sentTo || '')}</strong>. It works once and expires in 20 minutes. If it has not arrived in a few minutes, check your junk folder.</p>
+        ${pend.devLink ? `<p style="font-size:13px;">Staging only (no email service): <a href="${escapeHtml(pend.devLink)}" style="color:var(--secondary);">open the sign-in link</a></p>` : ''}
+        <button class="btn btn-secondary" onclick="Account.view=null;Account.pending={};Account.rerender()">Use a different email</button>
+      </div>`;
+    }
+    return intro + msg + membershipPlansHtml(null) + `
+    <div class="person-card" id="acctSignin">
+      <div class="person-card-title">Sign in or create your account</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:12px;">No password: we email you a link that signs you in. New here? The same link creates your account.</p>
+      <form onsubmit="event.preventDefault(); Account.requestLink(document.getElementById('acctEmail').value);" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <div class="field" style="flex:1;min-width:220px;margin:0;"><label class="field-label" for="acctEmail">Email address</label><input class="input" id="acctEmail" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+        <button class="btn btn-primary" type="submit">Email me a sign-in link</button>
+      </form>
+    </div>
+    ${notWill}
+    <div class="btn-row"><button class="btn btn-secondary" onclick="goTo('S01')">← Back to home</button><button class="btn btn-secondary" onclick="goTo('S28')">How we handle your data →</button></div>`;
+  }
+
+  const m = me.membership || {};
+  const statusLine = m.active
+    ? (m.plan === 'lifetime' ? 'Lifetime member' : 'Yearly member' + (m.paidUntil ? ', renews ' + new Date(m.paidUntil).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' }) : ''))
+    : (m.plan ? 'Membership ended' : 'No membership yet');
+  const header = `
+  <div class="person-card" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
+    <div><div class="person-card-title">${escapeHtml(me.email)}</div><div style="font-size:14px;color:var(--muted);">${statusLine}</div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      ${me.canManageBilling ? `<button class="btn btn-secondary" onclick="Account.manageBilling()">Manage billing</button>` : ''}
+      <button class="btn btn-secondary" onclick="Account.signOut()">Sign out</button>
+    </div>
+  </div>`;
+
+  // Not a member: choose a plan. (A lapsed member with a saved vault can still unlock and open it.)
+  if (!m.active && !me.vault) {
+    return intro + msg + header + (A.config.billing ? membershipPlansHtml(m) : `<div class="info-callout">Payments are being set up. Please check back soon.</div>`) + notWill + accountFooterHtml();
+  }
+
+  // Member without a vault yet: set up encryption.
+  if (!me.vault) {
+    if (A.view === 'recovery' && pend.recoveryCode) {
+      return intro + msg + header + `
+      <div class="person-card">
+        <div class="person-card-title">Step 2 of 2: save your recovery code</div>
+        <p style="font-size:14px;color:var(--muted);line-height:1.6;">If you forget your passphrase, this code is the <strong>only</strong> way to open your saved Wills. We do not keep a copy and cannot reset it. Write it down or save it somewhere safe, away from this device.</p>
+        <div class="recovery-code" id="recoveryCode">${pend.recoveryCode}</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px;">
+          <button class="btn btn-secondary" onclick="copyRecoveryCode(this)">Copy code</button>
+          <button class="btn btn-secondary" onclick="downloadRecoveryCode()">Download as a text file</button>
+        </div>
+        <label class="consent-row"><input type="checkbox" id="rcSaved"> I have saved my recovery code somewhere safe.</label>
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="if(!document.getElementById('rcSaved').checked){alert('Please confirm you have saved the recovery code.');return;} Account.firstSave(Account.pending.passphrase, Account.pending.recoveryCode)">Encrypt and save my Wills</button>
+      </div>` + accountFooterHtml();
+    }
+    return intro + msg + header + `
+    <div class="person-card">
+      <div class="person-card-title">Step 1 of 2: choose a passphrase</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6;">Your passphrase encrypts your Wills on this device before anything is sent. It never leaves your device and is different from your email sign-in. Use at least 10 characters; a few unrelated words work well.</p>
+      <div class="field-row">
+        <div class="field"><label class="field-label" for="vpPass">Passphrase</label><input class="input" id="vpPass" type="password" autocomplete="new-password" minlength="10"></div>
+        <div class="field"><label class="field-label" for="vpPass2">Repeat passphrase</label><input class="input" id="vpPass2" type="password" autocomplete="new-password" minlength="10"></div>
+      </div>
+      <label class="consent-row"><input type="checkbox" id="vpConsent"> I agree to Meeras storing an encrypted copy of my Will drafts in my account. They may include sensitive information, such as my religion and my family's details. I understand that WIZINSIGHTS PTY LTD cannot read or recover them without my passphrase or recovery code.</label>
+      <label class="consent-row"><input type="checkbox" id="vpNotWill"> I understand a saved draft is not a Will: only the printed copy signed in front of two witnesses is.</label>
+      <button class="btn btn-primary" style="margin-top:12px;" onclick="startVaultSetup()">Continue</button>
+    </div>
+    <p class="plan-small">Drafts on this device that will be saved: ${Sessions.index.length || 0}. You can save again any time after changes.</p>` + accountFooterHtml();
+  }
+
+  // Vault exists but locked.
+  if (!A.rawKey) {
+    const useRec = A.view === 'recover';
+    return intro + msg + header + `
+    <div class="person-card">
+      <div class="person-card-title">${useRec ? 'Open with your recovery code' : 'Unlock your saved Wills'}</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6;">Saved ${me.vault.updatedAt ? new Date(me.vault.updatedAt).toLocaleString('en-AU', { dateStyle: 'medium', timeStyle: 'short' }) : ''}. ${useRec ? 'Enter the recovery code you saved when you set up storage; you will then choose a new passphrase.' : 'Your passphrase decrypts them on this device.'}</p>
+      <form onsubmit="event.preventDefault(); this.querySelector('button').disabled=true; this.querySelector('button').textContent='Unlocking…'; Account.unlock(document.getElementById('vuSecret').value, ${useRec});" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <div class="field" style="flex:1;min-width:220px;margin:0;"><label class="field-label" for="vuSecret">${useRec ? 'Recovery code' : 'Passphrase'}</label><input class="input" id="vuSecret" type="${useRec ? 'text' : 'password'}" autocomplete="${useRec ? 'off' : 'current-password'}" ${useRec ? 'placeholder="XXXX-XXXX-…"' : ''}></div>
+        <button class="btn btn-primary" type="submit">Unlock</button>
+      </form>
+      <button class="nav-link" style="margin-top:10px;color:var(--secondary);" onclick="Account.view=${useRec ? 'null' : "'recover'"};Account.pending={};Account.rerender()">${useRec ? 'Use my passphrase instead' : 'Forgot your passphrase? Use your recovery code'}</button>
+    </div>
+    ${!m.active ? `<div class="warn-callout">Your membership has ended. You can still open and download your saved Wills; renew to save changes.</div>${A.config.billing ? membershipPlansHtml(m) : ''}` : ''}` + accountFooterHtml();
+  }
+
+  // Unlocked.
+  if (A.view === 'changepass') {
+    return intro + msg + header + `
+    <div class="person-card">
+      <div class="person-card-title">Choose a new passphrase</div>
+      <div class="field-row">
+        <div class="field"><label class="field-label" for="cpPass">New passphrase</label><input class="input" id="cpPass" type="password" autocomplete="new-password"></div>
+        <div class="field"><label class="field-label" for="cpPass2">Repeat</label><input class="input" id="cpPass2" type="password" autocomplete="new-password"></div>
+      </div>
+      <button class="btn btn-primary" onclick="submitNewPassphrase()">Save new passphrase</button>
+      ${m.active ? '' : '<p class="plan-small">Changing your passphrase needs an active membership.</p>'}
+    </div>` + accountFooterHtml();
+  }
+  if (A.view === 'newrecovery' && pend.recoveryCode) {
+    return intro + msg + header + `
+    <div class="person-card">
+      <div class="person-card-title">Your new recovery code</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6;">Save it somewhere safe. Once you confirm, the old code stops working.</p>
+      <div class="recovery-code">${pend.recoveryCode}</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px;">
+        <button class="btn btn-secondary" onclick="copyRecoveryCode(this)">Copy code</button>
+        <button class="btn btn-secondary" onclick="downloadRecoveryCode()">Download as a text file</button>
+      </div>
+      <button class="btn btn-primary" onclick="Account.newRecovery(Account.pending.recoveryCode)">I have saved it: switch to the new code</button>
+      <button class="btn btn-secondary" onclick="Account.view=null;Account.pending={};Account.rerender()">Cancel</button>
+    </div>` + accountFooterHtml();
+  }
+
+  const saved = Object.entries(A.payload.drafts || {});
+  const savedIds = new Set(saved.map(([id]) => id));
+  const localOnly = Sessions.index.filter(d => !savedIds.has(d.id));
+  return intro + msg + header + `
+  <h4 class="section-h">Saved in your account</h4>
+  ${saved.length ? saved.map(([id, d]) => `
+    <div class="person-card" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;">
+      <div>
+        <div class="person-card-title">${escapeHtml(d.meta.name || 'Untitled draft')}</div>
+        <div style="font-size:13px;color:var(--muted);">${d.meta.testatorName ? escapeHtml(d.meta.testatorName) + ' · ' : ''}${d.meta.completionPct || 0}% complete${d.meta.lastSavedAt ? ' · last changed ' + new Date(d.meta.lastSavedAt).toLocaleDateString('en-AU') : ''}${Sessions.index.find(x => x.id === id) ? ' · also on this device' : ''}</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="Account.openSaved('${id}')">Open on this device</button>
+        ${m.active ? `<button class="btn btn-secondary" style="color:var(--danger);" onclick="Account.removeSaved('${id}')">Remove</button>` : ''}
+      </div>
+    </div>`).join('') : '<p class="screen-subtitle">Nothing saved yet.</p>'}
+
+  <h4 class="section-h">On this device</h4>
+  <p class="screen-subtitle" style="margin-bottom:12px;">${Sessions.index.length} draft${Sessions.index.length === 1 ? '' : 's'} on this device${localOnly.length ? ', ' + localOnly.length + ' not yet in your account' : ', all saved to your account'}. Saving updates the copies in your account with the versions on this device.</p>
+  ${m.active
+    ? `<button class="btn btn-primary" onclick="this.disabled=true;this.textContent='Encrypting and saving…';Account.saveAll()" ${Sessions.index.length ? '' : 'disabled'}>Save my drafts to my account</button>`
+    : `<div class="warn-callout">Your membership has ended. You can still open your saved Wills; renew to save changes.</div>${A.config.billing ? membershipPlansHtml(m) : ''}`}
+  ${m.active && m.plan === 'yearly' && A.config.billing ? `<div style="margin-top:18px;">${membershipPlansHtml(m)}</div>` : ''}
+
+  <h4 class="section-h">Security</h4>
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <button class="btn btn-secondary" onclick="Account.lock();Account.pending={notice:'Locked. Enter your passphrase to open your saved Wills again.'};Account.rerender()">Lock</button>
+    ${m.active ? `<button class="btn btn-secondary" onclick="Account.view='changepass';Account.pending={};Account.rerender()">Change passphrase</button>
+    <button class="btn btn-secondary" onclick="Account.view='newrecovery';Account.pending={recoveryCode:Vault.newRecoveryCode()};Account.rerender()">Make a new recovery code</button>` : ''}
+  </div>
+  ${notWill}` + accountFooterHtml();
+};
+
+function accountFooterHtml() {
+  return `
+  <div style="margin-top:28px;padding-top:18px;border-top:1px solid var(--border);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+    <button class="btn btn-secondary" onclick="goTo('S01')">← Back to home</button>
+    ${Account.me && Account.me.signedIn ? `<button class="nav-link" style="color:var(--danger);" onclick="Account.deleteAccount()">Delete my account</button>` : ''}
+  </div>`;
+}
+
+function startVaultSetup() {
+  const p1 = document.getElementById('vpPass').value, p2 = document.getElementById('vpPass2').value;
+  if (p1.length < 10) { alert('Please use a passphrase of at least 10 characters.'); return; }
+  if (p1 !== p2) { alert('The two passphrases do not match.'); return; }
+  if (!document.getElementById('vpConsent').checked || !document.getElementById('vpNotWill').checked) { alert('Please tick both boxes to continue.'); return; }
+  Account.view = 'recovery';
+  Account.pending = { passphrase: p1, recoveryCode: Vault.newRecoveryCode() };
+  Account.rerender();
+}
+function submitNewPassphrase() {
+  const p1 = document.getElementById('cpPass').value, p2 = document.getElementById('cpPass2').value;
+  if (p1.length < 10) { alert('Please use a passphrase of at least 10 characters.'); return; }
+  if (p1 !== p2) { alert('The two passphrases do not match.'); return; }
+  Account.changePassphrase(p1);
+}
+function copyRecoveryCode(btn) {
+  const code = Account.pending.recoveryCode || '';
+  if (navigator.clipboard) navigator.clipboard.writeText(code).then(() => { btn.textContent = 'Copied'; setTimeout(() => { btn.textContent = 'Copy code'; }, 2000); });
+}
+function downloadRecoveryCode() {
+  const text = 'Meeras recovery code\n\n' + (Account.pending.recoveryCode || '') + '\n\nAccount: ' + ((Account.me && Account.me.email) || '') + '\nCreated: ' + new Date().toLocaleString('en-AU') +
+    '\n\nThis code opens the Wills saved in your Meeras account if you forget your passphrase.\nKeep it private and somewhere safe. Meeras cannot recover it for you.\n';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'text/plain' }));
+  a.download = 'Meeras-recovery-code.txt';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+// ───── S39 CONSULTATION WITH OUR LEGAL EXPERT (hidden until a lawyer confirms) ─────
+// Shown only when SHOW_CONSULT is true here AND the API has CONSULT_ENABLED = "1".
+// The lawyer contacts the family, agrees the fee and bills them directly;
+// Meeras only passes the request on.
+const SHOW_CONSULT = false;
+const consultEnabled = () => SHOW_CONSULT && Account.available && Account.config && Account.config.consult;
+screens.S39 = () => {
+  if (!consultEnabled()) {
+    return `
+    <div class="step-label">Legal help</div>
+    <h2 class="screen-title">Consultations are coming soon</h2>
+    <p class="screen-subtitle">We are arranging for an Australian lawyer to help families customise their Wills. For now, the Resources page lists where to find legal help.</p>
+    <div class="btn-row"><button class="btn btn-secondary" onclick="goTo('S01')">← Back to home</button><button class="btn btn-primary" onclick="goTo('S27')">Resources →</button></div>`;
+  }
+  const p = Account.pending || {};
+  if (p.consultRef) {
+    return `
+    <div class="step-label">Legal help</div>
+    <h2 class="screen-title">Request sent</h2>
+    <p class="screen-subtitle">Thank you. Our legal expert will contact you to arrange a time and confirm the fee before any work starts. Your reference is <strong>${escapeHtml(p.consultRef)}</strong>.</p>
+    <div class="btn-row"><button class="btn btn-primary" onclick="Account.pending={};goTo('S01')">Back to home</button></div>`;
+  }
+  return `
+  <div class="step-label">Legal help</div>
+  <h2 class="screen-title">Have your Will customised by a lawyer</h2>
+  <p class="screen-subtitle">
+    For blended families, businesses, property overseas, testamentary trusts or anything the Meeras wizard
+    does not cover, request a consultation with our legal expert. The lawyer contacts you, explains the
+    options and agrees the fee with you before any work starts, and bills you directly. Meeras does not
+    charge for the introduction.
+  </p>
+  ${p.error ? `<div class="warn-callout" role="alert">${escapeHtml(p.error)}</div>` : ''}
+  <form class="person-card" onsubmit="event.preventDefault(); submitConsult(this);">
+    <div class="field-row">
+      <div class="field"><label class="field-label" for="coName">Your name</label><input class="input" id="coName" required autocomplete="name"></div>
+      <div class="field"><label class="field-label" for="coEmail">Email</label><input class="input" id="coEmail" type="email" required autocomplete="email"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label class="field-label" for="coPhone">Phone (optional)</label><input class="input" id="coPhone" type="tel" autocomplete="tel"></div>
+      <div class="field"><label class="field-label" for="coState">State or Territory</label>
+        <select class="input" id="coState"><option value="">Choose…</option>${['VIC','NSW','QLD','WA','SA','TAS','ACT','NT'].map(s => `<option${STATE.jurisdiction === s ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="field"><label class="field-label" for="coTopic">What do you need help with?</label>
+      <select class="input" id="coTopic"><option>Review my Meeras Will</option><option>Customise or draft my Will</option><option>Enduring power of attorney</option><option>Medical treatment decision maker</option><option>Something else</option></select></div>
+    <div class="field"><label class="field-label" for="coMsg">Anything the lawyer should know (optional)</label><textarea class="input" id="coMsg" rows="4" maxlength="3000" placeholder="Please do not include account numbers or ID numbers."></textarea></div>
+    <label class="consent-row"><input type="checkbox" id="coConsent"> I agree to Meeras passing these details to the lawyer so they can contact me.</label>
+    <button class="btn btn-primary" type="submit" style="margin-top:12px;">Send my request</button>
+  </form>`;
+};
+async function submitConsult(form) {
+  const v = id => document.getElementById(id).value;
+  if (!document.getElementById('coConsent').checked) { alert('Please tick the box so we can pass your details to the lawyer.'); return; }
+  const btn = form.querySelector('button[type=submit]'); btn.disabled = true; btn.textContent = 'Sending…';
+  try {
+    const r = await Account.api('POST', 'consult', { name: v('coName'), email: v('coEmail'), phone: v('coPhone'), state: v('coState'), topic: v('coTopic'), message: v('coMsg'), consent: true });
+    Account.pending = { consultRef: r.reference };
+    Analytics.track('consult-requested');
+  } catch (e) { Account.pending = { error: e.message }; }
+  renderScreen('S39');
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -7777,6 +8532,7 @@ async function init() {
   renderProgress();
   refreshSessionIndicator();
   const routed = applyHashRoute();   // a shared link such as /#faq opens that page directly
+  Account.init();                    // membership: reachable only where the API runs (meeras.com.au)
   window.addEventListener('hashchange', applyHashRoute);
   updateNavCta();
   if (!routed) updateTitle(STATE.currentScreen || 'S01');

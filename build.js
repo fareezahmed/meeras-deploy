@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /* Assemble the deployable site into dist/ for one environment.
  *
- *   node build.js                   production: meeras.com.au (Cloudflare Pages)
+ *   node build.js                   production: meeras.com.au (Cloudflare Worker)
+ *   node build.js --env staging     staging: meeras-staging.*.workers.dev (Stripe test mode, not indexed)
  *   node build.js --env dev         dev: fareez.dev/meeras (AWS, see deploy.sh)
  *
  * The site is the same single file in both environments. The build only
@@ -26,6 +27,14 @@ const ENVS = {
     canonical: 'https://meeras.com.au/',
     websiteId: process.env.UMAMI_WEBSITE_ID || SHARED_UMAMI_ID,
     cloudflare: true,
+  },
+  staging: {
+    // Umami only records the listed domains, so staging visits are not counted.
+    domains: 'meeras.com.au',
+    canonical: 'https://meeras.com.au/',
+    websiteId: SHARED_UMAMI_ID,
+    cloudflare: true,
+    noindex: true,
   },
   dev: {
     domains: 'fareez.dev',
@@ -78,6 +87,7 @@ if (cfg.cloudflare) {
     '  Referrer-Policy: strict-origin-when-cross-origin',
     '  Permissions-Policy: camera=(), microphone=(), geolocation=()',
     '  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload',
+    ...(cfg.noindex ? ['  X-Robots-Tag: noindex, nofollow'] : []),
     "  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://analytics.fareez.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://analytics.fareez.dev; frame-ancestors 'self'; base-uri 'self'",
     // The page itself keeps Cloudflare's default (max-age=0, must-revalidate):
     // /index.html is normalised to / with a redirect, and revalidation means a
@@ -94,7 +104,7 @@ if (cfg.cloudflare) {
 
 const crypto = require('crypto');
 const md5 = f => crypto.createHash('md5').update(fs.readFileSync(path.join(DIST, f))).digest('hex');
-console.log(`Built dist/ for ${env}`);
+console.log(`Built dist/ for ${env}${cfg.noindex ? ' (noindex)' : ''}`);
 console.log(`  analytics domains : ${cfg.domains}`);
 console.log(`  umami website id  : ${cfg.websiteId}`);
 console.log(`  canonical         : ${cfg.canonical || '(none)'}`);
