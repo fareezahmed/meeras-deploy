@@ -2466,6 +2466,7 @@ function applyHashRoute() {
   const key = (location.hash || '').replace(/^#\/?/, '').toLowerCase();
   const id = PAGE_HASHES[key];
   if (id) goTo(id);
+  return !!id;
 }
 function hashForScreen(id) {
   return Object.keys(PAGE_HASHES).find(k => PAGE_HASHES[k] === id) || null;
@@ -5716,7 +5717,8 @@ const FEATURE_STATUS = [
     ['Specific-item gifts counted against the one-third', 'planned'],
     ['Curated list of registered Australian Muslim charities', 'planned'],
     ["Start my spouse's Will from this draft (home panel and execution checklist)", 'live'],
-    ['Funerals page: services directory and a tool to connect a funeral service with a masjid', 'live'],
+    ['Funerals page: first hours and a services directory', 'live'],
+    ['Funerals page: tool to connect a funeral service with a masjid (built; hidden with SHOW_FUNERAL_CONNECT)', 'planned'],
     ['State-by-State guides (Act, witness rule, probate court, Will storage)', 'live'],
     ['Open Graph and Twitter card tags; skip link, focus styles, labelled inputs and steppers', 'live'],
     ['SEO and answer-engine data: keyword-first page titles, en-AU, descriptive H1, JSON-LD (Organization, WebSite, SoftwareApplication, HowTo, FAQPage)', 'live'],
@@ -5870,7 +5872,7 @@ screens.S33 = () => `
   <div class="person-card">
     <div class="person-card-title">1. Call the burial organisation first</div>
     <div style="font-size:14px;color:var(--muted);">Article 2.8 of the Will names any Muslim burial service the deceased engaged, and the cemetery or plot. Call them before anyone else so ghusl and burial can begin without delay; most Australian cities have a Muslim burial service reachable at any hour.</div>
-    <div style="margin-top:10px;"><button class="footer-link" style="color:var(--secondary);" onclick="goTo('S37')">Funerals: services and connecting with a masjid →</button></div>
+    <div style="margin-top:10px;"><button class="footer-link" style="color:var(--secondary);" onclick="goTo('S37')">Funerals: services and the first hours →</button></div>
   </div>
   <div class="person-card">
     <div class="person-card-title">2. Find the Will and read Article 2</div>
@@ -6126,6 +6128,9 @@ screens.S36 = () => `
 // ───── S37 FUNERALS ─────
 // Directory entries name organisations and their websites only. Add entries
 // as they are verified; never publish a phone number without checking it.
+// The "connect a funeral service with a masjid" message tool is hidden for now;
+// set this to true to show it again on the Funerals page.
+const SHOW_FUNERAL_CONNECT = false;
 const FUNERAL_SERVICES = [
   { state: 'National', name: 'Australian National Imams Council (ANIC)', role: 'Find a masjid or Imam anywhere in Australia; burial guidance; arbitration under Article 2.9', site: 'https://anic.org.au' },
   { state: 'NSW', name: 'Lebanese Muslim Association, Funeral Services (Lakemba)', role: 'Ghusl, janāzah and burial arrangements in Sydney', site: 'https://www.lma.org.au' },
@@ -6136,8 +6141,7 @@ screens.S37 = () => `
   <h2 class="screen-title">A funeral by the Sunnah, without delay</h2>
   <p class="screen-subtitle">
     When a Muslim dies, burial should follow as soon as possible. This page helps the family
-    reach a Muslim funeral service, and helps the service and the local masjid coordinate the
-    ghusl, the janāzah prayer and the burial. Nothing entered here is stored or sent by Meeras.
+    reach a Muslim funeral service and the local masjid${SHOW_FUNERAL_CONNECT ? ', and helps them coordinate the ghusl, the janāzah prayer and the burial. Nothing entered here is stored or sent by Meeras' : ''}.
   </p>
 
   <h4 class="section-h">The first hours</h4>
@@ -6147,7 +6151,7 @@ screens.S37 = () => `
     <div class="step-card"><div class="step-num">3</div><div class="step-name">Bury the same or next day</div><div class="step-desc">Article 2 asks for burial before sunset on the day of death or the following day, in the country of death, in a Muslim section.</div></div>
   </div>
 
-  <h4 class="section-h">Connect a funeral service with a masjid</h4>
+  ${SHOW_FUNERAL_CONNECT ? `<h4 class="section-h">Connect a funeral service with a masjid</h4>
   <p class="screen-subtitle" style="margin-bottom:12px;">Fill in what you know; Meeras writes a short message the funeral service and the masjid can exchange. Copy it, email it, or send it by WhatsApp from your own phone.</p>
   <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:16px;">
     <div class="field-row">
@@ -6171,7 +6175,7 @@ screens.S37 = () => `
       <button class="btn btn-secondary" onclick="sendFuneralMessage('email')">Send by email</button>
       <button class="btn btn-secondary" onclick="sendFuneralMessage('whatsapp')">Send by WhatsApp</button>
     </div>
-  </div>
+  </div>` : ''}
 
   <h4 class="section-h">Muslim funeral services and councils</h4>
   <p class="screen-subtitle" style="margin-bottom:12px;">Organisations listed by their websites; confirm current phone numbers there. Listings are added as they are verified.</p>
@@ -7706,10 +7710,10 @@ async function init() {
   renderScreen(STATE.currentScreen);
   renderProgress();
   refreshSessionIndicator();
-  applyHashRoute();   // a shared link such as /#faq opens that page directly
+  const routed = applyHashRoute();   // a shared link such as /#faq opens that page directly
   window.addEventListener('hashchange', applyHashRoute);
   updateNavCta();
-  updateTitle(STATE.currentScreen || 'S01');
+  if (!routed) updateTitle(STATE.currentScreen || 'S01');
 
   setTimeout(() => {
     pendingFlushPromise = Sessions.flushPendingWrites().catch(e => {
