@@ -1355,6 +1355,9 @@
     margin-top: 16px;
   }
   @media (max-width: 600px) { .donation-equal-buttons { grid-template-columns: 1fr; } }
+  .donate-go { width: 100%; justify-content: center; font-size: 17px; padding-top: 16px; padding-bottom: 16px; }
+  .donate-opened:not(:empty) { margin-top: 10px; padding: 10px 12px; border-radius: 8px; background: rgba(46,125,90,0.08); color: var(--text); font-size: 13px; line-height: 1.5; text-align: center; }
+  .donate-opened a { color: var(--secondary); }
 
   /* ========== PERSON CARD (executor/guardian/etc) ========== */
   .person-card {
@@ -5366,14 +5369,18 @@ screens.S24 = () => {
       <div style="font-family:var(--font-display);font-size:22px;color:var(--primary);font-weight:600;margin-bottom:6px;">Help keep Meeras free</div>
       <div style="font-size:13px;color:var(--muted);">Contributions go entirely to hosting and platform maintenance.</div>
     </div>
-    <div class="donation-amounts">
-      ${amt(5)  ? `<button type="button" class="donate-amount${selClass(5)}" data-link="${amt(5)}"  onclick="openDonation(this)">A$5</button>`  : ''}
-      ${amt(15) ? `<button type="button" class="donate-amount${selClass(15)}" data-link="${amt(15)}" onclick="openDonation(this)">A$15</button>` : ''}
-      ${amt(50) ? `<button type="button" class="donate-amount${selClass(50)}" data-link="${amt(50)}" onclick="openDonation(this)">A$50</button>` : ''}
-      ${cfg.links.custom ? `<button type="button" class="donate-amount${onlyCustom ? ' selected' : ''}" data-link="${cfg.links.custom}" onclick="openDonation(this)" style="font-style:italic;">Other</button>` : ''}
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin-top:14px;">1. Choose an amount</div>
+    <div class="donation-amounts" role="group" aria-label="Contribution amount">
+      ${amt(5)  ? `<button type="button" class="donate-amount${selClass(5)}" data-link="${amt(5)}"  aria-pressed="${firstSel === 5}" onclick="selectDonation(this)">A$5</button>`  : ''}
+      ${amt(15) ? `<button type="button" class="donate-amount${selClass(15)}" data-link="${amt(15)}" aria-pressed="${firstSel === 15}" onclick="selectDonation(this)">A$15</button>` : ''}
+      ${amt(50) ? `<button type="button" class="donate-amount${selClass(50)}" data-link="${amt(50)}" aria-pressed="${firstSel === 50}" onclick="selectDonation(this)">A$50</button>` : ''}
+      ${cfg.links.custom ? `<button type="button" class="donate-amount${onlyCustom ? ' selected' : ''}" data-link="${cfg.links.custom}" aria-pressed="${!!onlyCustom}" onclick="selectDonation(this)" style="font-style:italic;">Other</button>` : ''}
     </div>
-    <div style="font-size:12px;color:var(--muted);text-align:center;margin:6px 0 12px;">
-      You will be redirected to <strong>buy.stripe.com</strong> to complete your contribution. Card details never touch this device or any Meeras server.
+    <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px;">2. Pay securely with Stripe</div>
+    <button type="button" class="btn btn-primary donate-go" id="donateGo" onclick="goToDonation()">${donateGoLabel(firstSel ? 'A$' + firstSel : (onlyCustom ? 'Other' : ''))}</button>
+    <div id="donateOpened" class="donate-opened" role="status" aria-live="polite"></div>
+    <div style="font-size:12px;color:var(--muted);text-align:center;margin:8px 0 12px;">
+      Stripe's secure checkout opens in a new tab at <strong>buy.stripe.com</strong>. Card details never touch this device or any Meeras server.
     </div>
 
     <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin:10px 0;font-size:13px;color:var(--muted);line-height:1.6;">
@@ -5389,7 +5396,9 @@ screens.S24 = () => {
     </div>
 
     <div class="donation-equal-buttons">
-      <button class="btn btn-secondary" onclick="nextScreen()">Continue without contributing</button>
+      ${PREV_SHOWN_SCREEN === 'S23'
+        ? `<button class="btn btn-secondary" onclick="nextScreen()">Continue without contributing</button>`
+        : `<button class="btn btn-secondary" onclick="leaveDonation()">Not now, go back</button>`}
     </div>
   </div>
 
@@ -5401,9 +5410,29 @@ screens.S24 = () => {
 `;
 };
 
-// Opens a Stripe Payment Link in a new tab. Selecting an amount IS the donation
-// action — no second "Donate" button — which keeps the flow simple and removes
-// the failure mode of "I clicked the amount but forgot to click Donate".
+// Choosing an amount only selects it; the "Continue to secure payment" button
+// then opens that amount's Stripe Payment Link in a new tab. Someone who lands on
+// this page directly sees one clear next step.
+function donateGoLabel(amount) {
+  if (amount === 'Other') return 'Continue to secure payment: choose your amount →';
+  return amount ? 'Continue to secure payment: ' + amount + ' →' : 'Continue to secure payment →';
+}
+function goToDonation() {
+  const sel = document.querySelector('.donate-amount.selected') || document.querySelector('.donate-amount');
+  if (!sel) return;
+  openDonation(sel);
+  const note = document.getElementById('donateOpened');
+  if (note) {
+    note.innerHTML = 'Stripe checkout opened in a new tab. If nothing opened, '
+      + '<a href="' + escapeHtml(sel.getAttribute('data-link')) + '" target="_blank" rel="noopener noreferrer">open the secure payment page here</a>. JazakAllahu khayran.';
+  }
+}
+// Leave the Donate page for wherever the visitor came from (keeps a Will in
+// progress where it was), or the home page.
+function leaveDonation() {
+  const back = PREV_SHOWN_SCREEN && PREV_SHOWN_SCREEN !== 'S24' ? PREV_SHOWN_SCREEN : 'S01';
+  goTo(back);
+}
 function openDonation(btn) {
   let url = (btn.getAttribute('data-link') || '').trim();
   if (!url) return;
@@ -5433,8 +5462,13 @@ function openDonation(btn) {
 
 // Legacy handler kept for backward compatibility if any older HTML still calls it.
 function selectDonation(btn) {
-  btn.parentElement.querySelectorAll('.donate-amount').forEach(b => b.classList.remove('selected'));
+  btn.parentElement.querySelectorAll('.donate-amount').forEach(b => { b.classList.remove('selected'); b.setAttribute('aria-pressed', 'false'); });
   btn.classList.add('selected');
+  btn.setAttribute('aria-pressed', 'true');
+  const go = document.getElementById('donateGo');
+  if (go) go.textContent = donateGoLabel((btn.textContent || '').trim());
+  const note = document.getElementById('donateOpened');
+  if (note) note.textContent = '';
 }
 
 // ───── S25 IMAM DIRECTORY ─────
@@ -6282,7 +6316,9 @@ function withHonorifics(escaped) {
   return String(escaped).replace(/(\([؀-ۿ\s]+\))/g, '<span lang="ar" class="honorific">$1</span>');
 }
 
+let SHOWN_SCREEN = null, PREV_SHOWN_SCREEN = null;
 function renderScreen(id) {
+  if (id !== SHOWN_SCREEN) { PREV_SHOWN_SCREEN = SHOWN_SCREEN; SHOWN_SCREEN = id; }
   const fn = screens[id];
   const container = document.getElementById('screenContainer');
   if (!fn) {
