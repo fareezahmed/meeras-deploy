@@ -498,17 +498,20 @@ async function consultRequest(request, env) {
   if (!name || !email) throw new HttpError(400, 'Please give your name and a valid email address.');
   if (b.consent !== true) throw new HttpError(400, 'Please agree to share your details with the lawyer.');
   if (!(await rateLimit(env, 'consult:' + clientIp(request), 5, 3600e3))) throw new HttpError(429, 'Too many requests. Please try again later.');
+  // Tell the lawyer whether the member discount applies (signed-in members only).
+  const acc = await currentAccount(request, env);
+  const isMember = !!(acc && membership(acc).active);
   const id = newId('con');
   await env.DB.prepare('INSERT INTO consult_requests (id, created_at, name, email, phone, state, topic, message) VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
     .bind(id, nowIso(), name, email, phone, state, topic, message).run();
   if (env.RESEND_API_KEY && env.CONSULT_NOTIFY_TO) {
-    const lines = [`Name: ${name}`, `Email: ${email}`, `Phone: ${phone || '-'}`, `State: ${state || '-'}`, `Topic: ${topic || '-'}`, '', message || '(no message)', '', `Reference: ${id}`];
+    const lines = [`Name: ${name}`, `Email: ${email}`, `Phone: ${phone || '-'}`, `State: ${state || '-'}`, `Topic: ${topic || '-'}`, `Meeras member: ${isMember ? 'yes (member discount applies)' : 'no'}`, '', message || '(no message)', '', `Reference: ${id}`];
     await sendEmail(env, { to: env.CONSULT_NOTIFY_TO, subject: `Meeras consultation request: ${name}`, text: lines.join('\n'), html: '<pre style="font-family:inherit;white-space:pre-wrap;">' + escHtml(lines.join('\n')) + '</pre>', replyTo: email });
     await sendEmail(env, {
       to: email,
       subject: 'We received your consultation request',
-      text: `Assalamu alaykum ${name},\n\nThank you. Your request has been passed to our legal expert, who will contact you to arrange a time and confirm the fee before any work starts.\n\nReference: ${id}\n\nMeeras, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497)`,
-      html: `<p>Assalamu alaykum ${escHtml(name)},</p><p>Thank you. Your request has been passed to our legal expert, who will contact you to arrange a time and confirm the fee before any work starts.</p><p style="color:#666;font-size:13px;">Reference: ${id}</p><p style="color:#999;font-size:12px;">Meeras, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497)</p>`,
+      text: `Assalamu alaykum ${name},\n\nThank you. Your request has been passed to the independent lawyer, who will contact you directly to arrange a time and confirm their fee before any work starts${isMember ? ', with your member discount applied' : ''}.\n\nYou engage and pay the lawyer directly; their advice is between you and them, and Meeras is not responsible for it.\n\nReference: ${id}\n\nMeeras, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497)`,
+      html: `<p>Assalamu alaykum ${escHtml(name)},</p><p>Thank you. Your request has been passed to the independent lawyer, who will contact you directly to arrange a time and confirm their fee before any work starts${isMember ? ', with your member discount applied' : ''}.</p><p>You engage and pay the lawyer directly; their advice is between you and them, and Meeras is not responsible for it.</p><p style="color:#666;font-size:13px;">Reference: ${id}</p><p style="color:#999;font-size:12px;">Meeras, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497)</p>`,
     });
   }
   return json({ ok: true, reference: id });

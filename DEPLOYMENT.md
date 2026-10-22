@@ -492,8 +492,11 @@ The AWS dev copy has no API, so it never shows membership.
 The request form (`/#consultation`) is built but hidden. To launch it once a
 lawyer has agreed: set `SHOW_CONSULT = true` in `index.html`, and in
 `wrangler.toml` set `CONSULT_ENABLED = "1"` and `CONSULT_NOTIFY_TO` to the
-address that should receive requests. The lawyer agrees the fee with the family
-and bills them directly; Meeras only passes the request on.
+address that should receive requests. The lawyer is independent: they agree the
+fee with the family and bill them directly, members get a discount on that fee
+(the notification email says whether the requester is a member), and Meeras is
+not responsible for the advice. If any referral fee is ever agreed with the
+lawyer, disclose it on the request page first.
 
 ### Local development
 

@@ -159,7 +159,7 @@ Execute in order for a **first-time regression**; use **TC-xxx** IDs in your tes
 | Field | Content |
 |-------|---------|
 | **Preconditions** | **Test** Payment Link URLs in `donation-config.js` for at least one amount; `enabled: true`. Use only on approved test environment. |
-| **Steps** | 1. Reach **S24** from the wizard (after S23), and separately from the header **Donate** button on another page.<br>2. Click **A$15**, then **Continue to secure payment**.<br>3. Observe new tab/window.<br>4. Click **Not now, go back** (header route) or **Continue without contributing** (wizard route). |
+| **Steps** | 1. Reach **S24** from the wizard (after S23), and separately from the header **Support** button on another page.<br>2. Click **A$15**, then **Continue to secure payment**.<br>3. Observe new tab/window.<br>4. Click **Not now, go back** (header route) or **Continue without contributing** (wizard route). |
 | **Expected** | • Choosing an amount only selects it (no tab opens); the main button reads "Continue to secure payment: A$15 →" ("choose your amount" for Other).<br>• The button opens the matching Stripe **buy.stripe.com** (or test) checkout in a new tab and shows a fallback "open the secure payment page here" link.<br>• "Who receives your contribution" names WIZINSIGHTS PTY LTD, ABN 48 669 478 497, and explains Stripe shows "wizinsights".<br>• Header route: "Not now, go back" returns to the page you came from. Wizard route: "Continue without contributing" goes to the next step.<br>• Closing Stripe tab does not corrupt Meeras tab.<br>• Disclaimer text (non-tax-deductible, not a charity) is visible as per legal copy. |
 | **Result** | ☐ Pass ☐ Fail ☐ Blocked — **Notes:** |
 

@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Privacy-friendly analytics (Umami) -->
 <script async src="https://analytics.fareez.dev/script.js" data-website-id="95d7e13f-5749-4edc-a724-df39b41f5246" data-domains="fareez.dev"></script>
+<script>function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"e88234e8e3197d5692d6c254d5befb5"})});</script>
 <title>Free Islamic Will for Australia | Meeras</title>
 <meta name="description" content="Write a free, Shariah-compliant Islamic Will (wasiyyah) for Australia in about twenty minutes. Quranic inheritance shares, Islamic burial wishes, guardians and executors, designed to meet the formal requirements of every State and Territory. Private to your device.">
 <meta name="keywords" content="Islamic will Australia, Sharia will, wasiyyah Australia, Muslim will template, Islamic inheritance calculator, faraid Australia">
@@ -1784,7 +1785,7 @@
         <span class="save-indicator" id="saveIndicator">✓ Saved</span>
         <button class="nav-link" onclick="showResetModal()">Reset</button>
         <button class="nav-link member-only" id="navAccount" onclick="goTo('S38')">Sign in</button>
-        <button class="donate-btn" onclick="goTo('S24')" aria-label="Donate to support Meeras">Donate</button>
+        <button class="donate-btn" onclick="goTo('S24')" aria-label="Support Meeras with a contribution">Support</button>
         <button class="cta-nav" id="navCta" onclick="navPrimaryAction()">Begin your Will</button>
         <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobileMenu(event)"><span></span><span></span><span></span></button>
       </div>
@@ -1807,7 +1808,7 @@
       <button class="mm-item" onclick="goTo('S25')">Imam directory</button>
       <div class="mm-section">More</div>
       <button class="mm-item" onclick="goTo('S26')">About Meeras</button>
-      <button class="mm-item donate" onclick="goTo('S24')">Donate</button>
+      <button class="mm-item donate" onclick="goTo('S24')">Support Meeras</button>
       <button class="mm-item" onclick="goTo('S28')">Privacy Policy</button>
       <button class="mm-item" onclick="goTo('S29')">Terms of Service</button>
     </div>
@@ -1863,7 +1864,7 @@
           <li><button class="footer-link" onclick="goTo('S33')">For executors</button></li>
           <li><button class="footer-link" onclick="goTo('S27')">Resources</button></li>
           <li class="member-only"><button class="footer-link" onclick="goTo('S38')">Membership</button></li>
-          <li><button class="footer-link" onclick="goTo('S24')">Donate</button></li>
+          <li><button class="footer-link" onclick="goTo('S24')">Support Meeras</button></li>
         </ul>
       </div>
     </div>
@@ -3392,7 +3393,7 @@ screens.S01 = () => {
     <div>
       <div class="section-label">Membership</div>
       <h2 class="section-title">Keep your Will safe, and up to date</h2>
-      <p class="member-band-text">Making your Will is free. Members also keep an encrypted copy of their drafts in their account, to open and update on any device when life changes: a new child, a move, a marriage. Encrypted on your device first, so we cannot read it.</p>
+      <p class="member-band-text">Making your Will is free. Members keep an encrypted copy of their drafts in their account, to open and update on any device when life changes: a new child, a move, a marriage. Encrypted on your device first, so we cannot read it. Members also get a discount with our independent lawyer partner, once on board.</p>
       <div class="member-band-actions">
         <button class="btn btn-primary" onclick="goTo('S38')">See membership →</button>
         <button class="btn btn-secondary" onclick="goTo('S38')">Sign in</button>
@@ -5719,6 +5720,12 @@ screens.S28 = () => `
     a yearly membership is cancelled at the same time. Stripe keeps its own payment records as the
     law requires.
   </p>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    If you ask for a lawyer introduction, we keep your request (name, contact details, State, topic
+    and message) so we can pass it to the independent lawyer and follow up, and we tell the lawyer
+    whether you are a member so your discount applies. The lawyer handles your information under
+    their own privacy obligations.
+  </p>
 
   <h4 class="section-h">Anonymous usage statistics</h4>
   <p class="screen-subtitle" style="margin-bottom:16px;">
@@ -5800,9 +5807,11 @@ screens.S29 = () => `
 
   <h4 class="section-h">Membership</h4>
   <p class="screen-subtitle" style="margin-bottom:16px;">
-    Membership is optional and adds encrypted storage of your Will drafts in your account. Making
-    a Will on Meeras stays free. Prices are in Australian dollars and paid through Stripe to
-    WIZINSIGHTS PTY LTD; we are not registered for GST, so no GST is charged.
+    Membership is optional. It adds encrypted storage of your Will drafts in your account and,
+    once available, an introduction to an independent lawyer with a member discount on the
+    lawyer's fee. Making a Will on Meeras stays free. Membership prices are in Australian dollars
+    and paid through Stripe to WIZINSIGHTS PTY LTD; we are not registered for GST, so no GST is
+    charged. A lawyer's fee is separate (see "Lawyer introductions" below).
   </p>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     <strong>Yearly (A$15 a year)</strong> renews automatically each year until you cancel. You can
@@ -5819,6 +5828,18 @@ screens.S29 = () => `
     and we cannot reset or recover them. A saved draft is not a Will; only the printed copy
     signed in front of two witnesses is. Nothing in these terms limits your rights under the
     Australian Consumer Law.
+  </p>
+
+  <h4 class="section-h">Lawyer introductions</h4>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Where Meeras offers an introduction to a lawyer, the lawyer is an independent Australian legal
+    practitioner, not an employee or agent of WIZINSIGHTS PTY LTD, and Meeras does not provide
+    legal services. You engage the lawyer directly: they confirm their fee with you before any work
+    starts, you pay them, and your dealings with them, including any advice and documents they
+    prepare, are governed by your agreement with them and their professional obligations. Meeras
+    only passes on your request and is not responsible for the lawyer's advice, work or fees.
+    Member discounts are offered by the lawyer and may change. If Meeras ever receives a referral
+    fee or other benefit from a lawyer, we will say so on the request page before you send it.
   </p>
 
   <h4 class="section-h">Donations</h4>
@@ -5887,7 +5908,7 @@ const FEATURE_STATUS = [
     ['Executor information sheet PDF (assets, accounts, documents, last message)', 'planned'],
     ['Care of animals direction', 'planned'],
     ['Membership: encrypted storage of Will drafts (A$15 yearly, A$79 lifetime), sign-in by email link, Stripe payments', 'progress', 'Built and tested on staging; needs Stripe and Resend keys before launch.'],
-    ['Consultation requests with a legal expert (lawyer bills directly)', 'planned', 'Built; hidden until a lawyer confirms (SHOW_CONSULT and CONSULT_ENABLED).'],
+    ['Introductions to an independent lawyer, with a member discount (lawyer bills directly)', 'planned', 'Built; hidden until a lawyer confirms (SHOW_CONSULT and CONSULT_ENABLED).'],
     ['Enduring Power of Attorney and Advance Care Directive', 'considering'],
     ['Lawyer review referral by State', 'considering'],
     ['Arabic, Urdu, Turkish, Indonesian and Somali versions', 'considering'],
@@ -6011,7 +6032,7 @@ screens.S32 = () => `
 
   <h4 class="section-h">About Meeras</h4>
   <div class="faq">
-    <details><summary>Is it really free?</summary><p>Yes. Making your Will is free, with no account and no advertising. Optional <button class="footer-link" style="font-size:inherit;color:var(--secondary);" onclick="goTo('S38')">membership</button> (A$15 a year, or A$79 once for life) adds encrypted storage so you can keep and update your drafts on any device. Contributions through the Donate page help cover hosting and development; they are voluntary and not tax-deductible.</p></details>
+    <details><summary>Is it really free?</summary><p>Yes. Making your Will is free, with no account and no advertising. Optional <button class="footer-link" style="font-size:inherit;color:var(--secondary);" onclick="goTo('S38')">membership</button> (A$15 a year, or A$79 once for life) adds encrypted storage so you can keep and update your drafts on any device. Contributions through the Support Meeras page help cover hosting and development; they are voluntary and not tax-deductible.</p></details>
     <details><summary>Where is my information stored?</summary><p>Unless you choose membership, only in your browser tab, on your device, and the PDF is generated locally. Closing the tab clears the draft, so export it if you want to come back later. Members can save drafts to their account instead: they are encrypted on the member's device with a passphrase we never see, so we store only data we cannot read. We collect only anonymous page-view statistics.</p></details>
     <details><summary>Is Meeras a law firm?</summary><p>No. It is a free community tool. Nothing it produces is legal advice, and using it creates no solicitor-client relationship. For advice on your circumstances, consult an Australian legal practitioner and a qualified Imam.</p></details>
   </div>
@@ -6515,6 +6536,9 @@ const Account = {
     this.checked = true;
     // Membership entry points (class "member-only") appear only once the service is ready.
     document.body.classList.toggle('membership-on', !!(this.available && this.config.ready));
+    // A direct link to a page that depends on the config (#account, #consultation) rendered
+    // before the config arrived: draw it again now.
+    if (SHOWN_SCREEN === 'S39') renderScreen('S39');
     if (!this.available) { updateAccountNav(); this.rerender(); return false; }
 
     const qs = new URLSearchParams(location.search);
@@ -6773,18 +6797,18 @@ function membershipPlansHtml(current) {
     <div class="plan-card">
       <div class="plan-name">Yearly</div>
       <div class="plan-price">${pr.yearly}<span>/year</span></div>
-      <ul class="plan-list"><li>Encrypted storage for all your Will drafts</li><li>Open and update them on any device</li><li>Cancel any time; renews yearly until you do</li></ul>
+      <ul class="plan-list"><li>Encrypted storage for all your Will drafts</li><li>Open and update them on any device</li><li>Member discount with our independent lawyer partner (coming soon)</li><li>Cancel any time; renews yearly until you do</li></ul>
       ${btn('yearly', 'Choose yearly')}
     </div>
     <div class="plan-card plan-featured">
       <div class="plan-badge">Best value</div>
       <div class="plan-name">Lifetime</div>
       <div class="plan-price">${pr.lifetime}<span> once</span></div>
-      <ul class="plan-list"><li>Everything in yearly</li><li>One payment, no renewals</li><li>Supports Meeras for everyone</li></ul>
+      <ul class="plan-list"><li>Everything in yearly, for life</li><li>One payment, no renewals</li><li>Supports Meeras for everyone</li></ul>
       ${btn('lifetime', current && current.active && current.plan === 'yearly' ? 'Upgrade to lifetime' : 'Choose lifetime')}
     </div>
   </div>
-  <p class="plan-small">Prices in Australian dollars. Paid securely through Stripe to WIZINSIGHTS PTY LTD (ABN 48 669 478 497); Stripe shows the business as "wizinsights". Not registered for GST, so no GST is charged.</p>`;
+  <p class="plan-small">Prices in Australian dollars. Paid securely through Stripe to WIZINSIGHTS PTY LTD (ABN 48 669 478 497); Stripe shows the business as "wizinsights". Not registered for GST, so no GST is charged. A lawyer's consultation fee is separate and paid to the lawyer.</p>`;
 }
 
 screens.S38 = () => {
@@ -6794,9 +6818,10 @@ screens.S38 = () => {
   <div class="step-label">Membership</div>
   <h2 class="screen-title">Keep your Will safe, and up to date</h2>
   <p class="screen-subtitle">
-    Making your Will on Meeras is free and always will be. Membership adds secure storage: your drafts are
-    encrypted on your device before they are saved to your account, so you can open and update them on any
-    phone or computer. We cannot read them.
+    Making your Will on Meeras is free and always will be. Membership adds two things: secure storage, so your
+    drafts are encrypted on your device, saved to your account and ready to open and update on any phone or
+    computer (we cannot read them); and, once our lawyer partner is on board, an introduction to an
+    independent Australian lawyer with a member discount on their fee.
   </p>`;
   const notWill = `<div class="accent-callout"><strong>A saved draft is not a Will.</strong> Only the printed copy you sign in front of two witnesses is your Will. After you change a saved draft, print and sign the new version.</div>`;
 
@@ -6997,18 +7022,19 @@ function downloadRecoveryCode() {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-// ───── S39 CONSULTATION WITH OUR LEGAL EXPERT (hidden until a lawyer confirms) ─────
+// ───── S39 CONSULTATION WITH AN INDEPENDENT LAWYER (hidden until a lawyer confirms) ─────
 // Shown only when SHOW_CONSULT is true here AND the API has CONSULT_ENABLED = "1".
-// The lawyer contacts the family, agrees the fee and bills them directly;
-// Meeras only passes the request on.
+// The lawyer is independent of Meeras: they contact the family, agree the fee
+// and bill them directly, and the advice is between them. Members get a
+// discount on the lawyer's fee; Meeras only passes the request on.
 const SHOW_CONSULT = false;
 const consultEnabled = () => SHOW_CONSULT && Account.available && Account.config && Account.config.consult;
 screens.S39 = () => {
   if (!consultEnabled()) {
     return `
     <div class="step-label">Legal help</div>
-    <h2 class="screen-title">Consultations are coming soon</h2>
-    <p class="screen-subtitle">We are arranging for an Australian lawyer to help families customise their Wills. For now, the Resources page lists where to find legal help.</p>
+    <h2 class="screen-title">Lawyer introductions are coming soon</h2>
+    <p class="screen-subtitle">We are arranging for an independent Australian lawyer to help families who need more than the Meeras wizard covers. Members will get a discount on the lawyer's fee. For now, the Resources page lists where to find legal help.</p>
     <div class="btn-row"><button class="btn btn-secondary" onclick="goTo('S01')">← Back to home</button><button class="btn btn-primary" onclick="goTo('S27')">Resources →</button></div>`;
   }
   const p = Account.pending || {};
@@ -7016,18 +7042,25 @@ screens.S39 = () => {
     return `
     <div class="step-label">Legal help</div>
     <h2 class="screen-title">Request sent</h2>
-    <p class="screen-subtitle">Thank you. Our legal expert will contact you to arrange a time and confirm the fee before any work starts. Your reference is <strong>${escapeHtml(p.consultRef)}</strong>.</p>
+    <p class="screen-subtitle">Thank you. The lawyer will contact you directly to arrange a time and confirm their fee before any work starts${Account.me && Account.me.signedIn && Account.me.membership && Account.me.membership.active ? ', with your member discount applied' : ''}. Your reference is <strong>${escapeHtml(p.consultRef)}</strong>.</p>
     <div class="btn-row"><button class="btn btn-primary" onclick="Account.pending={};goTo('S01')">Back to home</button></div>`;
   }
   return `
   <div class="step-label">Legal help</div>
-  <h2 class="screen-title">Have your Will customised by a lawyer</h2>
+  <h2 class="screen-title">Get help from an independent lawyer</h2>
   <p class="screen-subtitle">
-    For blended families, businesses, property overseas, testamentary trusts or anything the Meeras wizard
-    does not cover, request a consultation with our legal expert. The lawyer contacts you, explains the
-    options and agrees the fee with you before any work starts, and bills you directly. Meeras does not
-    charge for the introduction.
+    For blended families, a business, property overseas, a testamentary trust, or anything the Meeras
+    wizard does not cover, ask for an introduction to an independent Australian lawyer who understands
+    Islamic Wills. They can review your Meeras Will, draft or customise one, and prepare related documents
+    such as a power of attorney.
   </p>
+  <div class="info-callout">
+    <strong>How it works.</strong> The lawyer contacts you directly, explains your options and confirms their
+    fee before any work starts. You engage and pay the lawyer, not Meeras; the advice and any documents they
+    prepare are between you and them, and Meeras is not responsible for them. Meeras does not charge for the
+    introduction. <strong>Members get a discount on the lawyer's fee</strong>${Account.me && Account.me.signedIn && Account.me.membership && Account.me.membership.active ? ': as a member, yours will be applied' : `; <button class="footer-link" style="font-size:inherit;color:var(--secondary);" onclick="goTo('S38')">see membership</button>`}.
+  </div>
+  <div class="accent-callout"><strong>Before the call, it helps to have:</strong> your Meeras Will PDF, a list of your assets and debts (including superannuation and any property overseas), and the names of the people you want to provide for. The lawyer can tell you what the fee covers and what it does not.</div>
   ${p.error ? `<div class="warn-callout" role="alert">${escapeHtml(p.error)}</div>` : ''}
   <form class="person-card" onsubmit="event.preventDefault(); submitConsult(this);">
     <div class="field-row">
@@ -7042,7 +7075,7 @@ screens.S39 = () => {
     <div class="field"><label class="field-label" for="coTopic">What do you need help with?</label>
       <select class="input" id="coTopic"><option>Review my Meeras Will</option><option>Customise or draft my Will</option><option>Enduring power of attorney</option><option>Medical treatment decision maker</option><option>Something else</option></select></div>
     <div class="field"><label class="field-label" for="coMsg">Anything the lawyer should know (optional)</label><textarea class="input" id="coMsg" rows="4" maxlength="3000" placeholder="Please do not include account numbers or ID numbers."></textarea></div>
-    <label class="consent-row"><input type="checkbox" id="coConsent"> I agree to Meeras passing these details to the lawyer so they can contact me.</label>
+    <label class="consent-row"><input type="checkbox" id="coConsent"> I agree to Meeras passing these details to the independent lawyer so they can contact me. I understand that I engage and pay the lawyer directly, and that Meeras is not responsible for their advice.</label>
     <button class="btn btn-primary" type="submit" style="margin-top:12px;">Send my request</button>
   </form>`;
 };
