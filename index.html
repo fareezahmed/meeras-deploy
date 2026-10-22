@@ -66,9 +66,9 @@
     --ease-card: cubic-bezier(0.2, 0.8, 0.2, 1);
     --primary: #1B4D6B;
     --primary-dark: #133649;
-    --secondary: #2E8B8B;
+    --secondary: #247272;     /* links and teal buttons: 4.7:1 on the callout background, 5:1 on parchment */
     --accent: #C9A961;
-    --accent-dark: #A88B47;
+    --accent-dark: #7A5F27;   /* small gold text: 5.3:1 on parchment, 6:1 on white; white text on it 6:1 */
     --text: #1A1A1A;
     --muted: #5A5A5A;
     --parchment: #F4F1EA;
@@ -76,7 +76,7 @@
     --pale-blue: #E8F0F4;
     --border: #D4CFC2;
     --danger: #B23A3A;
-    --success: #2D7A4F;
+    --success: #276F47;      /* 5:1 on the pale green badge background */
     --white: #FEFCF7;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -418,7 +418,7 @@
   .recipient-row.no-email {
     border-style: dashed;
     cursor: default;
-    opacity: 0.7;
+    background: var(--parchment);
   }
   .recipient-checkbox {
     width: 22px; height: 22px;
@@ -533,21 +533,32 @@
     padding: 14px 32px 4px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 5px;
+    gap: 0;
     overflow-x: auto;
+    scrollbar-width: none;
   }
+  .progress-strip::-webkit-scrollbar { display: none; }
+  /* Safe centring: when the strip overflows on a phone it scrolls instead of clipping the start. */
+  .progress-strip > :first-child { margin-left: auto; }
+  .progress-strip > :last-child { margin-right: auto; }
+  /* Each bead is a 24px target; the visible dot is drawn inside it. */
   .bead {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .bead::after {
+    content: '';
     width: 9px; height: 9px;
     border-radius: 50%;
     background: var(--border);
     transition: all 0.3s;
-    flex-shrink: 0;
-    cursor: pointer;
   }
-  .bead:hover { transform: scale(1.3); }
-  .bead.done { background: var(--secondary); }
-  .bead.active {
+  .bead:hover::after { transform: scale(1.3); }
+  .bead.done::after { background: var(--secondary); }
+  .bead.active::after {
     background: var(--accent);
     box-shadow: 0 0 0 3px rgba(201,169,97,0.25);
     transform: scale(1.5);
@@ -560,7 +571,7 @@
     margin: 0 4px;
     cursor: default;
   }
-  .bead.divider:hover { transform: none; }
+  .bead.divider::after { display: none; }
 
   /* ========== SCREEN ========== */
   .app { position: relative; z-index: 1; min-height: 100vh; }
@@ -575,6 +586,9 @@
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
   }
   .step-label {
     font-size: 11px;
@@ -606,14 +620,14 @@
     margin: 20px 0;
     letter-spacing: 8px;
   }
-  h4.section-h {
+  h2.section-h {
     font-family: var(--font-display);
     font-size: 22px;
     color: var(--primary);
     margin: 28px 0 12px;
     font-weight: 600;
   }
-  h4.section-h.sub { font-size: 19px; color: var(--secondary); }
+  h2.section-h.sub { font-size: 19px; color: var(--secondary); }
 
   /* ========== SCRIPTURE ========== */
   .scripture {
@@ -858,7 +872,7 @@
   .cta-start:focus-visible, .cta-resume:focus-visible, .btn-link:focus-visible, summary:focus-visible {
     outline: 3px solid var(--accent); outline-offset: 2px;
   }
-  :root { --accent-text: #8A6D2F; }
+  :root { --accent-text: var(--accent-dark); }
   .section-label, .help-eyebrow, .footer-heading, .footer-tagline, .compare-table th, .step-label { color: var(--accent-text); }
 
   /* Informational pages: comparison table, FAQ, feature status */
@@ -1612,7 +1626,7 @@
   .screen-title { font-family: var(--font-display); font-size: clamp(32px, 4vw, 42px); font-weight: 400; letter-spacing: 0; line-height: 1.1; font-variation-settings: 'opsz' 144; }
   .screen-subtitle { font-size: 18px; line-height: 1.55; font-weight: 300; }
   .section-title { font-family: var(--font-display); font-size: clamp(30px, 3.4vw, 38px); font-weight: 300; letter-spacing: 0; line-height: 1.1; }
-  .section-h, h4.section-h { font-family: var(--font-display); font-weight: 400; font-size: 26px; }
+  .section-h, h2.section-h { font-family: var(--font-display); font-weight: 400; font-size: 26px; }
   .help-title, .guide-title, .guarantee-title, .step-name, .person-card-title, .footer-brand-name, .cta-band-title, .brand-name, .heir-section-title, .resume-card-title, .summary-section-title {
     font-family: var(--font-display); font-weight: 400; letter-spacing: 0;
   }
@@ -1694,8 +1708,8 @@
     .band-last { padding-bottom: 64px; }
   }
   /* Text pages: clearer section starts */
-  .screen.medium h4.section-h { margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
-  .screen.medium h4.section-h:first-of-type { margin-top: 28px; padding-top: 0; border-top: none; }
+  .screen.medium h2.section-h { margin-top: 48px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .screen.medium h2.section-h:first-of-type { margin-top: 28px; padding-top: 0; border-top: none; }
 
   /* Header type: larger, confident navigation in the body face; brand in the display face */
   .top-nav { gap: 6px; margin-left: 28px; }
@@ -1727,7 +1741,7 @@
 <div class="app">
 
   <!-- TOP BAR -->
-  <div class="top-bar">
+  <div class="top-bar" role="banner">
     <div class="top-bar-inner">
       <a class="brand" onclick="goTo('S01')" aria-label="Meeras, Islamic Will: home">
         <picture class="brand-logo-full">
@@ -1761,7 +1775,7 @@
             <span class="session-pill-meta" id="sessionPillMeta"></span>
           </span>
         </button>
-        <span class="save-indicator" id="saveIndicator">✓ Saved</span>
+        <span class="save-indicator" id="saveIndicator" role="status" aria-live="polite">✓ Saved</span>
         <button class="nav-link" onclick="showResetModal()">Reset</button>
         <button class="donate-btn" onclick="goTo('S24')" aria-label="Support Meeras with a contribution">Support</button>
         <button class="cta-nav" id="navCta" onclick="navPrimaryAction()">Begin your Will</button>
@@ -1801,7 +1815,7 @@
     </div>
   </div>
 
-  <footer class="app-footer">
+  <footer class="app-footer" role="contentinfo">
     <div class="footer-grid">
       <div>
         <img class="footer-logo" src="assets/logo/logo-flat.png" alt="Meeras, Islamic Will" width="800" height="336">
@@ -1860,8 +1874,8 @@
 
 <!-- Reset modal -->
 <div class="modal-bg" id="resetModal">
-  <div class="modal">
-    <h3>Start over?</h3>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle" tabindex="-1">
+    <h3 id="resetModalTitle">Start over?</h3>
     <p>This will delete the draft of your Will from this device. The Will is not yet legally binding, so deleting it has no effect on any signed document you may already have. This action cannot be undone.</p>
     <div class="btn-row" style="border:none;padding:0;margin-top:0;">
       <button class="btn btn-secondary" onclick="hideResetModal()">Cancel</button>
@@ -1872,8 +1886,8 @@
 
 <!-- Drafts modal -->
 <div class="modal-bg modal-wide" id="draftsModal">
-  <div class="modal">
-    <h3>Your drafts</h3>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="draftsModalTitle" tabindex="-1">
+    <h3 id="draftsModalTitle">Your drafts</h3>
     <p>Each draft is a separate Will. Switch between drafts to work on multiple Wills (e.g. your own and a parent's). Drafts are stored only on this device.</p>
     <div class="drafts-list" id="draftsList"></div>
     <div class="drafts-toolbar">
@@ -1887,10 +1901,10 @@
 
 <!-- Rename modal -->
 <div class="modal-bg" id="renameModal">
-  <div class="modal">
-    <h3>Rename draft</h3>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="renameModalTitle" tabindex="-1">
+    <h3 id="renameModalTitle">Rename draft</h3>
     <p>Give this draft a name that helps you find it later.</p>
-    <input class="input" id="renameInput" placeholder="e.g. My will, Will for spouse, Mum's will" style="margin-bottom:18px;">
+    <input class="input" id="renameInput" aria-label="Draft name" placeholder="e.g. My will, Will for spouse, Mum's will" style="margin-bottom:18px;">
     <div class="btn-row" style="border:none;padding:0;margin-top:0;">
       <button class="btn btn-secondary" onclick="hideRenameModal()">Cancel</button>
       <button class="btn btn-primary" onclick="confirmRename()">Save name</button>
@@ -2601,7 +2615,7 @@ function goTo(screenId) {
     saveImmediately();   // Save navigation right away so the user can resume reliably
   }
   renderScreen(screenId);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   renderProgress();
   closeMobileMenu();
   closeNavDropdowns();
@@ -2665,6 +2679,9 @@ function renderProgress() {
   });
   strip.innerHTML = html;
   enhanceToggles(strip);
+  // On a narrow screen the strip scrolls; keep the current step in view.
+  const active = strip.querySelector('.bead.active');
+  if (active && strip.scrollWidth > strip.clientWidth) strip.scrollLeft = active.offsetLeft - strip.clientWidth / 2 + 12;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -3410,7 +3427,7 @@ screens.S01 = () => {
 // ───── S02 CAPACITY ─────
 screens.S02 = () => `
   <div class="step-label">Step 1 of 14  ·  Before you begin</div>
-  <h2 class="screen-title">A few things to confirm</h2>
+  <h1 class="screen-title">A few things to confirm</h1>
   <p class="screen-subtitle">
     An Australian Will is only valid if you are 18 or older and of sound mind.
     Please confirm the following before we continue.
@@ -3459,7 +3476,7 @@ function toggleCap(key, input) {
 // ───── S03 INHERITANCE RULES (informational) ─────
 screens.S03 = () => `
   <div class="step-label">Step 2 of 14  ·  Rules of inheritance</div>
-  <h2 class="screen-title">The rules this Will uses</h2>
+  <h1 class="screen-title">The rules this Will uses</h1>
   <p class="screen-subtitle">
     This Will uses the Sunni rules of inheritance, recognised by the Hanafi, Shafi'i,
     Maliki and Hanbali schools, set out in Schedule A. All four schools agree on the
@@ -3484,7 +3501,7 @@ function acceptSunniRules() {
 // ───── S04 TESTATOR DETAILS ─────
 screens.S04 = () => `
   <div class="step-label">Step 3 of 14  ·  Your identity</div>
-  <h2 class="screen-title">Tell us about yourself</h2>
+  <h1 class="screen-title">Tell us about yourself</h1>
   <p class="screen-subtitle">
     These details will appear on the first page of your Will as the testator (the person making the Will). They are stored only on this device.
   </p>
@@ -3520,7 +3537,7 @@ screens.S04 = () => `
     <div class="field-help">Used only to send the finished Will to yourself as a backup. Never transmitted off this device unless you explicitly send an email.</div>
   </div>
 
-  <h4 class="section-h">Your sex (for inheritance calculation)</h4>
+  <h2 class="section-h">Your sex (for inheritance calculation)</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Islamic inheritance rules differ slightly depending on whether the testator is male or female (particularly for spouse and parent shares). This is independent of the gender stated on official documents.</p>
   <div class="choice-grid cols-2">
     <button class="choice ${STATE.testatorSex === 'male' ? 'selected' : ''}" onclick="setTestatorSex('male')">
@@ -3593,7 +3610,7 @@ function renderDateError(value, opts) {
 // ───── S05 JURISDICTION ─────
 screens.S05 = () => `
   <div class="step-label">Step 4 of 14  ·  Your Australian jurisdiction</div>
-  <h2 class="screen-title">Which State or Territory?</h2>
+  <h1 class="screen-title">Which State or Territory?</h1>
   <p class="screen-subtitle">
     Your Will will be governed by the Succession Act of the State or Territory where you ordinarily live. This choice silently configures the witness rules and other formal requirements that will appear later.
   </p>
@@ -3625,7 +3642,7 @@ screens.S05 = () => `
 // ───── S06 ORGAN DONATION ─────
 screens.S06 = () => `
   <div class="step-label">Step 5 of 14  ·  Article 1 of your Will</div>
-  <h2 class="screen-title">Organ donation</h2>
+  <h1 class="screen-title">Organ donation</h1>
   <p class="screen-subtitle">
     Contemporary fatwas from bodies including the Islamic Fiqh Academy (Jeddah), the
     European Council for Fatwa and Research, and the Fiqh Council of North America
@@ -3660,7 +3677,7 @@ screens.S06 = () => `
 // ───── S07 FUNERAL ─────
 screens.S07 = () => `
   <div class="step-label">Step 6 of 14  ·  Article 2 of your Will</div>
-  <h2 class="screen-title">Funeral and burial</h2>
+  <h1 class="screen-title">Funeral and burial</h1>
   <p class="screen-subtitle">
     Article 2 of your Will contains a complete set of standard Islamic burial instructions: ghusl, kafan, prompt burial, no casket where the law permits, qibla orientation, no music or non-Islamic ceremony. You don't need to change anything below unless you have specific additional wishes.
   </p>
@@ -3670,7 +3687,7 @@ screens.S07 = () => `
   </div>
 
   <div id="anicDetailBlock" style="display:none;background:var(--white);border:1px solid var(--border);border-radius:6px;padding:18px 22px;margin-bottom:18px;font-size:13px;line-height:1.6;color:var(--text);">
-    <h4 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">After death (immediate)</h4>
+    <h2 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">After death (immediate)</h2>
     <ul style="margin:0 0 14px 18px;padding:0;">
       <li>My eyes and mouth are to be closed and my joints softened.</li>
       <li>The supplication <em>"Innā lillāhi wa innā ilayhi rājiʿūn..."</em> is to be made.</li>
@@ -3682,7 +3699,7 @@ screens.S07 = () => `
       <li>Only my wife may mourn for four months and ten days (ʿiddah); others should not mourn beyond three days.</li>
     </ul>
 
-    <h4 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Ghusl (washing)</h4>
+    <h2 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Ghusl (washing)</h2>
     <ul style="margin:0 0 14px 18px;padding:0;">
       <li>Intention for purification; perform wuḍūʾ as for prayer.</li>
       <li>Cloth used to clean mouth and nose; body washed thoroughly with water and soap or sidr.</li>
@@ -3691,27 +3708,27 @@ screens.S07 = () => `
       <li>My dignity is to be maintained: gloves to be used when touching private areas; ʿawrah not to be exposed.</li>
     </ul>
 
-    <h4 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Kafan (shrouding)</h4>
+    <h2 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Kafan (shrouding)</h2>
     <ul style="margin:0 0 14px 18px;padding:0;">
       <li>Three pieces of clean white cloth for a man, five for a woman.</li>
       <li>No silk or excessive cost. Pleasant fragrance applied to shroud (three times, no alcohol).</li>
       <li>If I die in Iḥrām, the two iḥrām garments are to be used.</li>
     </ul>
 
-    <h4 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Ṣalāt al-Janāzah</h4>
+    <h2 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Ṣalāt al-Janāzah</h2>
     <ul style="margin:0 0 14px 18px;padding:0;">
       <li>Not to be performed between graves. As many Muslims to attend as possible; lined up in at least three rows.</li>
       <li>Imam stands at the head (for a man) or the middle (for a woman).</li>
     </ul>
 
-    <h4 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Transportation</h4>
+    <h2 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Transportation</h2>
     <ul style="margin:0 0 14px 18px;padding:0;">
       <li>Body carried with dignity: no loud noise, music, images, or incense.</li>
       <li>Preferably carried on shoulders; a simple car if not possible.</li>
       <li>Silence and reflection maintained.</li>
     </ul>
 
-    <h4 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Burial</h4>
+    <h2 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Burial</h2>
     <ul style="margin:0 0 14px 18px;padding:0;">
       <li>Lahd-style (side-pit) grave preferred; Shuq (trench) if not possible.</li>
       <li>Forbidden burial times avoided (sunrise, zenith, sunset).</li>
@@ -3722,12 +3739,12 @@ screens.S07 = () => `
       <li>Attendees to remain and make duʿāʾ for forgiveness and steadfastness. No smoking or wasteful gatherings.</li>
     </ul>
 
-    <h4 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Visiting the grave</h4>
+    <h2 style="font-family:var(--font-display);color:var(--primary);font-weight:600;font-size:17px;margin-bottom:8px;">Visiting the grave</h2>
     <p style="margin:0 0 8px 0;">Visitors are to say (without facing the grave):</p>
     <p style="margin:0;font-style:italic;color:var(--muted);padding-left:14px;border-left:2px solid var(--accent);">"Peace be upon the people of these abodes from the believers and Muslims. May Allah have mercy on those who have gone before us and those who follow. We shall, Allah-willing, join you."</p>
   </div>
 
-  <h4 class="section-h">Nominated persons (optional)</h4>
+  <h2 class="section-h">Nominated persons (optional)</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">
     You may name specific righteous Muslims to carry out key parts of your funeral. If left blank, your executor will appoint trustworthy Muslims of appropriate gender for each role.
   </p>
@@ -3750,7 +3767,7 @@ screens.S07 = () => `
     <div class="field-help">A trustworthy male relative or maḥram (for a female testator).</div>
   </div>
 
-  <h4 class="section-h">Moment-of-death wishes</h4>
+  <h2 class="section-h">Moment-of-death wishes</h2>
   <div class="checkbox-card ${STATE.funeral.requestRighteousAtDeath ? 'checked' : ''}" onclick="setValue('funeral.requestRighteousAtDeath', !STATE.funeral.requestRighteousAtDeath); renderScreen('S07');">
     <div class="check-box">✓</div>
     <div class="check-text">I wish a group of <strong>righteous Muslims</strong> to be present during my final moments, reminding me to have good thoughts of Allah and to hope for His mercy and forgiveness.</div>
@@ -3760,7 +3777,7 @@ screens.S07 = () => `
     <div class="check-text">I wish to be gently prompted to say <strong>the Shahādah</strong> (<em>Lā ilāha illā Allāh, Muḥammad Rasūl Allāh</em>) periodically.</div>
   </div>
 
-  <h4 class="section-h">Pre-arranged burial (optional)</h4>
+  <h2 class="section-h">Pre-arranged burial (optional)</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">If you have already purchased a burial plot or engaged with a Muslim funeral service, recording the details here will save your executor crucial time on the day. Skip both toggles if not applicable; your Will defaults to "nearest Muslim cemetery, chosen by my executor".</p>
 
   <div class="checkbox-card ${STATE.funeral.hasPrePurchasedPlot ? 'checked' : ''}" onclick="setValue('funeral.hasPrePurchasedPlot', !STATE.funeral.hasPrePurchasedPlot); renderScreen('S07');">
@@ -3819,7 +3836,7 @@ screens.S07 = () => `
 // ───── S08 EXECUTORS ─────
 screens.S08 = () => `
   <div class="step-label">Step 7 of 14  ·  Article 3 of your Will</div>
-  <h2 class="screen-title">Who will carry out your Will?</h2>
+  <h1 class="screen-title">Who will carry out your Will?</h1>
   <p class="screen-subtitle">
     Your <strong>executor</strong> is the person you trust to manage your estate after death: collecting your assets, paying your debts and zakāt, and distributing the shares to your heirs according to Schedule A.
   </p>
@@ -3880,7 +3897,7 @@ function validateS08() {
 // ───── S09 ARBITRATOR ─────
 screens.S09 = () => `
   <div class="step-label">Step 8 of 14  ·  Article 4 of your Will</div>
-  <h2 class="screen-title">Arbitrator for disputes</h2>
+  <h1 class="screen-title">Arbitrator for disputes</h1>
   <p class="screen-subtitle">
     If a dispute arises about your Will after your death, your Will asks that it first be
     referred to Islamic arbitration/mediation by a neutral Arbitrator. Courts retain their
@@ -3926,7 +3943,7 @@ screens.S09 = () => `
 // ───── S10 GUARDIANS ─────
 screens.S10 = () => `
   <div class="step-label">Step 9 of 14  ·  Article 5 of your Will</div>
-  <h2 class="screen-title">Guardians for minor children</h2>
+  <h1 class="screen-title">Guardians for minor children</h1>
   <p class="screen-subtitle">
     If you die while any of your children are under 18, who should care for them?
     You can nominate your spouse first (the default), then up to three alternative guardians in order.
@@ -3958,7 +3975,7 @@ screens.S10 = () => `
     </div>
   </div>
 
-  <h4 class="section-h">Alternative guardians (in order)</h4>
+  <h2 class="section-h">Alternative guardians (in order)</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">If your spouse does not survive you, your adult children will be considered first. If they are unable or unwilling, the alternatives below will be requested in order.</p>
 
   ${STATE.altGuardians.map((g, i) => `
@@ -4033,7 +4050,7 @@ screens.S11 = () => {
   const d = STATE.debts.debtEntries;
   return `
   <div class="step-label">Step 10 of 14  ·  Article 6 of your Will</div>
-  <h2 class="screen-title">Debts and obligations</h2>
+  <h1 class="screen-title">Debts and obligations</h1>
   <p class="screen-subtitle">
     Article 6 instructs your executor to first pay all your debts, both worldly debts and "obligations due to Allah", before distributing anything to your heirs or bequest beneficiaries.
   </p>
@@ -4044,7 +4061,7 @@ screens.S11 = () => {
   </div>
 
   <!-- ZAKAT SECTION -->
-  <h4 class="section-h">Unpaid Zakāt</h4>
+  <h2 class="section-h">Unpaid Zakāt</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">List each unpaid zakat obligation separately. Specify the year it relates to and the category of wealth it was due on; your executor (and the scholar verifying your estate) will need this to calculate the correct amount.</p>
 
   ${z.length === 0 ? `
@@ -4081,7 +4098,7 @@ screens.S11 = () => {
   <button class="add-item" onclick="addZakatEntry()">+ Add zakat obligation</button>
 
   <!-- HAJJ BADAL -->
-  <h4 class="section-h" style="margin-top:32px;">Hajj badal</h4>
+  <h2 class="section-h" style="margin-top:32px;">Hajj badal</h2>
   <div class="checkbox-card ${STATE.debts.missedHajj ? 'checked' : ''}" onclick="setValue('debts.missedHajj', !STATE.debts.missedHajj); renderScreen('S11');">
     <div class="check-box">✓</div>
     <div class="check-text">
@@ -4090,7 +4107,7 @@ screens.S11 = () => {
   </div>
 
   <!-- DEBT SECTION -->
-  <h4 class="section-h" style="margin-top:32px;">Outstanding debts to creditors</h4>
+  <h2 class="section-h" style="margin-top:32px;">Outstanding debts to creditors</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">List each debt you owe. Mark whether the creditor has acknowledged the debt; undocumented family loans are a common source of dispute, and a "validated" flag tells your executor which debts have evidence and which may need follow-up.</p>
 
   ${d.length === 0 ? `
@@ -4133,7 +4150,7 @@ screens.S11 = () => {
   <button class="add-item" onclick="addDebtEntry()">+ Add debt</button>
 
   <!-- MISSED FASTING -->
-  <h4 class="section-h" style="margin-top:32px;">Missed fasting days</h4>
+  <h2 class="section-h" style="margin-top:32px;">Missed fasting days</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">If you have missed any obligatory fasts (Ramaḍān or vows) that you have not made up, record the number here. Your guardian or executor may either fast on your behalf (where permissible) or feed one poor person for each missed day from your estate.</p>
   <div class="field-row" style="grid-template-columns: 140px 1fr;gap:12px;">
     <div class="field" style="margin-bottom:8px;">
@@ -4150,7 +4167,7 @@ screens.S11 = () => {
   </div>
 
   <!-- UNFULFILLED OATHS -->
-  <h4 class="section-h" style="margin-top:32px;">Unfulfilled oaths (kaffārat al-yamīn)</h4>
+  <h2 class="section-h" style="margin-top:32px;">Unfulfilled oaths (kaffārat al-yamīn)</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">If you have made an oath (<em>yamīn</em>) that you swore by Allah and did not fulfil, your estate must discharge the expiation (<em>kaffārah</em>): feeding or clothing ten poor people, freeing a slave, or, if unable, fasting three days. Quran 5:89.</p>
 
   ${STATE.debts.oaths.length === 0 ? `
@@ -4180,7 +4197,7 @@ screens.S11 = () => {
   <button class="add-item" onclick="addOath()">+ Add unfulfilled oath</button>
 
   <!-- OTHER OBLIGATIONS -->
-  <h4 class="section-h" style="margin-top:32px;">Other obligations (optional)</h4>
+  <h2 class="section-h" style="margin-top:32px;">Other obligations (optional)</h2>
   <div class="field">
     <textarea class="input" placeholder="Anything else: promises made, trusts you are holding for others, items borrowed and not returned, etc." oninput="setValue('debts.otherObligations', this.value);">${escapeHtml(STATE.debts.otherObligations)}</textarea>
   </div>
@@ -4241,7 +4258,7 @@ screens.S12 = () => {
   const over = total > 33.33;
   return `
   <div class="step-label">Step 11 of 14  ·  Article 7 of your Will</div>
-  <h2 class="screen-title">Bequests (Wasiyyah)</h2>
+  <h1 class="screen-title">Bequests (Wasiyyah)</h1>
   <p class="screen-subtitle">
     You may bequeath <strong>up to one-third</strong> of your remaining estate (after debts and funeral costs) to charities, friends, distant relatives, or anyone who is <em>not</em> a Quranic heir. The rest must be distributed by farāʾiḍ.
   </p>
@@ -4252,14 +4269,14 @@ screens.S12 = () => {
     <div class="scripture-ref">Sahih al-Bukhari 2742 · Sahih Muslim 1628 (Saʿd ibn Abī Waqqāṣ)</div>
   </div>
 
-  <h4 class="section-h">Your bequests</h4>
+  <h2 class="section-h">Your bequests</h2>
 
   <div id="bequestList">
     ${STATE.bequests.map((b, i) => `
       <div class="item-row">
-        <input class="input" placeholder="Recipient (charity, person, or organisation)" value="${escapeHtml(b.recipient)}" oninput="setValue('bequests[${i}].recipient', this.value);">
-        <input class="input item-percent" type="number" min="0" max="100" step="0.5" value="${b.percent || 0}" oninput="setValue('bequests[${i}].percent', +this.value); renderScreen('S12');">
-        <button class="item-remove" onclick="removeBequest(${i})">×</button>
+        <input class="input" placeholder="Recipient (charity, person, or organisation)" aria-label="Bequest ${i + 1}: recipient" value="${escapeHtml(b.recipient)}" oninput="setValue('bequests[${i}].recipient', this.value);">
+        <input class="input item-percent" type="number" min="0" max="100" step="0.5" value="${b.percent || 0}" aria-label="Bequest ${i + 1}: percentage of the estate" oninput="setValue('bequests[${i}].percent', +this.value); renderScreen('S12');">
+        <button class="item-remove" aria-label="Remove bequest ${i + 1}" onclick="removeBequest(${i})">×</button>
       </div>
     `).join('')}
   </div>
@@ -4313,7 +4330,7 @@ screens.S13 = () => {
   const preselected = MADHHAB ? ', pre-selected from your ' + madhhabName(MADHHAB) + ' school' : '';
   return `
   <div class="step-label">Step 12 of 14  ·  Article 8: Heirs inventory</div>
-  <h2 class="screen-title">Your surviving family</h2>
+  <h1 class="screen-title">Your surviving family</h1>
   <p class="screen-subtitle">
     The farāʾiḍ engine needs to know who would be alive when you die, so it can calculate each person's Quranic share. Enter your <em>current</em> living family; you can update this later if circumstances change.
   </p>
@@ -4488,7 +4505,7 @@ screens.S13 = () => {
   </div>
 
   <!-- FOETUS CLAUSE (Article 8.6) -->
-  <h4 class="section-h" style="margin-top:8px;">Unborn heirs (foetus clause)</h4>
+  <h2 class="section-h" style="margin-top:8px;">Unborn heirs (foetus clause)</h2>
   <div class="heir-section">
     <p style="font-size:13px;color:var(--muted);margin-bottom:14px;">
       Classical Islamic jurisprudence recognises a foetus conceived before the testator's death as a potential heir, provided the child is born alive within a defined waiting period. The original Islamic Will Kit uses 9.5 months (approx. 285 days, matching modern medical maximum gestation).
@@ -4594,7 +4611,7 @@ function toggleAnicDetail() {
 // ───── S14 TESTAMENTARY TRUST ─────
 screens.S14 = () => `
   <div class="step-label">Step 13 of 14  ·  Article 9 of your Will</div>
-  <h2 class="screen-title">Testamentary trust for minors</h2>
+  <h1 class="screen-title">Testamentary trust for minors</h1>
   <p class="screen-subtitle">
     If any inheritance is left to a minor child (under 18), it must be held in trust until they reach adulthood. Article 9 of your Will appoints the same guardian named in Step 9 to act as trustee.
   </p>
@@ -4616,7 +4633,7 @@ screens.S14 = () => `
 // ───── S15 SUPERANNUATION ─────
 screens.S15 = () => `
   <div class="step-label">Step 14 of 14  ·  Article 10 of your Will</div>
-  <h2 class="screen-title">Superannuation</h2>
+  <h1 class="screen-title">Superannuation</h1>
   <p class="screen-subtitle">
     In Australia, your superannuation is <strong>not automatically part of your estate</strong>. It is governed by the trust deed of your super fund. To ensure your super is distributed by farāʾiḍ, you should make a <em>binding death benefit nomination</em> directing the fund to pay your estate.
   </p>
@@ -4656,7 +4673,7 @@ screens.S15 = () => `
 // ───── S16 SEVERABILITY ─────
 screens.S16 = () => `
   <div class="step-label">Article 11 of your Will</div>
-  <h2 class="screen-title">Severability clause</h2>
+  <h1 class="screen-title">Severability clause</h1>
   <p class="screen-subtitle">
     A standard legal protection. If any part of your Will is later found invalid by a court, the rest of the Will remains valid and enforceable. There is nothing for you to fill in; this clause is included automatically.
   </p>
@@ -4674,7 +4691,7 @@ screens.S16 = () => `
 // ───── S17 CONCLUSION ─────
 screens.S17 = () => `
   <div class="step-label">Article 12 of your Will</div>
-  <h2 class="screen-title">Conclusion</h2>
+  <h1 class="screen-title">Conclusion</h1>
   <p class="screen-subtitle">
     Your Will is almost complete. Article 12 of your Will is its formal conclusion, including the Quranic warning against altering a bequest.
   </p>
@@ -4702,7 +4719,7 @@ screens.S18 = () => {
   const schoolNote = rules.madhhab ? ', following the ' + madhhabName(rules.madhhab) + ' school' : '';
   return `
   <div class="step-label">Farāʾiḍ calculation</div>
-  <h2 class="screen-title">Likely heir shares <span style="font-family:var(--font-display);font-style:italic;font-size:0.65em;color:var(--accent-dark);font-weight:500;">a snapshot today</span></h2>
+  <h1 class="screen-title">Likely heir shares <span style="font-family:var(--font-display);font-style:italic;font-size:0.65em;color:var(--accent-dark);font-weight:500;">a snapshot today</span></h1>
   <p class="screen-subtitle">
     Based on the family you listed and Schedule A (Sunni)${schoolNote}, here is how the
     <strong>remaining ${result.remainderPct.toFixed(2)}% of your estate</strong>
@@ -4794,7 +4811,7 @@ screens.S19 = () => {
   const st = STATES[j];
   return `
   <div class="step-label">Before signing</div>
-  <h2 class="screen-title">Setting up your witnesses</h2>
+  <h1 class="screen-title">Setting up your witnesses</h1>
   <p class="screen-subtitle">
     Australian law requires <strong>two adult witnesses</strong> who watch you sign your Will and then sign it themselves in your presence. The rules below apply to your jurisdiction.
   </p>
@@ -4809,7 +4826,7 @@ screens.S19 = () => {
     </div>
   ` : ''}
 
-  <h4 class="section-h">Eligibility checklist for each witness</h4>
+  <h2 class="section-h">Eligibility checklist for each witness</h2>
 
   <div class="checkbox-card checked"><div class="check-box">✓</div><div class="check-text"><strong>Adult.</strong> At least 18 years old.</div></div>
   <div class="checkbox-card checked"><div class="check-box">✓</div><div class="check-text"><strong>Of sound mind.</strong> Capable of giving evidence in court if needed.</div></div>
@@ -4821,7 +4838,7 @@ screens.S19 = () => {
     <div class="checkbox-card checked"><div class="check-box">✓</div><div class="check-text"><strong>Preferably not a beneficiary.</strong> Even where permitted, an independent witness avoids any challenge to your Will.</div></div>
   `}
 
-  <h4 class="section-h">How the signing must happen</h4>
+  <h2 class="section-h">How the signing must happen</h2>
   <div class="info-callout">
     1.  Both witnesses must be present <strong>at the same time</strong> when you sign.<br>
     2.  Each witness must then sign the Will in <strong>your presence</strong>.<br>
@@ -4842,7 +4859,7 @@ screens.S20 = () => {
   const result = calculateFaraid(currentRules());
   return `
   <div class="step-label">Final review</div>
-  <h2 class="screen-title">A summary of your Will</h2>
+  <h1 class="screen-title">A summary of your Will</h1>
   <p class="screen-subtitle">
     Please read carefully. After this screen you will generate the final PDF.
   </p>
@@ -4912,7 +4929,7 @@ screens.S20 = () => {
 // ───── S21 GENERATE PDF ─────
 screens.S21 = () => `
   <div class="step-label">Generate</div>
-  <h2 class="screen-title">Your Will is ready</h2>
+  <h1 class="screen-title">Your Will is ready</h1>
   <p class="screen-subtitle">
     Tap the button below to generate the final PDF entirely on this device. The PDF will
     contain all 12 Articles of your Will, the Schedule A Mawārith table, your heir share
@@ -5017,7 +5034,7 @@ screens.S21B = () => {
 
   return `
   <div class="step-label">After generating · optional</div>
-  <h2 class="screen-title">Share your Will for reference</h2>
+  <h1 class="screen-title">Share your Will for reference</h1>
   <p class="screen-subtitle">
     Send a copy of your Will (the PDF you just generated) to people who should know about it: your executor, guardians, and adult family members. This is a <em>reference copy</em>, not the legal original; the signed paper Will remains the binding document.
   </p>
@@ -5041,7 +5058,7 @@ screens.S21B = () => {
   </div>
 
   <!-- Suggested recipients -->
-  <h4 class="section-h">Suggested recipients</h4>
+  <h2 class="section-h">Suggested recipients</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Tap to select. Add email addresses inline where missing.</p>
 
   ${recipients.length === 0
@@ -5070,7 +5087,7 @@ screens.S21B = () => {
   }
 
   <!-- Ad-hoc recipients -->
-  <h4 class="section-h" style="margin-top:32px;">Add other adult family members</h4>
+  <h2 class="section-h" style="margin-top:32px;">Add other adult family members</h2>
   <p style="font-size:13px;color:var(--muted);margin-bottom:12px;">Parents, adult siblings, adult children, or any other adult relative who should have a reference copy.</p>
 
   ${STATE.shareRecipients.map((r, i) => `
@@ -5257,7 +5274,7 @@ async function shareToSelf() {
 // ───── S22 EXECUTION CHECKLIST ─────
 screens.S22 = () => `
   <div class="step-label">After downloading</div>
-  <h2 class="screen-title">Print, sign, witness</h2>
+  <h1 class="screen-title">Print, sign, witness</h1>
   <p class="screen-subtitle">
     Follow these steps carefully. An incorrectly executed Will may be set aside by the court, leaving your estate to be distributed by intestacy.
   </p>
@@ -5299,7 +5316,7 @@ screens.S22 = () => `
 // ───── S23 STORAGE ─────
 screens.S23 = () => `
   <div class="step-label">Storage</div>
-  <h2 class="screen-title">Keep your Will safe</h2>
+  <h1 class="screen-title">Keep your Will safe</h1>
   <p class="screen-subtitle">
     A signed Will is only useful if it can be found. Choose one or more of the storage options below.
   </p>
@@ -5343,7 +5360,7 @@ screens.S24 = () => {
   if (!configured) {
     return `
       <div class="step-label">Optional</div>
-      <h2 class="screen-title">May Allah accept your effort.</h2>
+      <h1 class="screen-title">May Allah accept your effort.</h1>
       <p class="screen-subtitle">
         Meeras is free, and will always be free.
       </p>
@@ -5366,7 +5383,7 @@ screens.S24 = () => {
   const onlyCustom = !amt(5) && !amt(15) && !amt(50) && cfg.links.custom;
   return `
   <div class="step-label">Optional</div>
-  <h2 class="screen-title">May Allah accept your effort.</h2>
+  <h1 class="screen-title">May Allah accept your effort.</h1>
   <p class="screen-subtitle">
     Meeras is free, and will always be free. If you found it useful, a contribution helps cover the hosting and maintenance costs that keep this platform running for every Muslim family who needs it after you.
   </p>
@@ -5481,7 +5498,7 @@ function selectDonation(btn) {
 // ───── S25 IMAM DIRECTORY ─────
 screens.S25 = () => `
   <div class="step-label">Optional</div>
-  <h2 class="screen-title">Find an Imam to review</h2>
+  <h1 class="screen-title">Find an Imam to review</h1>
   <p class="screen-subtitle">
     Although your Will is now ready, we strongly recommend having a qualified Imam review it before signing, particularly to verify the farāʾiḍ calculation against your specific family configuration.
   </p>
@@ -5510,7 +5527,7 @@ screens.S25 = () => `
 // ───── S26 ABOUT US (info page) ─────
 screens.S26 = () => `
   <div class="step-label">About</div>
-  <h2 class="screen-title">About Meeras</h2>
+  <h1 class="screen-title">About Meeras</h1>
   <p class="screen-subtitle">
     Meeras (ميراث, "inheritance") is a free, community-maintained web application that helps
     Muslims in Australia prepare a Last Will and Testament that is Shariah-compliant and designed
@@ -5522,7 +5539,7 @@ screens.S26 = () => `
     <div class="scripture-ref">Sahih al-Bukhari 2738 · Sahih Muslim 1627</div>
   </div>
 
-  <h4 class="section-h">Why Meeras exists</h4>
+  <h2 class="section-h">Why Meeras exists</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Most Australian Muslims die without a valid will. When that happens, State intestacy rules,
     not the Quranic shares, decide who inherits. Professionally drafted Islamic wills are
@@ -5531,7 +5548,7 @@ screens.S26 = () => `
     of inheritance (Schedule A) with the formalities each Australian jurisdiction expects.
   </p>
 
-  <h4 class="section-h">How it works</h4>
+  <h2 class="section-h">How it works</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     A 14-step wizard walks you through executors, guardians, burial wishes, debts and religious
     obligations, bequests, and your family inventory. The farāʾiḍ engine computes illustrative
@@ -5539,14 +5556,14 @@ screens.S26 = () => `
     print, sign before two witnesses, and keep with your papers.
   </p>
 
-  <h4 class="section-h">Privacy by design</h4>
+  <h2 class="section-h">Privacy by design</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Your answers never leave your device. There are no accounts and no cookies; drafts live in
     your browser tab and the PDF is generated locally. We collect only anonymous, cookie-free
     page-view statistics (Umami on our own server, and Metricool). Read the full <button class="footer-link" style="font-size:inherit;color:var(--secondary);" onclick="goTo('S28')">Privacy Policy</button>.
   </p>
 
-  <h4 class="section-h">What Meeras is not</h4>
+  <h2 class="section-h">What Meeras is not</h2>
   <div class="info-callout">
     Meeras is a guide, not a law firm, and nothing it produces is legal advice. Every Will it
     generates instructs the executor to have the distribution verified by a qualified Sunni
@@ -5555,7 +5572,7 @@ screens.S26 = () => `
     family is involved.
   </div>
 
-  <h4 class="section-h">Support the project</h4>
+  <h2 class="section-h">Support the project</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Meeras is free and carries no advertising. If it has benefited you, an optional contribution
     helps cover hosting and continued development.
@@ -5570,13 +5587,13 @@ screens.S26 = () => `
 // ───── S27 RESOURCES (info page) ─────
 screens.S27 = () => `
   <div class="step-label">Resources</div>
-  <h2 class="screen-title">Resources &amp; guides</h2>
+  <h1 class="screen-title">Resources &amp; guides</h1>
   <p class="screen-subtitle">
     Short reads on Islamic estate planning in Australia, plus the authoritative external
     references we recommend.
   </p>
 
-  <h4 class="section-h">Why every Muslim adult in Australia needs a Will</h4>
+  <h2 class="section-h">Why every Muslim adult in Australia needs a Will</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     If you die without a valid will in Australia, your estate is distributed under your State's
     intestacy formula, typically to your spouse and children in fixed statutory proportions that
@@ -5587,7 +5604,7 @@ screens.S27 = () => `
     also the only way to choose your own executor and guardians for your children.
   </p>
 
-  <h4 class="section-h">What makes a Will valid in Australia</h4>
+  <h2 class="section-h">What makes a Will valid in Australia</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Each State and Territory has its own Act, but the core formalities are consistent: the will
     must be in writing; signed by a testator aged 18+ with testamentary capacity; and witnessed
@@ -5598,7 +5615,7 @@ screens.S27 = () => `
     through the signing ceremony step by step.
   </p>
 
-  <h4 class="section-h">Understanding farāʾiḍ: the fixed shares</h4>
+  <h2 class="section-h">Understanding farāʾiḍ: the fixed shares</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     The Islamic law of inheritance allocates fixed fractions of the estate to defined relatives,
     set out in Surah an-Nisāʾ 4:11–12 and 4:176. After debts, funeral costs and any bequests
@@ -5608,7 +5625,7 @@ screens.S27 = () => `
     binding shares are determined by whoever survives you at your death, not by a snapshot today.
   </p>
 
-  <h4 class="section-h">External references</h4>
+  <h2 class="section-h">External references</h2>
   <div class="person-card">
     <div class="person-card-title">MoneySmart: Wills &amp; powers of attorney</div>
     <div style="font-size:14px;color:var(--muted);">The Australian Government's plain-English guide to wills, executors, and estate planning, run by ASIC.</div>
@@ -5629,10 +5646,10 @@ screens.S27 = () => `
 // ───── S28 PRIVACY POLICY (info page) ─────
 screens.S28 = () => `
   <div class="step-label">Legal</div>
-  <h2 class="screen-title">Privacy Policy</h2>
+  <h1 class="screen-title">Privacy Policy</h1>
   <p class="screen-subtitle">Effective 22 October 2026 · Applies to the Meeras web application, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497).</p>
 
-  <h4 class="section-h">Your will data stays on your device</h4>
+  <h2 class="section-h">Your will data stays on your device</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Everything you type into Meeras (names, family details, debts, bequests, burial wishes)
     is stored only in your own browser and processed only on your own device. By default, drafts
@@ -5641,7 +5658,7 @@ screens.S28 = () => `
     accounts, no login, and no server that ever receives, stores, or can access your answers.
   </p>
 
-  <h4 class="section-h">Anonymous usage statistics</h4>
+  <h2 class="section-h">Anonymous usage statistics</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     We use a self-hosted, cookie-free analytics service (Umami, on our own server) to count
     anonymous usage: pages viewed, wizard steps reached, your selected State or Territory,
@@ -5658,7 +5675,7 @@ screens.S28 = () => `
     United States. It never receives anything you type into Meeras.
   </p>
 
-  <h4 class="section-h">Third-party requests</h4>
+  <h2 class="section-h">Third-party requests</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     On first load your browser fetches fonts from Google Fonts and the PDF library (pdf-lib)
     from the cdnjs content delivery network. Those services receive the standard metadata of any
@@ -5667,7 +5684,7 @@ screens.S28 = () => `
     card details never touch Meeras.
   </p>
 
-  <h4 class="section-h">Your choices</h4>
+  <h2 class="section-h">Your choices</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     You can use Meeras without providing any identification numbers (all ID fields are
     optional). You can export your draft to a file you control, and clear all local data at any
@@ -5689,10 +5706,10 @@ screens.S28 = () => `
 // ───── S29 TERMS OF SERVICE (info page) ─────
 screens.S29 = () => `
   <div class="step-label">Legal</div>
-  <h2 class="screen-title">Terms of Service</h2>
+  <h1 class="screen-title">Terms of Service</h1>
   <p class="screen-subtitle">Effective 1 October 2026 · By using Meeras you agree to these terms.</p>
 
-  <h4 class="section-h">Who we are</h4>
+  <h2 class="section-h">Who we are</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Meeras is operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497, ACN 669 478 497), a company
     registered in Australia with its main business location in Victoria. "We" and "the
@@ -5700,7 +5717,7 @@ screens.S29 = () => `
     <a href="https://abr.business.gov.au/ABN/View?abn=48669478497" target="_blank" rel="noopener" style="color:var(--secondary);">View our ABN record →</a>
   </p>
 
-  <h4 class="section-h">A free guide, not legal advice</h4>
+  <h2 class="section-h">A free guide, not legal advice</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Meeras is a free educational tool. The documents it produces are intended as a guide and do
     not constitute legal, financial, or religious advice, and using Meeras does not create a
@@ -5709,7 +5726,7 @@ screens.S29 = () => `
     business interests, superannuation, or a blended family is involved.
   </p>
 
-  <h4 class="section-h">Your responsibilities</h4>
+  <h2 class="section-h">Your responsibilities</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     You are responsible for the accuracy of the information you enter; for reviewing the
     generated document; for executing it correctly (signing before two adult witnesses in
@@ -5717,7 +5734,7 @@ screens.S29 = () => `
     as your circumstances change. A will that is not correctly executed may be invalid.
   </p>
 
-  <h4 class="section-h">No warranty</h4>
+  <h2 class="section-h">No warranty</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Meeras is provided free of charge, "as is" and "as available", without warranties of any
     kind. To the maximum extent permitted by law, the maintainers accept no liability for any
@@ -5726,14 +5743,14 @@ screens.S29 = () => `
     Consumer Law.
   </p>
 
-  <h4 class="section-h">Donations</h4>
+  <h2 class="section-h">Donations</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Contributions are voluntary, are received by WIZINSIGHTS PTY LTD, and are processed by
     Stripe on its own pages; Stripe shows the business as "wizinsights". They are not
     tax-deductible: Meeras is not a registered charity or a Deductible Gift Recipient.
   </p>
 
-  <h4 class="section-h">General</h4>
+  <h2 class="section-h">General</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     These terms are governed by the laws of Australia. If any part of these terms is found
     invalid, the remainder continues to apply. Continued use of Meeras after a change to these
@@ -5805,7 +5822,7 @@ screens.S30 = () => {
   const badge = s => { const [label, cls] = STATUS_LABELS[s] || STATUS_LABELS.planned; return `<span class="status-badge ${cls}">${label}</span>`; };
   return `
   <div class="step-label">Internal</div>
-  <h2 class="screen-title">Feature status</h2>
+  <h1 class="screen-title">Feature status</h1>
   <p class="screen-subtitle">An internal page, not linked from the site. Last updated ${STATUS_UPDATED}. Edit <code>FEATURE_STATUS</code> in index.html to change it.</p>
 
   <div class="info-callout">
@@ -5816,7 +5833,7 @@ screens.S30 = () => {
   </div>
 
   ${FEATURE_STATUS.map(group => `
-    <h4 class="section-h">${group.area}</h4>
+    <h2 class="section-h">${group.area}</h2>
     <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 16px;margin-bottom:18px;">
       ${group.items.map(([text, status]) => `
         <div class="status-row"><span>${text}</span>${badge(status)}</div>
@@ -5834,7 +5851,7 @@ screens.S30 = () => {
 // ───── S31 HOW IT WORKS (product page) ─────
 screens.S31 = () => `
   <div class="step-label">How it works</div>
-  <h2 class="screen-title">An Islamic Will, done properly, in about twenty minutes</h2>
+  <h1 class="screen-title">An Islamic Will, done properly, in about twenty minutes</h1>
   <p class="screen-subtitle">
     Answer plain-English questions, and Meeras assembles a complete Last Will and Testament
     built on the Sunni rules of inheritance (Schedule A) and designed to meet the formal
@@ -5842,14 +5859,14 @@ screens.S31 = () => `
     account, and nothing you type ever leaves your device.
   </p>
 
-  <h4 class="section-h">Three steps</h4>
+  <h2 class="section-h">Three steps</h2>
   <div class="steps">
     <div class="step-card"><div class="step-num">1</div><div class="step-name">Answer the questions</div><div class="step-desc">Executors, guardians, burial wishes, debts and religious obligations, bequests, and your family. Pause any time; your draft stays in this browser tab, and you can export it to a file.</div></div>
     <div class="step-card"><div class="step-num">2</div><div class="step-name">Download the PDF</div><div class="step-desc">Generated on your own device: twelve Articles, Schedule A, an illustrative share table, and a signing block prepared for your State or Territory.</div></div>
     <div class="step-card"><div class="step-num">3</div><div class="step-name">Sign with two witnesses</div><div class="step-desc">Print it, sign before two adult witnesses present at the same time, staple it once, and keep it with your papers. The execution checklist walks you through it.</div></div>
   </div>
 
-  <h4 class="section-h">What is in your Will</h4>
+  <h2 class="section-h">What is in your Will</h2>
   <table class="compare-table">
     <tr><th style="width:34%;">Article</th><th>What it does</th></tr>
     <tr><td>Preamble</td><td>Declaration of faith and advice to your family.</td></tr>
@@ -5865,7 +5882,7 @@ screens.S31 = () => `
     <tr><td>Schedule A</td><td>The Sunni rules of inheritance your executor applies to whoever survives you.</td></tr>
   </table>
 
-  <h4 class="section-h">How Meeras compares</h4>
+  <h2 class="section-h">How Meeras compares</h2>
   <table class="compare-table">
     <tr><th>Feature</th><th>Solicitor</th><th>Meeras</th><th>Generic kit</th></tr>
     <tr><td>Cost</td><td>$600 and up</td><td class="yes">Free</td><td>$25 to $160</td></tr>
@@ -5891,10 +5908,10 @@ screens.S31 = () => `
 // ───── S32 FAQ ─────
 screens.S32 = () => `
   <div class="step-label">FAQ</div>
-  <h2 class="screen-title">Questions people ask</h2>
+  <h1 class="screen-title">Questions people ask</h1>
   <p class="screen-subtitle">Short answers on the legal side and the Islamic side. None of this is advice on your own circumstances.</p>
 
-  <h4 class="section-h">Validity and signing</h4>
+  <h2 class="section-h">Validity and signing</h2>
   <div class="faq">
     <details><summary>Is a Will made with Meeras legally valid?</summary><p>The document is designed to meet the formal requirements for a valid will in every Australian State and Territory: in writing, signed by an adult with capacity, before two adult witnesses present at the same time who then sign in your presence. Validity depends on executing it correctly, which is why the execution checklist matters. The template is under independent legal review, and we recommend a review of your own Will where property, a business, superannuation or a blended family is involved.</p></details>
     <details><summary>Who can be a witness?</summary><p>Two adults who watch you sign, at the same time, and then sign themselves. Choose people who are not beneficiaries: in New South Wales, Queensland, Tasmania and the Northern Territory a gift to a witness can be lost, and everywhere else an independent witness avoids any challenge. A paid executor should not witness either.</p></details>
@@ -5903,7 +5920,7 @@ screens.S32 = () => `
     <details><summary>How do I update my Will?</summary><p>Run the wizard again (import your exported draft to save time), print and sign the new Will with two witnesses. A later valid Will revokes the earlier one, so destroy the old original. Review it after marriage, divorce, a birth, a death in the family, buying property, or moving State.</p></details>
   </div>
 
-  <h4 class="section-h">Islamic questions</h4>
+  <h2 class="section-h">Islamic questions</h2>
   <div class="faq">
     <details><summary>Which school of fiqh does Meeras follow?</summary><p>The Sunni rules of inheritance, which the Hanafi, Shafi'i, Maliki and Hanbali schools share. Where they differ on a family (the paternal grandmother beside the father, the grandfather beside brothers and sisters) you can choose your school on the heirs step and Meeras applies its ruling; with no school selected it applies the default rulings and tells you which.</p></details>
     <details><summary>What is the one-third rule?</summary><p>A Muslim may give away up to one third of the estate by bequest (wasiyyah) to people or causes who are not already heirs. The other two thirds, at least, pass to the heirs by their Quranic shares. Meeras enforces the cap on the bequests step and prints the shares in Article 8.</p></details>
@@ -5913,7 +5930,7 @@ screens.S32 = () => `
     <details><summary>Can I include my funeral wishes?</summary><p>Yes. Article 2 records ghusl, kafan, janāzah and burial by the Sunnah, your chosen burial organisation and plot, and any additional instructions. Tell your family where the Will is, because burial happens before probate.</p></details>
   </div>
 
-  <h4 class="section-h">About Meeras</h4>
+  <h2 class="section-h">About Meeras</h2>
   <div class="faq">
     <details><summary>Is it really free?</summary><p>Yes. No account, no fee, no advertising. Contributions through the Support Meeras page help cover hosting and development; they are voluntary and not tax-deductible.</p></details>
     <details><summary>Where is my information stored?</summary><p>Only in your browser tab, on your device. The PDF is generated locally. Meeras has no server that receives your answers; we collect only anonymous page-view statistics. Closing the tab clears the draft, so export it if you want to come back later.</p></details>
@@ -5929,13 +5946,13 @@ screens.S32 = () => `
 // ───── S33 FOR EXECUTORS ─────
 screens.S33 = () => `
   <div class="step-label">For executors and families</div>
-  <h2 class="screen-title">When someone has died</h2>
+  <h1 class="screen-title">When someone has died</h1>
   <p class="screen-subtitle">
     A plain guide for the executor and family of a Muslim who made a Will with Meeras. It follows the
     order the Will itself sets out. It is general information, not legal advice.
   </p>
 
-  <h4 class="section-h">The first day</h4>
+  <h2 class="section-h">The first day</h2>
   <div class="person-card">
     <div class="person-card-title">1. Call the burial organisation first</div>
     <div style="font-size:14px;color:var(--muted);">Article 2.8 of the Will names any Muslim burial service the deceased engaged, and the cemetery or plot. Call them before anyone else so ghusl and burial can begin without delay; most Australian cities have a Muslim burial service reachable at any hour.</div>
@@ -5950,7 +5967,7 @@ screens.S33 = () => `
     <div style="font-size:14px;color:var(--muted);">The funeral director or burial organisation registers the death with the State registry; the certificate arrives within a few weeks and is needed for everything that follows.</div>
   </div>
 
-  <h4 class="section-h">The executor's duties, in the Will's order</h4>
+  <h2 class="section-h">The executor's duties, in the Will's order</h2>
   <table class="compare-table">
     <tr><th style="width:30%;">Step</th><th>What the Will says</th></tr>
     <tr><td>Take control of the estate</td><td>Article 3 appoints the executors in order and gives them power to sell property and settle claims. If none can act, a local Sunni Imam is to be asked.</td></tr>
@@ -5962,7 +5979,7 @@ screens.S33 = () => `
     <tr><td>Superannuation</td><td>Article 10: claim the death benefit from each fund; it follows the fund's nomination, not the Will, unless nominated to the estate.</td></tr>
   </table>
 
-  <h4 class="section-h">Probate</h4>
+  <h2 class="section-h">Probate</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Probate is the Supreme Court's confirmation that the Will is valid and the executor may act. Banks,
     the land registry and superannuation funds usually require it above modest amounts. Every State
@@ -5971,7 +5988,7 @@ screens.S33 = () => `
     application.
   </p>
 
-  <h4 class="section-h">Getting help</h4>
+  <h2 class="section-h">Getting help</h2>
   <div class="person-card">
     <div class="person-card-title">Verifying the shares</div>
     <div style="font-size:14px;color:var(--muted);">Take the Will, Schedule A and the list of surviving relatives to a qualified Imam or scholar. The Australian National Imams Council can refer you; the Imam directory on this site has details.</div>
@@ -6010,7 +6027,7 @@ const LAUNCH_PLAN = [
     ['Umami website for meeras.com.au (production dashboard separate from dev)', 'live', 'Website id e52170c9-be50-41f7-85e8-70b8bfc36ad3, the default in build.js; UMAMI_WEBSITE_ID overrides it. Dev keeps the shared id.'],
     ['Search: Google Search Console verified for meeras.com.au; sitemap not needed for a single page', 'planned', ''],
     ['Social preview: Open Graph and Twitter card tags with a Meeras image', 'live', 'assets/logo/og-image.jpg (1200x630).'],
-    ['Accessibility pass on the wizard (keyboard, screen reader, contrast)', 'progress', 'Done: skip link, visible focus everywhere, labels linked to inputs, named stepper buttons, keyboard progress beads, expanded state on explanations, darker small gold text. Pending: a full screen-reader run-through of all 14 steps.'],
+    ['Accessibility pass on the wizard (keyboard, screen reader, contrast)', 'progress', 'Automated checks (axe-core, WCAG 2.2 AA) pass with no violations on all 37 screens as of 22 October 2026: contrast fixed for gold, teal and green text, dialogs with roles, focus trapping and Escape, one h1 per screen with h2 sections, live region for the save indicator, labelled bequest fields, banner and contentinfo landmarks, reduced-motion support, 24px progress-bead targets. Pending: a screen-reader run-through of all 14 steps (VoiceOver and NVDA) and a 200% zoom check; the PDF is untagged (pdf-lib limitation).'],
     ['Privacy Policy and Terms reviewed alongside the template', 'progress', ''],
     ['www to apex redirect rule in the Cloudflare zone', 'planned', 'Both hostnames serve the site today.'],
     ['Contribution links in donation-config.js are live Stripe Payment Links; "Donate" renamed "Support Meeras"', 'live', ''],
@@ -6055,14 +6072,14 @@ screens.S34 = () => {
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   return `
   <div class="step-label">Internal</div>
-  <h2 class="screen-title">Launch plan</h2>
+  <h1 class="screen-title">Launch plan</h1>
   <p class="screen-subtitle">An internal page, not linked from the site. Last updated ${LAUNCH_UPDATED}. Edit <code>LAUNCH_PLAN</code> in index.html to change it.</p>
 
   <div class="info-callout">
     <strong>Readiness.</strong> ${counts.live} of ${total} items done, ${counts.progress} in progress, ${counts.planned} planned, ${counts.considering} under consideration. The site can be live while the open items are completed; the public promotion push waits for three gates: insurance, the business name, and the solicitor's view on legal practice (with the template sign-off).
   </div>
 
-  <h4 class="section-h">Go-live risk register</h4>
+  <h2 class="section-h">Go-live risk register</h2>
   <p class="screen-subtitle" style="margin-bottom:12px;">Severity and likelihood from 1 to 5; score is their product. Not legal advice: for the solicitor to confirm. Two risks are orange; both fall to yellow once the solicitor's view and insurance are in place.</p>
   <div style="overflow-x:auto;">
   <table class="compare-table risk-table">
@@ -6072,12 +6089,12 @@ screens.S34 = () => {
   </table>
   </div>
 
-  <h4 class="section-h">Where the company does not protect the founder</h4>
+  <h2 class="section-h">Where the company does not protect the founder</h2>
   <div class="info-callout">
     WIZINSIGHTS PTY LTD carries negligence and contract claims. Personal exposure remains for: unqualified legal practice (an offence against the person who does the work); being knowingly involved in misleading claims; giving a family advice personally (own duty of care); trading while insolvent after a large claim; personal guarantees and director penalty notices for unpaid tax or super.
   </div>
 
-  <h4 class="section-h">If something goes wrong</h4>
+  <h2 class="section-h">If something goes wrong</h2>
   <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 16px;margin-bottom:18px;">
     <div class="status-row"><span><strong>A family says their Will failed or was challenged.</strong> Do not give a view. Refer them to a solicitor, keep every message, note the template version printed in their PDF, and tell the insurer at once (late notification is a common ground for refusal).</span></div>
     <div class="status-row"><span><strong>A regulator, law society or legal services commissioner writes.</strong> Do not reply personally; engage a solicitor first.</span></div>
@@ -6085,7 +6102,7 @@ screens.S34 = () => {
     <div class="status-row"><span><strong>A State changes its succession law.</strong> Re-review the affected clauses, bump the template version, regenerate the specimens, note it in the review document.</span></div>
   </div>
 
-  <h4 class="section-h">Goals for the first year</h4>
+  <h2 class="section-h">Goals for the first year</h2>
   <table class="compare-table">
     <tr><th>Measure</th><th>Target</th><th>How it is measured</th></tr>
     <tr><td>Reach</td><td>5% of the roughly 480,000 Muslim adults in Australia visit (about 24,000 unique visitors)</td><td>Umami unique visitors, production hostname</td></tr>
@@ -6096,7 +6113,7 @@ screens.S34 = () => {
   </table>
 
   ${LAUNCH_PLAN.map(group => `
-    <h4 class="section-h">${group.phase}</h4>
+    <h2 class="section-h">${group.phase}</h2>
     <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 16px;margin-bottom:18px;">
       ${group.items.map(([text, status, note]) => `
         <div class="status-row"><span>${text}${note ? `<br><span style="font-size:12px;color:var(--muted);">${note}</span>` : ''}</span>${badge(status)}</div>
@@ -6144,14 +6161,14 @@ screens.S35 = () => {
   const origin = (location.origin && location.origin !== 'null') ? location.origin : 'https://meeras.com.au';
   return `
   <div class="step-label">Internal</div>
-  <h2 class="screen-title">Lead generation</h2>
+  <h1 class="screen-title">Lead generation</h1>
   <p class="screen-subtitle">An internal page, not linked from the site. Last updated ${LEADS_UPDATED}. Edit <code>LEAD_CHANNELS</code> in index.html to change it.</p>
 
   <div class="info-callout">
     <strong>What a lead is here.</strong> Meeras has no accounts and collects no names, so a lead is a measurable step in the Umami funnel, not a contact record: a visit, a started wizard, a generated PDF, a share, or a donation click. Growth means more of each, attributed to a channel through UTM-tagged links.
   </div>
 
-  <h4 class="section-h">The funnel (Umami events)</h4>
+  <h2 class="section-h">The funnel (Umami events)</h2>
   <table class="compare-table">
     <tr><th>Stage</th><th>Event</th><th>What to watch</th></tr>
     <tr><td>Visit</td><td>page view</td><td>Unique visitors by referrer and UTM source</td></tr>
@@ -6163,7 +6180,7 @@ screens.S35 = () => {
     <tr><td>Support</td><td>donation-click (tier)</td><td>Contributions per completed Will</td></tr>
   </table>
 
-  <h4 class="section-h">Channels</h4>
+  <h2 class="section-h">Channels</h2>
   ${LEAD_CHANNELS.map(c => `
     <div class="person-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
@@ -6175,7 +6192,7 @@ screens.S35 = () => {
     </div>
   `).join('')}
 
-  <h4 class="section-h">Rules for every campaign</h4>
+  <h2 class="section-h">Rules for every campaign</h2>
   <div class="info-callout">
     <ul style="margin:0 0 0 18px;padding:0;line-height:1.7;font-size:14px;">
       <li>Tag every external link with utm_source, utm_medium and utm_campaign; Umami reports them without any change to the site.</li>
@@ -6206,7 +6223,7 @@ const STATE_GUIDES = {
 };
 screens.S36 = () => `
   <div class="step-label">State guides</div>
-  <h2 class="screen-title">Your Will, State by State</h2>
+  <h1 class="screen-title">Your Will, State by State</h1>
   <p class="screen-subtitle">
     The Quranic shares are the same everywhere; the formalities differ a little by State and
     Territory. Meeras builds the right signing block for your jurisdiction. This page summarises
@@ -6220,7 +6237,7 @@ screens.S36 = () => `
   ${Object.keys(STATES).map(code => {
     const st = STATES[code], g = STATE_GUIDES[code] || {};
     return `
-    <h4 class="section-h">${st.name}</h4>
+    <h2 class="section-h">${st.name}</h2>
     <table class="compare-table">
       <tr><th style="width:34%;">Governing Act</th><td>${st.act}</td></tr>
       <tr><th>Witnesses and gifts</th><td>${st.strictWitness
@@ -6257,20 +6274,20 @@ const FUNERAL_SERVICES = [
 const telHref = n => 'tel:' + String(n).replace(/[^0-9+]/g, '');
 screens.S37 = () => `
   <div class="step-label">Funerals</div>
-  <h2 class="screen-title">A funeral by the Sunnah, without delay</h2>
+  <h1 class="screen-title">A funeral by the Sunnah, without delay</h1>
   <p class="screen-subtitle">
     When a Muslim dies, burial should follow as soon as possible. This page helps the family
     reach a Muslim funeral service and the local masjid${SHOW_FUNERAL_CONNECT ? ', and helps them coordinate the ghusl, the janāzah prayer and the burial. Nothing entered here is stored or sent by Meeras' : ''}.
   </p>
 
-  <h4 class="section-h">The first hours</h4>
+  <h2 class="section-h">The first hours</h2>
   <div class="steps">
     <div class="step-card"><div class="step-num">1</div><div class="step-name">Call the funeral service</div><div class="step-desc">The deceased's Will (Article 2.8) may name one. They collect the body, arrange ghusl and kafan, and book the cemetery.</div></div>
     <div class="step-card"><div class="step-num">2</div><div class="step-name">Tell the masjid</div><div class="step-desc">The Imam leads the janāzah prayer and announces it after a congregational prayer so the community can attend.</div></div>
     <div class="step-card"><div class="step-num">3</div><div class="step-name">Bury the same or next day</div><div class="step-desc">Article 2 asks for burial before sunset on the day of death or the following day, in the country of death, in a Muslim section.</div></div>
   </div>
 
-  ${SHOW_FUNERAL_CONNECT ? `<h4 class="section-h">Connect a funeral service with a masjid</h4>
+  ${SHOW_FUNERAL_CONNECT ? `<h2 class="section-h">Connect a funeral service with a masjid</h2>
   <p class="screen-subtitle" style="margin-bottom:12px;">Fill in what you know; Meeras writes a short message the funeral service and the masjid can exchange. Copy it, email it, or send it by WhatsApp from your own phone.</p>
   <div style="background:var(--white);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:16px;">
     <div class="field-row">
@@ -6296,7 +6313,7 @@ screens.S37 = () => `
     </div>
   </div>` : ''}
 
-  <h4 class="section-h">Muslim funeral services and councils</h4>
+  <h2 class="section-h">Muslim funeral services and councils</h2>
   <p class="screen-subtitle" style="margin-bottom:12px;">Call the service before travelling; availability changes, especially after hours. Victorian details are from the Islamic Council of Victoria's AskICV directory. Listings for other states are added as they are verified.</p>
   ${FUNERAL_SERVICES.map(f => `
     <div class="person-card">
@@ -7487,12 +7504,45 @@ async function downloadSamplePDF() {
 // ────────────────────────────────────────────────────────────────────────────
 // 8.  MODAL & RESET
 // ────────────────────────────────────────────────────────────────────────────
-function showResetModal() {
-  document.getElementById('resetModal').classList.add('show');
+// Dialogs: open moves focus inside, Tab stays inside, Escape closes, and
+// focus returns to the control that opened the dialog.
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+let _dialogOpener = null;
+function openDialog(id, focusSelector) {
+  const bg = document.getElementById(id);
+  if (!bg || bg.classList.contains('show')) return;
+  _dialogOpener = document.activeElement;
+  bg.classList.add('show');
+  const dialog = bg.querySelector('[role="dialog"]') || bg;
+  const first = focusSelector ? dialog.querySelector(focusSelector) : null;
+  setTimeout(() => { (first || dialog).focus(); }, 30);
 }
-function hideResetModal() {
-  document.getElementById('resetModal').classList.remove('show');
+function closeDialog(id) {
+  const bg = document.getElementById(id);
+  if (!bg || !bg.classList.contains('show')) return;
+  bg.classList.remove('show');
+  const back = _dialogOpener;
+  _dialogOpener = null;
+  if (back && typeof back.focus === 'function' && document.contains(back)) back.focus();
 }
+function openDialogId() {
+  const bg = document.querySelector('.modal-bg.show');
+  return bg ? bg.id : null;
+}
+document.addEventListener('keydown', e => {
+  const id = openDialogId();
+  if (!id) return;
+  if (e.key === 'Escape') { e.preventDefault(); closeDialog(id); return; }
+  if (e.key !== 'Tab') return;
+  const dialog = document.querySelector('#' + id + ' [role="dialog"]');
+  const items = [...dialog.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null);
+  if (!items.length) { e.preventDefault(); dialog.focus(); return; }
+  const first = items[0], last = items[items.length - 1];
+  if (e.shiftKey && (document.activeElement === first || document.activeElement === dialog)) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
+function showResetModal() { openDialog('resetModal', '.btn-secondary'); }
+function hideResetModal() { closeDialog('resetModal'); }
 
 // ═══════════════════════════════════════════════════════════════════════════
 //   SESSIONS UI — drafts modal, top-bar pill, export/import, resume card
@@ -7529,11 +7579,9 @@ function relativeTime(iso) {
 
 function showDraftsModal() {
   renderDraftsList();
-  document.getElementById('draftsModal').classList.add('show');
+  openDialog('draftsModal');
 }
-function hideDraftsModal() {
-  document.getElementById('draftsModal').classList.remove('show');
-}
+function hideDraftsModal() { closeDialog('draftsModal'); }
 
 function renderDraftsList() {
   const list = document.getElementById('draftsList');
@@ -7656,15 +7704,10 @@ function renameDraftPrompt(id) {
   _renameTargetId = id;
   const entry = Sessions.index.find(d => d.id === id);
   const input = document.getElementById('renameInput');
-  if (input) {
-    input.value = entry?.name || '';
-    setTimeout(() => input.focus(), 50);
-  }
-  document.getElementById('renameModal').classList.add('show');
+  if (input) input.value = entry?.name || '';
+  openDialog('renameModal', '#renameInput');
 }
-function hideRenameModal() {
-  document.getElementById('renameModal').classList.remove('show');
-}
+function hideRenameModal() { closeDialog('renameModal'); }
 async function confirmRename() {
   const v = document.getElementById('renameInput').value;
   if (_renameTargetId) {
