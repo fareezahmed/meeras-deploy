@@ -237,6 +237,10 @@
     white-space: nowrap;
     text-transform: uppercase;
   }
+  .donate-ico { width: 16px; height: 16px; flex: none; }
+  .mm-item.donate { justify-content: flex-start; gap: 8px; }
+  .mm-item.donate::after { margin-left: auto; }
+  .footer-link .donate-ico { width: 14px; height: 14px; vertical-align: -2px; margin-right: 5px; color: var(--accent-dark); }
   .donate-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 14px rgba(201,169,97,0.55), 0 0 0 1px rgba(201,169,97,0.35);
@@ -1804,7 +1808,7 @@
         </button>
         <span class="save-indicator" id="saveIndicator" role="status" aria-live="polite">✓ Saved</span>
         <button class="nav-link" onclick="showResetModal()">Reset</button>
-        <button class="donate-btn" onclick="goTo('S24')" aria-label="Support Meeras with a contribution">Support</button>
+        <button class="donate-btn" onclick="goTo('S24')" aria-label="Support Meeras with a contribution"><svg class="donate-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.2s-4.2-2.5-4.2-5.4a2.3 2.3 0 0 1 4.2-1.3 2.3 2.3 0 0 1 4.2 1.3c0 2.9-4.2 5.4-4.2 5.4z"/></svg>Support</button>
         <button class="cta-nav" id="navCta" onclick="navPrimaryAction()">Begin your Will</button>
         <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobileMenu(event)"><span></span><span></span><span></span></button>
       </div>
@@ -1826,7 +1830,7 @@
       <button class="mm-item" onclick="goTo('S25')">Imam directory</button>
       <div class="mm-section">More</div>
       <button class="mm-item" onclick="goTo('S26')">About Meeras</button>
-      <button class="mm-item donate" onclick="goTo('S24')">Support Meeras</button>
+      <button class="mm-item donate" onclick="goTo('S24')"><svg class="donate-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.2s-4.2-2.5-4.2-5.4a2.3 2.3 0 0 1 4.2-1.3 2.3 2.3 0 0 1 4.2 1.3c0 2.9-4.2 5.4-4.2 5.4z"/></svg>Support Meeras</button>
       <button class="mm-item" onclick="goTo('S28')">Privacy Policy</button>
       <button class="mm-item" onclick="goTo('S29')">Terms of Service</button>
     </div>
@@ -1881,7 +1885,7 @@
           <li><button class="footer-link" onclick="goTo('S32')">FAQ</button></li>
           <li><button class="footer-link" onclick="goTo('S33')">For executors</button></li>
           <li><button class="footer-link" onclick="goTo('S27')">Resources</button></li>
-          <li><button class="footer-link" onclick="goTo('S24')">Support Meeras</button></li>
+          <li><button class="footer-link" onclick="goTo('S24')"><svg class="donate-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.2s-4.2-2.5-4.2-5.4a2.3 2.3 0 0 1 4.2-1.3 2.3 2.3 0 0 1 4.2 1.3c0 2.9-4.2 5.4-4.2 5.4z"/></svg>Support Meeras</button></li>
         </ul>
       </div>
     </div>
