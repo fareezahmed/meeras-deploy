@@ -12,19 +12,20 @@
  * No Will clause text is touched.
  *
  * Environment variables (optional):
- *   UMAMI_WEBSITE_ID   Umami website id for production (default: the shared id)
+ *   UMAMI_WEBSITE_ID   overrides the production Umami website id (default: PROD_UMAMI_ID)
  */
 const fs = require('fs');
 const path = require('path');
 
 const argEnv = process.argv.includes('--env') ? process.argv[process.argv.indexOf('--env') + 1] : null;
 const env = argEnv || process.env.MEERAS_ENV || 'production';
-const SHARED_UMAMI_ID = '95d7e13f-5749-4edc-a724-df39b41f5246';
+const SHARED_UMAMI_ID = '95d7e13f-5749-4edc-a724-df39b41f5246';   // dev and staging
+const PROD_UMAMI_ID = 'e52170c9-be50-41f7-85e8-70b8bfc36ad3';     // "Meeras (production)" in Umami
 const ENVS = {
   production: {
     domains: 'meeras.com.au,www.meeras.com.au',
     canonical: 'https://meeras.com.au/',
-    websiteId: process.env.UMAMI_WEBSITE_ID || SHARED_UMAMI_ID,
+    websiteId: process.env.UMAMI_WEBSITE_ID || PROD_UMAMI_ID,
     cloudflare: true,
   },
   dev: {

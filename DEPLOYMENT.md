@@ -366,11 +366,11 @@ the MD5 pinned in the legal-review document refers to the repository
 
 ### 8.1 One-time setup (about 15 minutes)
 
-1. **Umami:** in https://analytics.fareez.dev add a second website,
-   `meeras.com.au`, and copy its website id. Keeping production and dev as
-   separate Umami websites keeps the dashboards separate. (If you prefer one
-   combined dashboard, skip this: the build falls back to the shared id, and
-   `data-domains` already lists both hosts.)
+1. **Umami:** done. Production reports to the "Meeras (production)" website
+   in https://analytics.fareez.dev (id `e52170c9-be50-41f7-85e8-70b8bfc36ad3`,
+   the default `PROD_UMAMI_ID` in `build.js`); dev and staging use the shared
+   website. Set the `UMAMI_WEBSITE_ID` build variable only to point production
+   somewhere else.
 2. **The Worker project (Git integration):** Cloudflare dashboard → Workers &
    Pages → Create → *Import a repository* → `fareezahmed/meeras-deploy`. The
    project is named `meeras-deploy` (it must match `name` in `wrangler.toml`).
@@ -378,7 +378,7 @@ the MD5 pinned in the legal-review document refers to the repository
    - Production branch: `main`
    - Build command: `npm run build`
    - Deploy command: `npx wrangler deploy` (the default)
-   - Build variable: `UMAMI_WEBSITE_ID` = the id from step 1
+   - No build variables are needed (`UMAMI_WEBSITE_ID` is an optional override)
    `wrangler.toml` declares `[assets] directory = "./dist"`, so the deploy
    uploads `dist/` as static assets with no Worker script. Every push to `main`
    deploys production; other branches build preview versions.
