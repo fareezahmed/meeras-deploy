@@ -237,6 +237,10 @@
     white-space: nowrap;
     text-transform: uppercase;
   }
+  .donate-ico { width: 16px; height: 16px; flex: none; }
+  .mm-item.donate { justify-content: flex-start; gap: 8px; }
+  .mm-item.donate::after { margin-left: auto; }
+  .footer-link .donate-ico { width: 14px; height: 14px; vertical-align: -2px; margin-right: 5px; color: var(--accent-dark); }
   .donate-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 4px 14px rgba(201,169,97,0.55), 0 0 0 1px rgba(201,169,97,0.35);
@@ -1352,23 +1356,50 @@
   }
   @media (max-width: 600px) { .donation-amounts { grid-template-columns: repeat(2, 1fr); } }
   .donate-amount {
-    background: var(--parchment);
+    position: relative;
+    background: var(--white);
     border: 1.5px solid var(--border);
-    padding: 14px;
-    border-radius: 4px;
+    padding: 18px 14px 16px;
+    border-radius: 16px;
     cursor: pointer;
-    font-family: var(--font-display);
-    font-size: 20px;
-    font-weight: 600;
+    text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
     color: var(--primary);
-    transition: all 0.2s;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
   }
-  .donate-amount:hover { border-color: var(--accent); }
+  .donate-amount:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 28px rgba(27,77,107,0.10); }
   .donate-amount.selected {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
+    background: var(--parchment);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(201,169,97,0.28), 0 12px 28px rgba(27,77,107,0.10);
+    transform: translateY(-4px);
   }
+  .da-icon { width: 44px; height: 44px; color: var(--secondary); margin-bottom: 4px; transition: color 0.25s; }
+  .da-icon svg { width: 100%; height: 100%; display: block; }
+  .donate-amount.selected .da-icon { color: var(--accent-dark); }
+  .da-amount { font-family: var(--font-display); font-size: 26px; font-weight: 600; line-height: 1.1; }
+  .da-cover { font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.35; }
+  .da-note { font-family: var(--font-body); font-size: 12px; color: var(--muted); line-height: 1.4; }
+  .da-check {
+    position: absolute; top: 10px; right: 10px;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--accent); color: var(--primary-dark);
+    font-size: 13px; font-weight: 700; line-height: 22px;
+    transform: scale(0); transition: transform 0.25s cubic-bezier(.34,1.56,.64,1);
+  }
+  .donate-amount.selected .da-check { transform: scale(1); }
+  /* Icon animations: steam rises, the globe turns, the server blinks, the heart beats. */
+  .steam { opacity: 0; }
+  .donate-amount:hover .steam, .donate-amount.selected .steam { animation: steam 1.8s ease-in-out infinite; }
+  .s2 { animation-delay: 0.35s !important; } .s3 { animation-delay: 0.7s !important; }
+  @keyframes steam { 0% { opacity: 0; transform: translateY(3px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-4px); } }
+  .donate-amount:hover .orbit, .donate-amount.selected .orbit { animation: orbit 3s linear infinite; transform-origin: 24px 24px; }
+  @keyframes orbit { to { transform: rotateY(360deg); } }
+  .donate-amount:hover .led, .donate-amount.selected .led { animation: led 1.2s steps(2, start) infinite; }
+  .l2 { animation-delay: 0.6s !important; }
+  @keyframes led { 50% { opacity: 0.15; } }
+  .donate-amount:hover .beat, .donate-amount.selected .beat { animation: beat 1.3s ease-in-out infinite; transform-origin: 24px 26px; }
+  @keyframes beat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.12); } 30% { transform: scale(1); } 45% { transform: scale(1.08); } }
   .donation-equal-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -1805,7 +1836,7 @@
         <span class="save-indicator" id="saveIndicator" role="status" aria-live="polite">✓ Saved</span>
         <button class="nav-link" onclick="showResetModal()">Reset</button>
         <button class="nav-link member-only" id="navAccount" onclick="goTo('S38')">Sign in</button>
-        <button class="donate-btn" onclick="goTo('S24')" aria-label="Support Meeras with a contribution">Support</button>
+        <button class="donate-btn" onclick="goTo('S24')" aria-label="Support Meeras with a contribution"><svg class="donate-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.2s-4.2-2.5-4.2-5.4a2.3 2.3 0 0 1 4.2-1.3 2.3 2.3 0 0 1 4.2 1.3c0 2.9-4.2 5.4-4.2 5.4z"/></svg>Support</button>
         <button class="cta-nav" id="navCta" onclick="navPrimaryAction()">Begin your Will</button>
         <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobileMenu(event)"><span></span><span></span><span></span></button>
       </div>
@@ -1828,7 +1859,7 @@
       <button class="mm-item" onclick="goTo('S25')">Imam directory</button>
       <div class="mm-section">More</div>
       <button class="mm-item" onclick="goTo('S26')">About Meeras</button>
-      <button class="mm-item donate" onclick="goTo('S24')">Support Meeras</button>
+      <button class="mm-item donate" onclick="goTo('S24')"><svg class="donate-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.2s-4.2-2.5-4.2-5.4a2.3 2.3 0 0 1 4.2-1.3 2.3 2.3 0 0 1 4.2 1.3c0 2.9-4.2 5.4-4.2 5.4z"/></svg>Support Meeras</button>
       <button class="mm-item" onclick="goTo('S28')">Privacy Policy</button>
       <button class="mm-item" onclick="goTo('S29')">Terms of Service</button>
     </div>
@@ -1884,7 +1915,7 @@
           <li><button class="footer-link" onclick="goTo('S33')">For executors</button></li>
           <li><button class="footer-link" onclick="goTo('S27')">Resources</button></li>
           <li class="member-only"><button class="footer-link" onclick="goTo('S38')">Membership</button></li>
-          <li><button class="footer-link" onclick="goTo('S24')">Support Meeras</button></li>
+          <li><button class="footer-link" onclick="goTo('S24')"><svg class="donate-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.2s-4.2-2.5-4.2-5.4a2.3 2.3 0 0 1 4.2-1.3 2.3 2.3 0 0 1 4.2 1.3c0 2.9-4.2 5.4-4.2 5.4z"/></svg>Support Meeras</button></li>
         </ul>
       </div>
     </div>
@@ -5459,10 +5490,10 @@ screens.S24 = () => {
     </div>
     <div style="font-size:14px;font-weight:600;color:var(--text);margin-top:14px;">1. Choose an amount</div>
     <div class="donation-amounts" role="group" aria-label="Contribution amount">
-      ${amt(5)  ? `<button type="button" class="donate-amount${selClass(5)}" data-link="${amt(5)}"  aria-pressed="${firstSel === 5}" onclick="selectDonation(this)">A$5</button>`  : ''}
-      ${amt(15) ? `<button type="button" class="donate-amount${selClass(15)}" data-link="${amt(15)}" aria-pressed="${firstSel === 15}" onclick="selectDonation(this)">A$15</button>` : ''}
-      ${amt(50) ? `<button type="button" class="donate-amount${selClass(50)}" data-link="${amt(50)}" aria-pressed="${firstSel === 50}" onclick="selectDonation(this)">A$50</button>` : ''}
-      ${cfg.links.custom ? `<button type="button" class="donate-amount${onlyCustom ? ' selected' : ''}" data-link="${cfg.links.custom}" aria-pressed="${!!onlyCustom}" onclick="selectDonation(this)" style="font-style:italic;">Other</button>` : ''}
+      ${amt(5)  ? donateCard(5, amt(5), firstSel === 5, 'coffee', 'A coffee for the developer', 'One flat white, and an evening of fixes and replies.') : ''}
+      ${amt(15) ? donateCard(15, amt(15), firstSel === 15, 'domain', 'The meeras.com.au address for a year', 'Keeps the site at the same trusted address.') : ''}
+      ${amt(50) ? donateCard(50, amt(50), firstSel === 50, 'server', 'Hosting and analytics for about three months', 'The servers that keep Meeras online and improving.') : ''}
+      ${cfg.links.custom ? donateCard('Other', cfg.links.custom, !!onlyCustom, 'heart', 'Your choice, every amount helps', 'Sadaqah jāriyah: a Will made with Meeras keeps giving.') : ''}
     </div>
     <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:10px;">2. Pay securely with Stripe</div>
     <button type="button" class="btn btn-primary donate-go" id="donateGo" onclick="goToDonation()">${donateGoLabel(firstSel ? 'A$' + firstSel : (onlyCustom ? 'Other' : ''))}</button>
@@ -5501,6 +5532,23 @@ screens.S24 = () => {
 // Choosing an amount only selects it; the "Continue to secure payment" button
 // then opens that amount's Stripe Payment Link in a new tab. Someone who lands on
 // this page directly sees one clear next step.
+// One contribution card: amount, what it covers, and an animated icon.
+const DONATE_ICONS = {
+  coffee: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path class="steam s1" d="M17 6c-2 3 2 5 0 8"/><path class="steam s2" d="M24 4c-2 3 2 5 0 8"/><path class="steam s3" d="M31 6c-2 3 2 5 0 8"/><path d="M10 20h26v9a10 10 0 0 1-10 10h-6a10 10 0 0 1-10-10z"/><path d="M36 23h3a4 4 0 0 1 0 8h-3"/><path d="M8 43h32"/></svg>',
+  domain: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="24" cy="24" r="17"/><path class="orbit" d="M7 24h34M24 7c6 6 6 28 0 34M24 7c-6 6-6 28 0 34"/><path d="M11 13c8 4 18 4 26 0M11 35c8-4 18-4 26 0"/></svg>',
+  server: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8" y="8" width="32" height="12" rx="3"/><rect x="8" y="28" width="32" height="12" rx="3"/><circle class="led l1" cx="15" cy="14" r="1.8" fill="currentColor"/><circle class="led l2" cx="15" cy="34" r="1.8" fill="currentColor"/><path d="M22 14h11M22 34h11"/></svg>',
+  heart: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path class="beat" d="M24 41s-15-9-15-20a8 8 0 0 1 15-4 8 8 0 0 1 15 4c0 11-15 20-15 20z"/></svg>',
+};
+function donateCard(amount, link, selected, icon, covers, note) {
+  const label = amount === 'Other' ? 'Other' : 'A$' + amount;
+  return `<button type="button" class="donate-amount da-${icon}${selected ? ' selected' : ''}" data-link="${link}" data-amount="${label}" aria-pressed="${!!selected}" onclick="selectDonation(this)">
+      <span class="da-icon" aria-hidden="true">${DONATE_ICONS[icon]}</span>
+      <span class="da-amount">${label}</span>
+      <span class="da-cover">${covers}</span>
+      <span class="da-note">${note}</span>
+      <span class="da-check" aria-hidden="true">✓</span>
+    </button>`;
+}
 function donateGoLabel(amount) {
   if (amount === 'Other') return 'Continue to secure payment: choose your amount →';
   return amount ? 'Continue to secure payment: ' + amount + ' →' : 'Continue to secure payment →';
@@ -5540,7 +5588,7 @@ function openDonation(btn) {
     return;
   }
   // Tier is a fixed config constant (A$5/A$15/A$50/Other), not user-entered data.
-  Analytics.track('donation-click', { tier: (btn.textContent || '').trim() || 'unknown' });
+  Analytics.track('donation-click', { tier: (btn.dataset.amount || btn.textContent || '').trim() || 'unknown' });
   // Highlight the chosen amount in the UI (in case Stripe's window is blocked)
   btn.parentElement.querySelectorAll('.donate-amount').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
@@ -5554,7 +5602,7 @@ function selectDonation(btn) {
   btn.classList.add('selected');
   btn.setAttribute('aria-pressed', 'true');
   const go = document.getElementById('donateGo');
-  if (go) go.textContent = donateGoLabel((btn.textContent || '').trim());
+  if (go) go.textContent = donateGoLabel((btn.dataset.amount || btn.textContent || '').trim());
   const note = document.getElementById('donateOpened');
   if (note) note.textContent = '';
 }
