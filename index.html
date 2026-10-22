@@ -6213,7 +6213,7 @@ const LAUNCH_PLAN = [
     ['Social preview: Open Graph and Twitter card tags with a Meeras image', 'live', 'assets/logo/og-image.jpg (1200x630).'],
     ['Accessibility pass on the wizard (keyboard, screen reader, contrast)', 'progress', 'Automated checks (axe-core, WCAG 2.2 AA) pass with no violations on all 37 screens as of 22 October 2026: contrast fixed for gold, teal and green text, dialogs with roles, focus trapping and Escape, one h1 per screen with h2 sections, live region for the save indicator, labelled bequest fields, banner and contentinfo landmarks, reduced-motion support, 24px progress-bead targets. Pending: a screen-reader run-through of all 14 steps (VoiceOver and NVDA) and a 200% zoom check; the PDF is untagged (pdf-lib limitation).'],
     ['Privacy Policy and Terms reviewed alongside the template', 'progress', ''],
-    ['www to apex redirect rule in the Cloudflare zone', 'planned', 'Both hostnames serve the site today.'],
+    ['www to apex redirect, and http to https', 'live', 'Done 22 October 2026. The zone rule and Always Use HTTPS were added but did not take effect on the Worker custom domains, so the Worker issues both 301s itself (worker/index.mjs).'],
     ['Contribution links in donation-config.js are live Stripe Payment Links; "Donate" renamed "Support Meeras"', 'live', ''],
     ['Dev environment refreshed to the launch build (./deploy.sh)', 'live', 'Both environments are deployed on every change.'],
     ['Privacy Policy discloses every analytics service (Umami, Metricool) and names the operator', 'live', 'Effective 22 October 2026.'],

@@ -17,6 +17,9 @@
 
 // The Google Search Console ownership file must answer at its exact URL with
 // status 200; the assets layer would 307-redirect "/name.html" to "/name".
+// One canonical host: www and plain http are redirected to https://meeras.com.au.
+// Staging (*.workers.dev) is left alone.
+const APEX = 'meeras.com.au';
 const GOOGLE_VERIFICATION = {
   '/google663a0c67b107aea8.html': 'google-site-verification: google663a0c67b107aea8.html',
 };
@@ -30,6 +33,13 @@ const GRACE_DAYS = 14;          // a yearly membership keeps saving rights this 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    const host = url.hostname.toLowerCase();
+    let scheme = url.protocol.replace(':', '');
+    try { const v = JSON.parse(request.headers.get('cf-visitor') || '{}'); if (v.scheme) scheme = v.scheme; } catch (e) {}
+    if (host === 'www.' + APEX || (host === APEX && scheme !== 'https')) {
+      const target = 'https://' + APEX + url.pathname + url.search;
+      if (target !== request.url) return Response.redirect(target, 301);
+    }
     if (GOOGLE_VERIFICATION[url.pathname] !== undefined) {
       return new Response(GOOGLE_VERIFICATION[url.pathname], { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=3600', 'X-Robots-Tag': 'noindex' } });
     }
