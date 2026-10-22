@@ -35,7 +35,7 @@ binding = "ASSETS"
 # Serve dist/404.html (which redirects to the home page) for unknown paths.
 not_found_handling = "404-page"
 # Only the API runs the Worker script; pages and files are served directly.
-run_worker_first = ["/api/*"]
+run_worker_first = ["/api/*", "/google663a0c67b107aea8.html"]
 # dist/_headers is applied by the assets layer.
 
 [[d1_databases]]
@@ -67,7 +67,7 @@ routes = []
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "404-page"
-run_worker_first = ["/api/*"]
+run_worker_first = ["/api/*", "/google663a0c67b107aea8.html"]
 
 [[env.staging.d1_databases]]
 binding = "DB"
