@@ -237,7 +237,11 @@
     white-space: nowrap;
     text-transform: uppercase;
   }
-  .donate-ico { width: 16px; height: 16px; flex: none; }
+  .donate-ico { width: 17px; height: 17px; flex: none; }
+  /* Gold coin with a heart and a dollar sign (on light backgrounds) */
+  .dc-rim { fill: #D9A531; } .dc-face { fill: #F2C94C; } .dc-heart { fill: #B8861B; } .dc-dollar { fill: #FFF3CC; }
+  /* On the gold header button the coin is cream so it stands out */
+  .donate-btn .dc-rim { fill: #FFF3CC; } .donate-btn .dc-face { fill: #FFE69A; } .donate-btn .dc-heart { fill: #8C6A1E; } .donate-btn .dc-dollar { fill: #FFF3CC; }
   .mm-item.donate { justify-content: flex-start; gap: 8px; }
   .mm-item.donate::after { margin-left: auto; }
   .footer-link .donate-ico { width: 14px; height: 14px; vertical-align: -2px; margin-right: 5px; color: var(--accent-dark); }
@@ -1836,7 +1840,7 @@
         <span class="save-indicator" id="saveIndicator" role="status" aria-live="polite">✓ Saved</span>
         <button class="nav-link" onclick="showResetModal()">Reset</button>
         <button class="nav-link member-only" id="navAccount" onclick="goTo('S38')">Sign in</button>
-        <button class="donate-btn" onclick="goTo('S24')" aria-label="Support Meeras with a contribution"><svg class="donate-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.2s-4.2-2.5-4.2-5.4a2.3 2.3 0 0 1 4.2-1.3 2.3 2.3 0 0 1 4.2 1.3c0 2.9-4.2 5.4-4.2 5.4z"/></svg>Support</button>
+        <button class="donate-btn" onclick="goTo('S24')" aria-label="Support Meeras with a contribution"><svg class="donate-ico" viewBox="0 0 24 24" aria-hidden="true"><circle class="dc-rim" cx="12" cy="12" r="11"/><circle class="dc-face" cx="12" cy="12" r="9.2"/><path class="dc-heart" d="M12 18.6s-5.6-3.3-5.6-7.3a3 3 0 0 1 5.6-1.6 3 3 0 0 1 5.6 1.6c0 4-5.6 7.3-5.6 7.3z"/><text class="dc-dollar" x="12" y="15.1" text-anchor="middle" font-family="DM Sans, Arial, Helvetica, sans-serif" font-weight="800" font-size="8.6">$</text></svg>Support</button>
         <button class="cta-nav" id="navCta" onclick="navPrimaryAction()">Begin your Will</button>
         <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu" onclick="toggleMobileMenu(event)"><span></span><span></span><span></span></button>
       </div>
@@ -1859,7 +1863,7 @@
       <button class="mm-item" onclick="goTo('S25')">Imam directory</button>
       <div class="mm-section">More</div>
       <button class="mm-item" onclick="goTo('S26')">About Meeras</button>
-      <button class="mm-item donate" onclick="goTo('S24')"><svg class="donate-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.2s-4.2-2.5-4.2-5.4a2.3 2.3 0 0 1 4.2-1.3 2.3 2.3 0 0 1 4.2 1.3c0 2.9-4.2 5.4-4.2 5.4z"/></svg>Support Meeras</button>
+      <button class="mm-item donate" onclick="goTo('S24')"><svg class="donate-ico" viewBox="0 0 24 24" aria-hidden="true"><circle class="dc-rim" cx="12" cy="12" r="11"/><circle class="dc-face" cx="12" cy="12" r="9.2"/><path class="dc-heart" d="M12 18.6s-5.6-3.3-5.6-7.3a3 3 0 0 1 5.6-1.6 3 3 0 0 1 5.6 1.6c0 4-5.6 7.3-5.6 7.3z"/><text class="dc-dollar" x="12" y="15.1" text-anchor="middle" font-family="DM Sans, Arial, Helvetica, sans-serif" font-weight="800" font-size="8.6">$</text></svg>Support Meeras</button>
       <button class="mm-item" onclick="goTo('S28')">Privacy Policy</button>
       <button class="mm-item" onclick="goTo('S29')">Terms of Service</button>
     </div>
@@ -1915,7 +1919,7 @@
           <li><button class="footer-link" onclick="goTo('S33')">For executors</button></li>
           <li><button class="footer-link" onclick="goTo('S27')">Resources</button></li>
           <li class="member-only"><button class="footer-link" onclick="goTo('S38')">Membership</button></li>
-          <li><button class="footer-link" onclick="goTo('S24')"><svg class="donate-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16.2s-4.2-2.5-4.2-5.4a2.3 2.3 0 0 1 4.2-1.3 2.3 2.3 0 0 1 4.2 1.3c0 2.9-4.2 5.4-4.2 5.4z"/></svg>Support Meeras</button></li>
+          <li><button class="footer-link" onclick="goTo('S24')"><svg class="donate-ico" viewBox="0 0 24 24" aria-hidden="true"><circle class="dc-rim" cx="12" cy="12" r="11"/><circle class="dc-face" cx="12" cy="12" r="9.2"/><path class="dc-heart" d="M12 18.6s-5.6-3.3-5.6-7.3a3 3 0 0 1 5.6-1.6 3 3 0 0 1 5.6 1.6c0 4-5.6 7.3-5.6 7.3z"/><text class="dc-dollar" x="12" y="15.1" text-anchor="middle" font-family="DM Sans, Arial, Helvetica, sans-serif" font-weight="800" font-size="8.6">$</text></svg>Support Meeras</button></li>
         </ul>
       </div>
     </div>
