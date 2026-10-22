@@ -72,7 +72,8 @@ if (!UMAMI_TAG.test(notFound)) throw new Error('Umami tag not found in 404.html'
 fs.writeFileSync(path.join(DIST, '404.html'), notFound.replace(UMAMI_TAG, umamiTag));
 
 // Copied as they are.
-for (const f of ['donation-config.js', 'robots.txt']) {
+// google663a0c67b107aea8.html is the Search Console ownership proof; keep it in place.
+for (const f of ['donation-config.js', 'robots.txt', 'google663a0c67b107aea8.html']) {
   fs.copyFileSync(path.join(ROOT, f), path.join(DIST, f));
 }
 // Web assets (logo, icons, social image). Sources in brand/ are not deployed.
