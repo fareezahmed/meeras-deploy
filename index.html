@@ -877,6 +877,12 @@
   .status-progress { background: rgba(201,169,97,0.22); color: var(--accent-dark); }
   .status-planned { background: rgba(27,77,107,0.1); color: var(--primary); }
   .status-considering { background: rgba(138,132,127,0.16); color: var(--muted); }
+  .risk-green { background: rgba(45,122,79,0.12); color: var(--success); }
+  .risk-yellow { background: rgba(201,169,97,0.26); color: var(--accent-dark); }
+  .risk-orange { background: rgba(214,112,38,0.16); color: #9a4a0d; }
+  .risk-red { background: rgba(178,58,58,0.14); color: var(--danger); }
+  .risk-table td:nth-child(2), .risk-table td:nth-child(6) { min-width: 220px; }
+  .risk-table td:nth-child(5) { white-space: nowrap; }
   @media (max-width: 600px) {
     .compare-table { font-size: 13px; }
     .compare-table th, .compare-table td { padding: 8px 6px; }
@@ -6120,12 +6126,17 @@ screens.S33 = () => `
 
 // ───── S34 LAUNCH PLAN (internal page: /#launch, not linked anywhere) ─────
 // Status values: live, progress, planned, considering (see STATUS_LABELS).
-const LAUNCH_UPDATED = '17 October 2026';
+const LAUNCH_UPDATED = '22 October 2026';
 const LAUNCH_PLAN = [
   { phase: 'Before launch', items: [
     ['Production at meeras.com.au with HTTPS, security headers and the canonical link', 'live', ''],
     ['Engine tests and the Al-Mawārīth cross-check pass (npm test)', 'live', ''],
-    ['Independent legal review of the template signed off (Part F of the review request)', 'progress', 'Launch messaging must say "under review" until the certificate is signed.'],
+    ['Independent legal review of the template signed off (Part F of the review request)', 'progress', 'Launch messaging must say "under review" until the certificate is signed. Review pack: Meeras-Legal-Review-Request-v2.docx plus the seven specimens.'],
+    ["Solicitor's written view that the free generator is not legal practice (Uniform Law s10; Part E, Q14)", 'planned', 'The only mitigation that changes risk R1. Personal offence, not just the company.'],
+    ['Professional indemnity, public liability and cyber insurance naming online Will templates and document storage', 'planned', 'Ask a broker; tell any existing WizInsights insurer about Meeras.'],
+    ['"Meeras" registered as a business name under WIZINSIGHTS PTY LTD (ASIC)', 'planned', 'Required when trading under a name that is not the company name. About ten minutes.'],
+    ['Interest in Meeras declared to the iCAN Victoria committee', 'planned', 'Before any iCAN channel or event mentions Meeras.'],
+    ['Operator named on the site: WIZINSIGHTS PTY LTD, ABN 48 669 478 497, on the Support, Terms and Privacy pages and in the footer', 'live', ''],
     ['Seven specimen Wills regenerated from the launch build and their checksums recorded', 'live', ''],
     ['Umami website for meeras.com.au and the UMAMI_WEBSITE_ID build variable', 'planned', 'Optional; the shared dashboard already records the production hostname.'],
     ['Search: Google Search Console verified for meeras.com.au; sitemap not needed for a single page', 'planned', ''],
@@ -6133,23 +6144,41 @@ const LAUNCH_PLAN = [
     ['Accessibility pass on the wizard (keyboard, screen reader, contrast)', 'progress', 'Done: skip link, visible focus everywhere, labels linked to inputs, named stepper buttons, keyboard progress beads, expanded state on explanations, darker small gold text. Pending: a full screen-reader run-through of all 14 steps.'],
     ['Privacy Policy and Terms reviewed alongside the template', 'progress', ''],
     ['www to apex redirect rule in the Cloudflare zone', 'planned', 'Both hostnames serve the site today.'],
-    ['Donation links in donation-config.js switched to live Stripe Payment Links', 'planned', ''],
-    ['Dev environment refreshed to the launch build (./deploy.sh)', 'planned', ''],
+    ['Contribution links in donation-config.js are live Stripe Payment Links; "Donate" renamed "Support Meeras"', 'live', ''],
+    ['Dev environment refreshed to the launch build (./deploy.sh)', 'live', 'Both environments are deployed on every change.'],
+    ['Privacy Policy discloses every analytics service (Umami, Metricool) and names the operator', 'live', 'Effective 22 October 2026.'],
   ]},
   { phase: 'Launch week', items: [
     ['Announcement to the Australian National Imams Council and State Islamic councils', 'planned', 'Ask for a listing on their resource pages and a khutbah mention.'],
     ['Posts to Muslim community groups and mosque notice boards (Melbourne, Sydney first)', 'planned', ''],
     ['Short explainer video: why every Muslim adult needs a Will', 'planned', ''],
     ['Al-Mawārīth calculator links to Meeras for the Will step', 'planned', ''],
-    ['Feedback channel open (email on the About page) and triage routine', 'planned', ''],
+    ['Feedback channel open (email on the About page) and triage routine', 'planned', 'A support address has not been chosen yet.'],
+    ['House rule in force: nobody at Meeras answers an individual\'s question about their own Will (WhatsApp, events, email); refer to the FAQ, an Imam or a lawyer', 'live', 'Keeps the legal-practice risk down and avoids a personal duty of care.'],
+    ['Claim ladder kept in all launch copy: "designed to meet the formal requirements", "under independent legal review"; never "legally valid" or "lawyer approved"', 'live', ''],
   ]},
   { phase: 'After launch (first 90 days)', items: [
     ['Weekly review of the Umami funnel: visits, wizard started, PDF generated, donation clicks', 'planned', ''],
     ['Fix list from user feedback, prioritised by frequency', 'planned', ''],
     ['Second content batch: State-by-State guides, superannuation nominations, executor sheet', 'planned', ''],
-    ['Decide on the paid encrypted-account tier from observed demand', 'considering', ''],
+    ['Membership (encrypted storage, A$15 yearly or A$79 lifetime) and lawyer introductions', 'progress', 'Built on the membership branch and tested on staging. Needs: Stripe and Resend keys, solicitor review of the membership Terms, refund policy, support address, and a lawyer who has agreed. Hidden until then.'],
   ]},
 ];
+// Go-live risk register (22 October 2026). Score = severity x likelihood, 1 to 5 each;
+// green 1-4, yellow 5-9, orange 10-15, red 16+. Not legal advice; for the solicitor to check.
+const LAUNCH_RISKS = [
+  ['R1', 'Unqualified legal practice: the generator applies inheritance rules to a family and selects clauses (Legal Profession Uniform Law s10 and State equivalents). A personal offence, not only the company\'s.', 5, 2, 'Free generator, user signs their own Will, claim ladder, disclaimers on every page and in the PDF, no individual advice. Needs the solicitor\'s written view.', 'open'],
+  ['R2', 'One template defect repeated across every Will made from that version; negligence claims by families or disappointed beneficiaries (Hill v Van Erp).', 4, 3, 'Independent legal review under way; engine cross-checked against 5,000 families with no differences; each PDF records its template version. Needs insurance.', 'open'],
+  ['R3', 'No insurance that covers Will-related claims; an existing WizInsights policy would exclude legal services and could be voided by not disclosing Meeras.', 4, 2, 'Broker quote for professional indemnity, public liability and cyber cover.', 'open'],
+  ['R4', 'Misleading claims under the Australian Consumer Law ("Shariah-compliant", "designed to meet requirements", "we cannot read them"); a director knowingly involved is personally liable.', 4, 2, 'Claim ladder enforced in all copy; privacy wording matches what the site does.', 'mitigated'],
+  ['R7', 'Family provision challenges to Wills that follow the Islamic shares; Meeras blamed publicly.', 3, 3, 'Claims are against the estate; site warns that Wills can be challenged; reputational only.', 'accepted'],
+  ['R6', 'A Meeras claim reaches the rest of WizInsights\' assets and contracts.', 4, 2, 'Insurance is the control; a separate company later if Meeras grows.', 'accepted'],
+  ['R8', 'Privacy: the statutory tort for serious invasions of privacy (from June 2025) and, once membership is live, sensitive data in accounts.', 3, 1, 'No accounts live; Will data stays on the device; member vault encrypted on the device; breach plan needed before membership launches.', 'mitigated'],
+  ['R10', 'Conflict of interest between the iCAN Victoria role and a WizInsights product.', 2, 3, 'Declare the interest; no iCAN channels without the committee\'s agreement.', 'open'],
+  ['R11', '"Meeras" is not registered as a business name under the ABN.', 1, 4, 'Register with ASIC.', 'open'],
+  ['R12', 'GST registration once turnover passes A$75,000; "lifetime" membership promise if the service ends.', 1, 1, 'Not relevant until membership has revenue; Terms give 90 days\' notice.', 'accepted'],
+];
+const riskLevel = s => s >= 16 ? ['Red', 'risk-red'] : s >= 10 ? ['Orange', 'risk-orange'] : s >= 5 ? ['Yellow', 'risk-yellow'] : ['Green', 'risk-green'];
 screens.S34 = () => {
   const badge = s => { const [label, cls] = STATUS_LABELS[s] || STATUS_LABELS.planned; return `<span class="status-badge ${cls}">${label}</span>`; };
   const counts = { live: 0, progress: 0, planned: 0, considering: 0 };
@@ -6161,7 +6190,30 @@ screens.S34 = () => {
   <p class="screen-subtitle">An internal page, not linked from the site. Last updated ${LAUNCH_UPDATED}. Edit <code>LAUNCH_PLAN</code> in index.html to change it.</p>
 
   <div class="info-callout">
-    <strong>Readiness.</strong> ${counts.live} of ${total} items done, ${counts.progress} in progress, ${counts.planned} planned, ${counts.considering} under consideration. The one gate that blocks public promotion is the legal review sign-off; everything else can proceed in parallel.
+    <strong>Readiness.</strong> ${counts.live} of ${total} items done, ${counts.progress} in progress, ${counts.planned} planned, ${counts.considering} under consideration. The site can be live while the open items are completed; the public promotion push waits for three gates: insurance, the business name, and the solicitor's view on legal practice (with the template sign-off).
+  </div>
+
+  <h4 class="section-h">Go-live risk register</h4>
+  <p class="screen-subtitle" style="margin-bottom:12px;">Severity and likelihood from 1 to 5; score is their product. Not legal advice: for the solicitor to confirm. Two risks are orange; both fall to yellow once the solicitor's view and insurance are in place.</p>
+  <div style="overflow-x:auto;">
+  <table class="compare-table risk-table">
+    <tr><th>#</th><th>Risk</th><th>Sev</th><th>Lik</th><th>Score</th><th>Controls</th><th>Status</th></tr>
+    ${LAUNCH_RISKS.map(([id, risk, sev, lik, controls, status]) => { const score = sev * lik; const [label, cls] = riskLevel(score); return `
+    <tr><td>${id}</td><td>${risk}</td><td>${sev}</td><td>${lik}</td><td><span class="status-badge ${cls}">${score} ${label}</span></td><td>${controls}</td><td>${status}</td></tr>`; }).join('')}
+  </table>
+  </div>
+
+  <h4 class="section-h">Where the company does not protect the founder</h4>
+  <div class="info-callout">
+    WIZINSIGHTS PTY LTD carries negligence and contract claims. Personal exposure remains for: unqualified legal practice (an offence against the person who does the work); being knowingly involved in misleading claims; giving a family advice personally (own duty of care); trading while insolvent after a large claim; personal guarantees and director penalty notices for unpaid tax or super.
+  </div>
+
+  <h4 class="section-h">If something goes wrong</h4>
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:6px;padding:4px 16px;margin-bottom:18px;">
+    <div class="status-row"><span><strong>A family says their Will failed or was challenged.</strong> Do not give a view. Refer them to a solicitor, keep every message, note the template version printed in their PDF, and tell the insurer at once (late notification is a common ground for refusal).</span></div>
+    <div class="status-row"><span><strong>A regulator, law society or legal services commissioner writes.</strong> Do not reply personally; engage a solicitor first.</span></div>
+    <div class="status-row"><span><strong>A data incident.</strong> Today only analytics data exists. Once membership is live: the vault is ciphertext, but emails and payment status are personal data; follow the breach plan and consider notification.</span></div>
+    <div class="status-row"><span><strong>A State changes its succession law.</strong> Re-review the affected clauses, bump the template version, regenerate the specimens, note it in the review document.</span></div>
   </div>
 
   <h4 class="section-h">Goals for the first year</h4>
