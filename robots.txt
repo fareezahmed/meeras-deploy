@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 # Meeras is a free, public Islamic Will resource — search engines welcome.
+Sitemap: https://meeras.com.au/sitemap.xml

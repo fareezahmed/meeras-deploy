@@ -67,6 +67,16 @@ fs.writeFileSync(path.join(DIST, '404.html'), notFound.replace(UMAMI_TAG, umamiT
 for (const f of ['donation-config.js', 'robots.txt', 'google663a0c67b107aea8.html']) {
   fs.copyFileSync(path.join(ROOT, f), path.join(DIST, f));
 }
+if (cfg.canonical) {
+  // sitemap.xml names only the canonical URL; dev has no canonical and no sitemap.
+  fs.copyFileSync(path.join(ROOT, 'sitemap.xml'), path.join(DIST, 'sitemap.xml'));
+} else {
+  // robots.txt on dev must not point crawlers at the production sitemap.
+  const robots = fs.readFileSync(path.join(DIST, 'robots.txt'), 'utf8').replace(/^Sitemap:.*\n?/m, '');
+  fs.writeFileSync(path.join(DIST, 'robots.txt'), robots);
+}
+// Browsers and Google ask for /favicon.ico at the root whatever the <link> says.
+fs.copyFileSync(path.join(ROOT, 'assets', 'logo', 'favicon.ico'), path.join(DIST, 'favicon.ico'));
 // Web assets (logo, icons, social image). Sources in brand/ are not deployed.
 fs.cpSync(path.join(ROOT, 'assets'), path.join(DIST, 'assets'), { recursive: true });
 
