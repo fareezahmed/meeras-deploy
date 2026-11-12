@@ -28,8 +28,8 @@
     currency: 'AUD',
     links: {
       amount5: 'https://buy.stripe.com/cNiaEXekMf6v1ZN3Hkg7e08',
-      amount15: 'https://buy.stripe.com/5kQ5kDgsUbUj33R6Twg7e0a',
-      amount50: 'https://buy.stripe.com/3cIaEXb8Agaz47V4Log7e0b',
+      amount15: 'https://buy.stripe.com/8x2cN5foQf6vgUHb9Mg7e0i',
+      amount50: 'https://buy.stripe.com/28E5kD4KcbUj5bZ5Psg7e0h',
       custom: 'https://buy.stripe.com/eVq6oH5OgaQfawj1zcg7e0c',
     },
     successUrl: origin,
