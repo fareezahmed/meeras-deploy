@@ -235,7 +235,7 @@ The script slices the engine out of `index.html`, runs the worked examples
 (al-Akdariyyah, Zayd's method, ʿUmariyyatān, sisters with and without daughters,
 radd, the charity fallback), sweeps 5,000 random families under the default and
 Ḥanafī rules (every distribution must sum to exactly one with no negative share)
-and, when `../mawarith/Mawarith-Calculator.html` exists (or `MAWARITH=path` is
+and, when `../mawarith/mcalc/calculator.html` exists (or `MAWARITH=path` is
 set), asserts that every heir's fraction equals Al-Mawārīth's for all of them.
 Browser tests: serve the folder (`python3 -m http.server 8000`) and open
 `http://localhost:8000/test.html`.

@@ -32,7 +32,7 @@
 | **Browsers** | At least **Chrome** + one of **Firefox / Safari / Edge**. |
 | **Profiles** | Run critical storage tests in **normal** window and **private/incognito** (expectations may differ if storage is blocked). |
 | **Donations** | If testing Stripe: use **Stripe test mode** Payment Links in `donation-config.js` only on a non-production build if possible. |
-| **Engine tests** | Before manual testing run `npm test` (Node 18+). It slices the engine out of `index.html`, runs the worked examples and, when `../mawarith/Mawarith-Calculator.html` is present, cross-checks 5,000 random families against Al-Mawārīth. Browser tests: serve the folder and open `test.html`. |
+| **Engine tests** | Before manual testing run `npm test` (Node 18+). It slices the engine out of `index.html`, runs the worked examples and, when `../mawarith/mcalc/calculator.html` is present, cross-checks 5,000 random families against Al-Mawārīth. Browser tests: serve the folder and open `test.html`. |
 
 **Artifacts to attach per defect:** URL, browser + version, screenshot, console errors (F12 → Console), steps to reproduce.
 
