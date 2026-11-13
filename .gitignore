@@ -22,3 +22,6 @@ build/
 # Cloudflare Pages (wrangler) local state
 .wrangler/
 .claude/
+
+# Third-party reference material (other publishers' booklets); kept local only
+reference/

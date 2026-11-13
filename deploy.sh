@@ -146,6 +146,7 @@ aws s3 sync . "$SYNC_DEST" \
   --exclude "tests/*" \
   --exclude "build.js" \
   --exclude "brand/*" \
+  --exclude "reference/*" \
   --exclude "worker/*" \
   --exclude "wrangler.toml" \
   --exclude "dist/*" \
