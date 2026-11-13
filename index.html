@@ -1960,7 +1960,7 @@
 // ────────────────────────────────────────────────────────────────────────────
 const DEFAULT_STATE = () => ({
   meta: { version: '1.0', createdAt: new Date().toISOString(), lastSavedAt: null },
-  capacity: { age: false, willing: false, faraid: false },
+  capacity: { age: false, willing: false, faraid: false, guide: false },
   madhhab: null,           // always 'sunni' once past Step 2 (field retained for draft compatibility)
   testator: { fullName: '', dob: '', idNumber: '', address: '', email: '' },
   jurisdiction: null,      // 'NSW' | 'VIC' | ...
@@ -3211,7 +3211,7 @@ screens.S01 = () => {
     || STATE.executors[0].name || STATE.heirs.sons > 0 || STATE.heirs.daughters > 0
     || STATE.heirs.spouses.some(s => s && s.name)
     || (STATE.bequests.length > 0 && STATE.bequests[0].recipient)
-    || STATE.capacity.age || STATE.capacity.willing || STATE.capacity.faraid;
+    || STATE.capacity.age || STATE.capacity.willing || STATE.capacity.faraid || STATE.capacity.guide;
   const hasDraft = hasNavigated || hasData;
   const pct = computeCompletion();
   const lastStep = STATE.currentScreen || 'S01';
@@ -3487,8 +3487,14 @@ screens.S02 = () => `
     <div class="check-text">I understand and intend my estate to be distributed according to <strong>Islamic inheritance law</strong> (farāʾiḍ), and accept the rules set by Allah ﷻ in the Quran.</div>
   </label>
 
+  <label class="checkbox-card ${STATE.capacity.guide ? 'checked' : ''}">
+    <input type="checkbox" class="native-check" ${STATE.capacity.guide ? 'checked' : ''} onchange="toggleCap('guide', this)">
+    <div class="check-box" aria-hidden="true">${STATE.capacity.guide ? '✓' : ''}</div>
+    <div class="check-text">I understand that Meeras is a <strong>guide, not legal advice</strong>, and that no lawyer has reviewed my answers. I am responsible for checking my Will and signing it correctly, and I accept the Terms of Service linked at the foot of this page.</div>
+  </label>
+
   <div class="info-callout">
-    <strong>Why we ask.</strong> Each Australian Succession Act requires testamentary capacity: that you understand what you are doing, what you own, and who has a claim. This is also a Shariah condition for a valid Wasiyyah.
+    <strong>Why we ask.</strong> Each Australian Succession Act requires testamentary capacity: that you understand what you are doing, what you own, and who has a claim. This is also a Shariah condition for a valid Wasiyyah. If illness, age or a diagnosis could lead someone to question your capacity later, see a lawyer before you sign and ask your doctor for a letter written at the time.
   </div>
 
   <div class="btn-row">
@@ -3496,7 +3502,7 @@ screens.S02 = () => `
     <button class="btn btn-primary" id="s02Continue" onclick="nextScreen()" ${capacityComplete() ? '' : 'disabled'}>Continue  →</button>
   </div>
 `;
-function capacityComplete() { return STATE.capacity.age && STATE.capacity.willing && STATE.capacity.faraid; }
+function capacityComplete() { return STATE.capacity.age && STATE.capacity.willing && STATE.capacity.faraid && STATE.capacity.guide; }
 function toggleCap(key, input) {
   STATE.capacity[key] = !!input.checked;
   scheduleSave();
@@ -3715,7 +3721,7 @@ screens.S07 = () => `
   <div class="step-label">Step 6 of 14  ·  Article 2 of your Will</div>
   <h1 class="screen-title">Funeral and burial</h1>
   <p class="screen-subtitle">
-    Article 2 of your Will contains a complete set of standard Islamic burial instructions: ghusl, kafan, prompt burial, no casket where the law permits, qibla orientation, no music or non-Islamic ceremony. You don't need to change anything below unless you have specific additional wishes.
+    Article 2 of your Will contains a complete set of standard Islamic burial instructions: ghusl, kafan, prompt burial, no casket where the law permits, qibla orientation, no music or non-Islamic ceremony. You don't need to change anything below unless you have specific additional wishes. Funeral wishes in a Will are generally not legally binding, and a Will is often read after the burial, so tell your family and your executor what you want now.
   </p>
 
   <div class="accent-callout">
@@ -3983,6 +3989,8 @@ screens.S10 = () => `
   <p class="screen-subtitle">
     If you die while any of your children are under 18, who should care for them?
     You can nominate your spouse first (the default), then up to three alternative guardians in order.
+    This records your wish: a surviving parent normally keeps care of the children, and a court can decide
+    differently where that is in the children's best interests. Ask each person first whether they are willing.
   </p>
 
   <div class="person-card">
@@ -4389,6 +4397,7 @@ screens.S13 = () => {
 
   <div class="info-callout">
     <strong>A reminder.</strong> Under Article 8.4 of your Will, a <em>non-Muslim relative cannot inherit</em>; this follows classical Sunni jurisprudence. The engine excludes them by default. Note in the field below if any of your listed family are non-Muslim.
+    <br><br><strong>Australian law still applies.</strong> A spouse, child or dependant who is left out, or who receives less than they need, can ask an Australian court for provision from your estate, whatever the Will says. If that could happen in your family, get legal advice before you sign.
   </div>
 
   <!-- School of fiqh -->
@@ -4871,7 +4880,7 @@ screens.S19 = () => {
     <div class="checkbox-card checked"><div class="check-box">✓</div><div class="check-text"><strong>Not a beneficiary.</strong> Neither witness is named in your Will to receive anything.</div></div>
     <div class="checkbox-card checked"><div class="check-box">✓</div><div class="check-text"><strong>Not the spouse of a beneficiary.</strong> Equivalent disqualification applies in ${st.name}.</div></div>
   ` : `
-    <div class="checkbox-card checked"><div class="check-box">✓</div><div class="check-text"><strong>Preferably not a beneficiary.</strong> Even where permitted, an independent witness avoids any challenge to your Will.</div></div>
+    <div class="checkbox-card checked"><div class="check-box">✓</div><div class="check-text"><strong>Preferably not a beneficiary, nor the spouse, partner or child of one.</strong> Even where permitted, an independent witness avoids any challenge to your Will.</div></div>
   `}
 
   <h2 class="section-h">How the signing must happen</h2>
@@ -5340,7 +5349,7 @@ screens.S22 = () => `
   </div>
   <div class="checkbox-card">
     <div class="check-box" style="background:var(--accent);border-color:var(--accent);color:white;font-weight:bold;">5</div>
-    <div class="check-text">On the final page, fill in the date, day of the week, and time.</div>
+    <div class="check-text">On the final page, fill in the date, day of the week, and time. Each witness writes their <strong>full name and address</strong> beside their signature, so they can be found later if the court needs them. Everyone signs on the <strong>same day</strong>.</div>
   </div>
 
   <div class="btn-row">
@@ -5369,6 +5378,13 @@ screens.S23 = () => `
   <div class="info-callout">
     <strong>4. Tell your executor.</strong> Whichever option you choose, your executor must know where the Will is and how to access it. Consider giving them a sealed photocopy marked "COPY: original held at [location]".
   </div>
+  <div class="info-callout">
+    <strong>5. The signed paper is the Will.</strong> A scan or photo is only a copy for reference. Do not write on the original, and do not pin, clip or staple anything else to it. If you make a new Will, mark the old one cancelled with the date, or destroy it.
+  </div>
+  ${STATE.jurisdiction === 'VIC' ? `
+  <div class="accent-callout">
+    <strong>In Victoria.</strong> The Supreme Court's Probate Office stores Wills for a fee, and State Trustees runs a free Victorian Will and Powers of Attorney Registry where you can record where your Will is kept.
+  </div>` : ''}
 
   <div class="btn-row">
     <button class="btn btn-secondary" onclick="prevScreen()">← Back</button>
@@ -5968,9 +5984,13 @@ screens.S32 = () => `
   <div class="faq">
     <details><summary>Is a Will made with Meeras legally valid?</summary><p>The document is designed to meet the formal requirements for a valid will in every Australian State and Territory: in writing, signed by an adult with capacity, before two adult witnesses present at the same time who then sign in your presence. Validity depends on executing it correctly, which is why the execution checklist matters. The template is under independent legal review, and we recommend a review of your own Will where property, a business, superannuation or a blended family is involved.</p></details>
     <details><summary>Who can be a witness?</summary><p>Two adults who watch you sign, at the same time, and then sign themselves. Choose people who are not beneficiaries: in New South Wales, Queensland, Tasmania and the Northern Territory a gift to a witness can be lost, and everywhere else an independent witness avoids any challenge. A paid executor should not witness either.</p></details>
-    <details><summary>Can I sign electronically?</summary><p>No. Print it on plain paper, sign every page with the same pen, and keep the original. Staple it once and never remove the staple. A scanned copy is a reference, not the Will.</p></details>
+    <details><summary>Can I sign electronically?</summary><p>A Meeras Will is made to be printed and signed in ink. Print it on plain paper, sign every page with the same pen, and keep the original. Staple it once and never remove the staple. A scanned copy is a reference, not the Will. Some States, Victoria among them, allow witnessing over a video link under strict conditions (in Victoria one witness must be a lawyer or a justice of the peace); do that only with a lawyer's help.</p></details>
     <details><summary>What happens if I die without a Will?</summary><p>Your State's intestacy formula decides who inherits, usually your spouse and children in fixed statutory proportions. It does not follow the Quranic shares, and it says nothing about Islamic burial, guardianship or bequests. A valid Will is the only instrument that makes your farāʾiḍ intentions operate.</p></details>
-    <details><summary>How do I update my Will?</summary><p>Run the wizard again (import your exported draft to save time), print and sign the new Will with two witnesses. A later valid Will revokes the earlier one, so destroy the old original. Review it after marriage, divorce, a birth, a death in the family, buying property, or moving State.</p></details>
+    <details><summary>How do I update my Will?</summary><p>Run the wizard again (import your exported draft to save time), print and sign the new Will with two witnesses. A later valid Will revokes the earlier one, so destroy the old original. Do not make handwritten changes to a signed Will. Review it every three to five years, and after marriage, divorce, separation, a birth, a death in the family, buying property, or moving State.</p></details>
+    <details><summary>What if I marry, divorce or separate?</summary><p>Marrying generally cancels a Will made before the marriage, unless the Will says it was made with that marriage in mind; a Meeras Will does not say this, so make a new Will after you marry. Divorce generally cancels what the Will gives your former spouse and their appointment as executor, and the detail differs by State. Separation alone changes nothing: a spouse you have separated from still takes under the Will until you make a new one. Get legal advice if you are separated but not divorced.</p></details>
+    <details><summary>Does everything I own pass under my Will?</summary><p>No. A home or account you own as a joint tenant passes to the surviving owner, outside the Will and outside the Islamic shares; check the title, because many couples own their home this way. Superannuation and life insurance follow the nomination you gave the fund or insurer. Assets held in a family trust or a company are not yours to leave by Will. Get advice on these, on overseas property and on business assets.</p></details>
+    <details><summary>Can my Will be challenged?</summary><p>Yes. In every State a court can order provision from your estate for a spouse, child or dependant who was not adequately provided for, whatever the Will says, and no clause can prevent that. The risk is higher where shares are unequal or where someone is left out, such as a non-Muslim relative, an adopted child or a stepchild. Get legal advice if that applies to your family, talk to your family where it is safe to, and consider leaving a letter with the Will that explains your reasons.</p></details>
+    <details><summary>When should I see a lawyer instead?</summary><p>Before you sign, if any of these apply: a child or dependant with a disability; children from an earlier relationship; you are separated but still married; you want to leave someone out; property overseas; a business, company, family trust or self-managed super fund; you are seriously ill or in hospital; or a diagnosis that might lead someone to question your capacity. A doctor's letter written at the time you sign helps in the last two cases.</p></details>
   </div>
 
   <h2 class="section-h">Islamic questions</h2>
@@ -5980,7 +6000,7 @@ screens.S32 = () => `
     <details><summary>Can I leave something to a non-Muslim relative?</summary><p>Not as an heir: Article 8 distributes the remainder among Muslim heirs. You can provide for a non-Muslim relative with a bequest in Article 7, within the one third. Specialist advice is sensible here, because family provision laws also apply.</p></details>
     <details><summary>Why are the printed percentages "illustrative"?</summary><p>Inheritance is determined at the moment of death, by whoever survives you then. The table shows the shares for the family you listed today; Article 8.7 directs the executor to apply Schedule A to your then-living heirs, with a scholar's verification. A child born later still inherits.</p></details>
     <details><summary>Does superannuation follow my Will?</summary><p>Not automatically. Superannuation is paid by the fund's trustee, usually to whoever you nominated. Make a binding nomination to your estate (or to your dependants) if you want it distributed Islamically; Article 10 asks the trustee to pay it to the estate where there is no valid nomination.</p></details>
-    <details><summary>Can I include my funeral wishes?</summary><p>Yes. Article 2 records ghusl, kafan, janāzah and burial by the Sunnah, your chosen burial organisation and plot, and any additional instructions. Tell your family where the Will is, because burial happens before probate.</p></details>
+    <details><summary>Can I include my funeral wishes?</summary><p>Yes. Article 2 records ghusl, kafan, janāzah and burial by the Sunnah, your chosen burial organisation and plot, and any additional instructions. Funeral wishes in a Will are generally not legally binding, and burial happens before probate, so tell your family and your executor what you want and where the Will is.</p></details>
   </div>
 
   <h2 class="section-h">About Meeras</h2>
@@ -7423,7 +7443,7 @@ function pdfFilename() {
 // content to render. Used only to build the sample download — never persisted.
 function sampleSTATE() {
   const s = DEFAULT_STATE();
-  s.capacity = { age: true, willing: true, faraid: true };
+  s.capacity = { age: true, willing: true, faraid: true, guide: true };
   s.madhhab = 'sunni';
   s.testator = {
     fullName: 'Yusuf Ahmad Karim',
