@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<!-- Source for the combined Al-Mawārīth + Meeras promotion material (Australia).
+     One page, five layouts; pick one with ?v=
+       hero | problem | question   1080 x 1080 social squares
+       story                       1080 x 1920 WhatsApp status / Instagram story
+       flyer                       A4 portrait (1240 x 1754 CSS px, printed at 2480 x 3508)
+     Rendered by render.sh (macOS WebKit through render.swift).
+     Not deployed: build.js and deploy.sh leave brand/ out.
+
+     Wording rules (launch plan, "Rules for every campaign"): lead with the problem and the
+     price, say "designed to meet the formal requirements" and "under independent legal
+     review", never "legally valid" or "lawyer approved". -->
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<title>Al-Mawārīth and Meeras promotion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=block" rel="stylesheet">
+<style>
+  :root {
+    --blue: #1B4D6B; --blue-dark: #133649; --blue-deep: #0F2B3B;
+    --teal: #14655A; --teal-deep: #0B4A3F; --teal-dark: #08372F;
+    --gold: #C9A961; --gold-light: #E6CB86; --gold-text: #8A6A1F;
+    --parchment: #F6F1E6; --card: #FEFCF7; --line: #E3D8C0;
+    --ink: #14201D; --ink-soft: #46534F;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { overflow: hidden; }
+  body { font-family: 'DM Sans', system-ui, sans-serif; color: var(--ink); background: var(--parchment); position: relative; }
+  body.sq { width: 1080px; height: 1080px; }
+  body.st { width: 1080px; height: 1920px; }
+  body.a4 { width: 1240px; height: 1754px; }
+  section { display: none; position: absolute; inset: 0; }
+  body[data-v="hero"] #hero, body[data-v="problem"] #problem, body[data-v="question"] #question,
+  body[data-v="story"] #story, body[data-v="flyer"] #flyer { display: flex; flex-direction: column; }
+
+  .pattern { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.16; pointer-events: none; }
+  .dark .pattern { opacity: 0.10; }
+  .bar { height: 14px; flex: none; background: linear-gradient(90deg, #A8873F 0%, #E6CB86 50%, #A8873F 100%); position: relative; z-index: 1; }
+  .inner { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; }
+  .serif { font-family: 'Fraunces', Georgia, serif; }
+  .eyebrow { font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold-text); }
+  .dark .eyebrow { color: var(--gold-light); }
+  .teal { color: var(--teal-deep); } .blue { color: var(--blue); } .goldc { color: var(--gold-light); }
+
+  /* The two tool cards */
+  .tools { display: flex; gap: 28px; }
+  .tool { flex: 1; border-radius: 28px; color: #FEFCF7; display: flex; flex-direction: column; overflow: hidden;
+          box-shadow: 0 18px 40px rgba(15, 43, 59, 0.22); }
+  .tool.maw { background: linear-gradient(160deg, #14655A 0%, #0B4A3F 60%, #08372F 100%); }
+  .tool.mee { background: linear-gradient(160deg, #235F82 0%, #1B4D6B 55%, #133649 100%); }
+  .plate { background: var(--card); display: flex; align-items: center; justify-content: center; border-bottom: 4px solid var(--gold); }
+  .plate img { display: block; }
+  .tool .body { flex: 1; display: flex; flex-direction: column; }
+  .step { font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-light); }
+  .tool h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; color: #FEFCF7; }
+  .tool p { color: rgba(254, 252, 247, 0.9); }
+  .url { margin-top: auto; align-self: flex-start; background: var(--gold-light); color: var(--blue-deep); font-weight: 700; border-radius: 999px; }
+  .maw .url { color: var(--teal-dark); }
+
+  .strip { display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--blue-dark); }
+  .strip span + span::before { content: '◆'; color: var(--gold); margin: 0 0.9em; font-size: 0.62em; position: relative; top: -0.18em; }
+  .dark .strip { color: #FEFCF7; }
+  .fine { color: var(--ink-soft); text-align: center; }
+  .dark .fine { color: rgba(254, 252, 247, 0.72); }
+
+  /* ---------- Square: hero ---------- */
+  #hero .inner { padding: 60px 68px 44px; }
+  #hero .eyebrow { font-size: 23px; }
+  #hero h1 { font-weight: 400; font-size: 102px; line-height: 1.0; letter-spacing: -0.02em; margin-top: 18px; }
+  #hero .lead { font-size: 31px; line-height: 1.34; color: var(--ink-soft); margin-top: 22px; max-width: 900px; }
+  #hero .tools { margin-top: 34px; flex: 1; }
+  .sq .plate { height: 118px; }
+  .sq .plate img.mawlogo { height: 76px; } .sq .plate img.meelogo { height: 82px; }
+  .sq .tool .body { padding: 24px 28px 28px; }
+  .sq .step { font-size: 19px; }
+  .sq .tool h3 { font-size: 35px; line-height: 1.1; margin-top: 10px; }
+  .sq .tool p { font-size: 24px; line-height: 1.36; margin-top: 12px; }
+  .sq .url { font-size: 26px; padding: 11px 24px; }
+  #hero .strip { font-size: 26px; margin-top: 30px; }
+  #hero .fine { font-size: 17.5px; line-height: 1.4; margin-top: 14px; }
+
+  /* ---------- Square: problem (dark) ---------- */
+  #problem { background: radial-gradient(120% 90% at 30% 10%, #1B5A63 0%, #133649 45%, #0F2B3B 100%); color: #FEFCF7; }
+  #problem .inner { padding: 62px 68px 44px; }
+  #problem .eyebrow { font-size: 23px; }
+  #problem h1 { font-weight: 400; font-size: 84px; line-height: 1.04; letter-spacing: -0.018em; margin-top: 20px; color: #FEFCF7; }
+  #problem h1 em { font-style: normal; color: var(--gold-light); }
+  #problem .lead { font-size: 30px; line-height: 1.36; color: rgba(254, 252, 247, 0.88); margin-top: 24px; max-width: 900px; }
+  .rows { display: flex; flex-direction: column; gap: 20px; margin-top: 36px; flex: 1; justify-content: center; }
+  .row { background: var(--card); border-radius: 24px; display: flex; align-items: center; gap: 26px; padding: 22px 28px; color: var(--ink);
+         border-left: 12px solid var(--gold); box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28); }
+  .row .logo { width: 250px; flex: none; display: flex; justify-content: center; }
+  .row .logo img { display: block; max-width: 100%; }
+  .row .txt { flex: 1; }
+  .row .step { font-size: 18px; color: var(--gold-text); }
+  .row h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: 35px; line-height: 1.12; margin-top: 6px; }
+  .row.maw h3 { color: var(--teal-deep); } .row.mee h3 { color: var(--blue); }
+  .row .u { font-weight: 700; font-size: 26px; margin-top: 8px; color: var(--ink); }
+  #problem .strip { font-size: 26px; margin-top: 30px; }
+  #problem .fine { font-size: 17.5px; line-height: 1.4; margin-top: 14px; }
+
+  /* ---------- Square: question ---------- */
+  #question .inner { padding: 60px 68px 44px; }
+  #question .eyebrow { font-size: 23px; }
+  #question h1 { font-weight: 400; font-size: 108px; line-height: 1.0; letter-spacing: -0.02em; margin-top: 16px; color: var(--blue-dark); }
+  .asks { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 20px; margin-top: 34px; }
+  .ask { background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 18px 22px; font-size: 27px; line-height: 1.25; font-weight: 500; color: var(--ink);
+         display: flex; align-items: center; gap: 16px; }
+  .ask b { flex: none; width: 46px; height: 46px; border-radius: 50%; background: var(--gold-light); color: var(--blue-deep); font-family: 'Fraunces', Georgia, serif; font-weight: 600;
+           font-size: 28px; display: flex; align-items: center; justify-content: center; }
+  .band { margin-top: 30px; flex: 1; border-radius: 28px; background: linear-gradient(100deg, #0B4A3F 0%, #14655A 38%, #1B4D6B 62%, #133649 100%); color: #FEFCF7;
+          display: flex; align-items: stretch; box-shadow: 0 18px 40px rgba(15, 43, 59, 0.22); }
+  .band .half { flex: 1; padding: 28px 30px; display: flex; flex-direction: column; }
+  .band .half + .half { border-left: 2px solid rgba(230, 203, 134, 0.5); }
+  .band .step { font-size: 19px; }
+  .band h3 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: 37px; line-height: 1.12; margin-top: 10px; }
+  .band p { font-size: 23px; line-height: 1.36; margin-top: 10px; color: rgba(254, 252, 247, 0.9); }
+  .band .url { font-size: 25px; padding: 10px 22px; color: var(--blue-deep); }
+  #question .strip { font-size: 26px; margin-top: 28px; }
+  #question .fine { font-size: 17.5px; line-height: 1.4; margin-top: 14px; }
+
+  /* ---------- Story 1080 x 1920 ---------- */
+  #story .inner { padding: 150px 76px 130px; }
+  #story .eyebrow { font-size: 27px; }
+  #story h1 { font-weight: 400; font-size: 124px; line-height: 1.0; letter-spacing: -0.02em; margin-top: 26px; }
+  #story .lead { font-size: 39px; line-height: 1.36; color: var(--ink-soft); margin-top: 34px; }
+  #story .tools { flex-direction: column; gap: 34px; margin-top: 56px; flex: 1; }
+  #story .tool { flex: 1; flex-direction: row; }
+  #story .plate { width: 330px; flex: none; border-bottom: none; border-right: 5px solid var(--gold); padding: 0 26px; }
+  #story .plate img { max-width: 100%; }
+  #story .tool .body { padding: 34px 36px; }
+  #story .step { font-size: 23px; }
+  #story .tool h3 { font-size: 50px; line-height: 1.08; margin-top: 12px; }
+  #story .tool p { font-size: 30px; line-height: 1.34; margin-top: 14px; }
+  #story .url { font-size: 33px; padding: 14px 30px; }
+  #story .strip { font-size: 33px; margin-top: 56px; }
+  #story .fine { font-size: 22px; line-height: 1.42; margin-top: 22px; }
+
+  /* ---------- A4 flyer ---------- */
+  #flyer .inner { padding: 50px 84px 40px; }
+  .logos { display: flex; align-items: center; justify-content: space-between; padding-bottom: 20px; border-bottom: 2px solid var(--line); }
+  .logos img.mawlogo { height: 84px; } .logos img.meelogo { height: 92px; }
+  .logos .plus { font-family: 'Fraunces', Georgia, serif; font-size: 44px; color: var(--gold); }
+  #flyer .eyebrow { font-size: 22px; margin-top: 28px; }
+  #flyer h1 { font-weight: 400; font-size: 94px; line-height: 1.0; letter-spacing: -0.02em; margin-top: 12px; }
+  #flyer .lead { font-size: 26px; line-height: 1.4; color: var(--ink-soft); margin-top: 20px; }
+  #flyer .lead strong { color: var(--ink); font-weight: 600; }
+  #flyer .tools { margin-top: 28px; gap: 32px; }
+  #flyer .tool { box-shadow: 0 14px 30px rgba(15, 43, 59, 0.18); }
+  #flyer .tool .body { padding: 26px 30px 26px; }
+  #flyer .step { font-size: 19px; }
+  #flyer .tool h3 { font-size: 40px; line-height: 1.08; margin-top: 8px; }
+  #flyer .tool ul { list-style: none; margin-top: 14px; }
+  #flyer .tool li { font-size: 21.5px; line-height: 1.34; color: rgba(254, 252, 247, 0.93); padding-left: 30px; position: relative; margin-bottom: 8px; }
+  #flyer .tool li::before { content: '◆'; position: absolute; left: 0; top: 0.28em; font-size: 0.6em; color: var(--gold-light); }
+  .qr { margin-top: auto; padding-top: 14px; display: flex; align-items: center; gap: 22px; }
+  .qr img { width: 152px; height: 152px; background: #fff; border-radius: 14px; padding: 10px; display: block; flex: none; }
+  .qr .scan { font-size: 20px; line-height: 1.3; color: rgba(254, 252, 247, 0.85); }
+  .qr .scan b { display: block; font-size: 31px; line-height: 1.1; color: var(--gold-light); font-weight: 700; margin-top: 6px; word-break: break-word; }
+  .how { margin-top: 24px; background: var(--card); border: 2px solid var(--line); border-radius: 24px; padding: 20px 30px 22px; }
+  .how h2 { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: 30px; color: var(--blue-dark); }
+  .how ol { margin: 14px 0 0 0; list-style: none; counter-reset: s; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
+  .how li { counter-increment: s; font-size: 20.5px; line-height: 1.36; color: var(--ink-soft); padding-top: 46px; position: relative; }
+  .how li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 40px; height: 40px; border-radius: 50%; background: var(--gold-light); color: var(--blue-deep);
+                    font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 24px; display: flex; align-items: center; justify-content: center; }
+  .how li strong { color: var(--ink); font-weight: 600; }
+  #flyer .strip { font-size: 26px; margin-top: 22px; }
+  #flyer .fine { font-size: 17px; line-height: 1.44; margin-top: auto; padding-top: 16px; text-align: left; border-top: 2px solid var(--line); }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="stars" width="120" height="120" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#C9A961" stroke-width="1.5">
+        <rect x="36" y="36" width="48" height="48"/>
+        <rect x="36" y="36" width="48" height="48" transform="rotate(45 60 60)"/>
+      </g>
+    </pattern>
+  </defs>
+</svg>
+
+<!-- ================= Square 1: hero ================= -->
+<section id="hero">
+  <svg class="pattern" aria-hidden="true"><rect width="100%" height="100%" fill="url(#stars)"/></svg>
+  <div class="bar"></div>
+  <div class="inner">
+    <div class="eyebrow">For Muslim families in Australia</div>
+    <h1 class="serif"><span class="teal">Know your shares.</span><br><span class="blue">Write your Will.</span></h1>
+    <p class="lead">Without a Will, State law decides who inherits, and it does not follow the Qurʾānic shares.</p>
+    <div class="tools">
+      <div class="tool maw">
+        <div class="plate"><img class="mawlogo" src="assets/almawarith-logo.png" alt="Al-Mawārīth"></div>
+        <div class="body">
+          <div class="step">Step 1 · Calculate</div>
+          <h3>See each heir’s share</h3>
+          <p>The Qurʾānic shares for your family, with the reasoning behind each one.</p>
+          <div class="url">almawarith.com</div>
+        </div>
+      </div>
+      <div class="tool mee">
+        <div class="plate"><img class="meelogo" src="assets/meeras-logo.png" alt="Meeras Islamic Will"></div>
+        <div class="body">
+          <div class="step">Step 2 · Write</div>
+          <h3>Make your Islamic Will</h3>
+          <p>For your State or Territory, in about twenty minutes, on your own device.</p>
+          <div class="url">meeras.com.au</div>
+        </div>
+      </div>
+    </div>
+    <div class="strip"><span>Free</span><span>No sign-up</span><span>No ads</span></div>
+    <p class="fine">Guides, not legal advice or a binding ruling. The Meeras Will template is under independent legal review.</p>
+  </div>
+  <div class="bar"></div>
+</section>
+
+<!-- ================= Square 2: problem ================= -->
+<section id="problem" class="dark">
+  <svg class="pattern" aria-hidden="true"><rect width="100%" height="100%" fill="url(#stars)"/></svg>
+  <div class="bar"></div>
+  <div class="inner">
+    <div class="eyebrow">Muslims in Australia</div>
+    <h1 class="serif">Without a Will, <em>your State</em> decides who inherits.</h1>
+    <p class="lead">Australia’s intestacy rules do not follow the Qurʾānic shares, and they say nothing about an Islamic burial. Two free tools help you put it right.</p>
+    <div class="rows">
+      <div class="row maw">
+        <div class="logo"><img src="assets/almawarith-logo.png" alt="Al-Mawārīth" style="height:78px"></div>
+        <div class="txt">
+          <div class="step">Step 1</div>
+          <h3>Work out each heir’s share</h3>
+          <div class="u">almawarith.com</div>
+        </div>
+      </div>
+      <div class="row mee">
+        <div class="logo"><img src="assets/meeras-logo.png" alt="Meeras Islamic Will" style="height:92px"></div>
+        <div class="txt">
+          <div class="step">Step 2</div>
+          <h3>Put it in an Islamic Will</h3>
+          <div class="u">meeras.com.au</div>
+        </div>
+      </div>
+    </div>
+    <div class="strip"><span>Free</span><span>No sign-up</span><span>No ads</span></div>
+    <p class="fine">Guides, not legal advice or a binding ruling. The Meeras Will template is under independent legal review.</p>
+  </div>
+  <div class="bar"></div>
+</section>
+
+<!-- ================= Square 3: question ================= -->
+<section id="question">
+  <svg class="pattern" aria-hidden="true"><rect width="100%" height="100%" fill="url(#stars)"/></svg>
+  <div class="bar"></div>
+  <div class="inner">
+    <div class="eyebrow">A question for every Muslim adult in Australia</div>
+    <h1 class="serif">Who inherits<br>from you?</h1>
+    <div class="asks">
+      <div class="ask"><b>?</b>What is my spouse’s share?</div>
+      <div class="ask"><b>?</b>What do my parents receive?</div>
+      <div class="ask"><b>?</b>Sons and daughters: how much each?</div>
+      <div class="ask"><b>?</b>What may I leave to charity?</div>
+    </div>
+    <div class="band">
+      <div class="half">
+        <div class="step">Step 1 · Find the answers</div>
+        <h3>Al-Mawārīth calculator</h3>
+        <p>Every share explained, with its evidence.</p>
+        <div class="url">almawarith.com</div>
+      </div>
+      <div class="half">
+        <div class="step">Step 2 · Put it in writing</div>
+        <h3>Meeras Islamic Will</h3>
+        <p>For your State or Territory, in about twenty minutes.</p>
+        <div class="url">meeras.com.au</div>
+      </div>
+    </div>
+    <div class="strip"><span>Free</span><span>No sign-up</span><span>No ads</span></div>
+    <p class="fine">Guides, not legal advice or a binding ruling. The Meeras Will template is under independent legal review.</p>
+  </div>
+  <div class="bar"></div>
+</section>
+
+<!-- ================= Story 1080 x 1920 ================= -->
+<section id="story">
+  <svg class="pattern" aria-hidden="true"><rect width="100%" height="100%" fill="url(#stars)"/></svg>
+  <div class="bar"></div>
+  <div class="inner">
+    <div class="eyebrow">For Muslim families in Australia</div>
+    <h1 class="serif"><span class="teal">Know your shares.</span><br><span class="blue">Write your Will.</span></h1>
+    <p class="lead">Without a Will, State law decides who inherits, and it does not follow the Qurʾānic shares.</p>
+    <div class="tools">
+      <div class="tool maw">
+        <div class="plate"><img src="assets/almawarith-logo.png" alt="Al-Mawārīth"></div>
+        <div class="body">
+          <div class="step">Step 1 · Calculate</div>
+          <h3>See each heir’s share</h3>
+          <p>The Qurʾānic shares for your family, with the reasoning behind each one.</p>
+          <div class="url">almawarith.com</div>
+        </div>
+      </div>
+      <div class="tool mee">
+        <div class="plate"><img src="assets/meeras-logo.png" alt="Meeras Islamic Will"></div>
+        <div class="body">
+          <div class="step">Step 2 · Write</div>
+          <h3>Make your Islamic Will</h3>
+          <p>For your State or Territory, in about twenty minutes, on your own device.</p>
+          <div class="url">meeras.com.au</div>
+        </div>
+      </div>
+    </div>
+    <div class="strip"><span>Free</span><span>No sign-up</span><span>No ads</span></div>
+    <p class="fine">Guides, not legal advice or a binding ruling.<br>The Meeras Will template is under independent legal review.</p>
+  </div>
+  <div class="bar"></div>
+</section>
+
+<!-- ================= A4 flyer ================= -->
+<section id="flyer">
+  <svg class="pattern" aria-hidden="true"><rect width="100%" height="100%" fill="url(#stars)"/></svg>
+  <div class="bar"></div>
+  <div class="inner">
+    <div class="logos">
+      <img class="mawlogo" src="assets/almawarith-logo.png" alt="Al-Mawārīth">
+      <span class="plus">+</span>
+      <img class="meelogo" src="assets/meeras-logo.png" alt="Meeras Islamic Will">
+    </div>
+    <div class="eyebrow">For Muslim families in Australia</div>
+    <h1 class="serif"><span class="teal">Know your shares.</span><br><span class="blue">Write your Will.</span></h1>
+    <p class="lead"><strong>If you die without a Will in Australia, your State’s intestacy rules decide who inherits.</strong> Those rules do not follow the Qurʾānic shares, and they say nothing about an Islamic burial or who raises your children. Two free tools, made for our community, help you put it right.</p>
+
+    <div class="tools">
+      <div class="tool maw">
+        <div class="body">
+          <div class="step">Step 1 · Calculate</div>
+          <h3>Al-Mawārīth<br>inheritance calculator</h3>
+          <ul>
+            <li>The Qurʾānic share of every heir, from spouse and parents to distant relatives</li>
+            <li>Explains why each person inherits or is excluded, with the evidence</li>
+            <li>Choose your school: Ḥanafī, Mālikī, Shāfiʿī or Ḥanbalī</li>
+            <li>Download a report for your family and executor</li>
+          </ul>
+          <div class="qr">
+            <img src="assets/qr-almawarith.png" alt="QR code for almawarith.com">
+            <div class="scan">Scan, or visit<b>almawarith.com</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="tool mee">
+        <div class="body">
+          <div class="step">Step 2 · Write</div>
+          <h3>Meeras<br>Islamic Will</h3>
+          <ul>
+            <li>Shares, Islamic burial wishes, guardians, executors, debts and bequests in one document</li>
+            <li>Designed to meet the formal requirements of every State and Territory</li>
+            <li>Made on your own device; your answers are not uploaded</li>
+            <li>About twenty minutes, then print and sign with two witnesses</li>
+          </ul>
+          <div class="qr">
+            <img src="assets/qr-meeras.png" alt="QR code for meeras.com.au">
+            <div class="scan">Scan, or visit<b>meeras.com.au</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="how">
+      <h2>Three steps, one evening</h2>
+      <ol>
+        <li><strong>Calculate.</strong> List who would survive you and see each share.</li>
+        <li><strong>Write.</strong> Answer the questions and download your Will.</li>
+        <li><strong>Sign.</strong> Print it, sign before two adult witnesses, and tell your executor where it is.</li>
+      </ol>
+    </div>
+
+    <div class="strip"><span>Free</span><span>No sign-up</span><span>No ads</span></div>
+    <p class="fine">Al-Mawārīth and Meeras are guides. They are not legal advice and not a binding Sharīʿah ruling. The Meeras Will template is under independent legal review. Have the shares confirmed by a qualified scholar, and see an Australian lawyer if you own a business or property overseas, have a blended family, or want to leave someone out. Questions: support@meeras.com.au</p>
+  </div>
+  <div class="bar"></div>
+</section>
+
+<script>
+var v = new URLSearchParams(location.search).get('v') || 'hero';
+var kinds = { hero: 'sq', problem: 'sq', question: 'sq', story: 'st', flyer: 'a4' };
+if (!kinds[v]) v = 'hero';
+document.body.dataset.v = v;
+document.body.className = kinds[v];
+</script>
+</body>
+</html>
