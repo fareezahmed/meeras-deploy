@@ -2651,19 +2651,47 @@ function goTo(screenId) {
     saveImmediately();   // Save navigation right away so the user can resume reliably
   }
   renderScreen(screenId);
-  window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  // Start every step at its top, and jump there instead of animating. Continue sits at the
+  // foot of a step; when the next step is longer the browser keeps the footer in view (scroll
+  // anchoring), and an animated scroll from there can be cut short, which left phone users at
+  // the foot of the new step.
+  window.scrollTo(0, 0);
   renderProgress();
   closeMobileMenu();
   closeNavDropdowns();
   updateNavCta();
   updateTitle(screenId);
   Analytics.screen(screenId);
-  // Keep the address bar in step with the informational pages so links can be shared.
+}
+
+// ---- Browser Back and Forward ---------------------------------------------
+// Every change of screen is one entry in the browser's history, so Back returns
+// to the previous step instead of leaving the site, and Forward goes on again.
+// renderScreen() records the entry; the informational pages keep their hash in
+// the address bar so links can be shared.
+let HISTORY_NAV = false;   // true while a Back/Forward (or first load) is being applied: replace, do not add
+function recordHistory(id, keepUrl) {
   try {
-    const key = hashForScreen(screenId);
-    if (key) history.replaceState(null, '', '#' + key);
-    else if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    const state = { meerasScreen: id };
+    if (keepUrl) { history.replaceState(state, ''); return; }
+    const key = hashForScreen(id);
+    const url = key ? '#' + key : location.pathname + location.search;
+    if (HISTORY_NAV) history.replaceState(state, '', url);
+    else history.pushState(state, '', url);
   } catch (e) { /* history API unavailable */ }
+}
+// The steps of a Will need an open draft; Support and Find an Imam do not.
+function needsDraft(id) {
+  return SCREEN_ORDER.includes(id) && !['S01', 'S24', 'S25'].includes(id);
+}
+function onHistoryNav() {
+  let id = history.state && history.state.meerasScreen;
+  if (!id) id = PAGE_HASHES[(location.hash || '').replace(/^#\/?/, '').toLowerCase()];
+  if (!id || !screens[id]) return;
+  if (needsDraft(id) && !Sessions.activeId) id = 'S01';   // the draft was deleted since
+  if (id === SHOWN_SCREEN) return;
+  HISTORY_NAV = true;
+  try { goTo(id); } finally { HISTORY_NAV = false; }
 }
 
 /** First visit / cleared storage: create the first draft only when the user starts. */
@@ -5641,6 +5669,14 @@ screens.S26 = () => `
     family is involved.
   </div>
 
+  <h2 class="section-h">Contact</h2>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Questions, corrections and feedback are welcome at
+    <a href="mailto:support@meeras.com.au" style="color:var(--secondary);">support@meeras.com.au</a>.
+    We cannot give advice on your own Will or family; for that, see an Australian legal
+    practitioner and a qualified Imam. Please do not email us your Will.
+  </p>
+
   <h2 class="section-h">Support the project</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Meeras is free and carries no advertising. If it has benefited you, an optional contribution
@@ -5716,7 +5752,7 @@ screens.S27 = () => `
 screens.S28 = () => `
   <div class="step-label">Legal</div>
   <h1 class="screen-title">Privacy Policy</h1>
-  <p class="screen-subtitle">Effective 22 October 2026 · Applies to the Meeras web application, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497).</p>
+  <p class="screen-subtitle">Effective 13 November 2026 · Applies to the Meeras web application, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497).</p>
 
   <h2 class="section-h">Your will data stays on your device</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
@@ -5759,6 +5795,16 @@ screens.S28 = () => `
     optional). You can export your draft to a file you control, and clear all local data at any
     time with the Reset button or by clearing your browser's site data. Because we hold no
     personal data about you, there is nothing for us to access, correct, or delete on a server.
+  </p>
+
+  <h2 class="section-h">If you email us</h2>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Questions and privacy complaints can be sent to
+    <a href="mailto:support@meeras.com.au" style="color:var(--secondary);">support@meeras.com.au</a>.
+    When you email us we receive your email address and whatever you write, and we use them only
+    to reply to you. The message is delivered through Cloudflare to a mailbox hosted by Google.
+    Please do not send us your Will or personal details about your family; we do not need them
+    to answer a question. Ask us at the same address to delete your messages.
   </p>
 
   <div class="info-callout">
@@ -5813,6 +5859,15 @@ screens.S29 = () => `
     as your circumstances change. A will that is not correctly executed may be invalid.
   </p>
 
+  <h2 class="section-h">What Meeras does not promise</h2>
+  <p class="screen-subtitle" style="margin-bottom:8px;">By using Meeras you understand that:</p>
+  <ul class="screen-subtitle" style="margin:0 0 16px 20px;padding:0;">
+    <li style="margin-bottom:6px;"><strong>It is made for straightforward estates.</strong> It may not suit a business, company or family trust, property overseas, a blended family, or a dependant with a disability.</li>
+    <li style="margin-bottom:6px;"><strong>Validity is not guaranteed.</strong> Whether a Will made with Meeras is valid and admitted to probate depends on your answers and on how it is signed and witnessed.</li>
+    <li style="margin-bottom:6px;"><strong>No Will can rule out a claim.</strong> A court can order provision from your estate for a spouse, child or dependant, whatever the Will says.</li>
+    <li><strong>Scholars differ on some cases.</strong> Meeras applies the Sunni rules of inheritance, with your chosen school where the schools differ, and it does not cover every family. Your Will directs your executor to have the shares verified by a qualified scholar before anything is distributed.</li>
+  </ul>
+
   <h2 class="section-h">No warranty</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Meeras is provided free of charge, "as is" and "as available", without warranties of any
@@ -5847,9 +5902,21 @@ screens.S29 = () => `
     tax-deductible: Meeras is not a registered charity or a Deductible Gift Recipient.
   </p>
 
+  <h2 class="section-h">If something goes wrong</h2>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    If you have a complaint or a dispute with us, write to WIZINSIGHTS PTY LTD first at
+    <a href="mailto:support@meeras.com.au" style="color:var(--secondary);">support@meeras.com.au</a> and give
+    us 30 days to try to resolve it with you in good faith. If it is not resolved, you and we
+    agree to try mediation, with a mediator we both accept, before starting court proceedings.
+    This does not stop either of us from seeking urgent court orders, and it does not limit
+    your rights under the Australian Consumer Law or your right to go to a regulator or
+    tribunal.
+  </p>
+
   <h2 class="section-h">General</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
-    These terms are governed by the laws of Australia. If any part of these terms is found
+    These terms are governed by the laws of Victoria, Australia, and you and we submit to the
+    non-exclusive jurisdiction of the courts of Victoria. If any part of these terms is found
     invalid, the remainder continues to apply. Continued use of Meeras after a change to these
     terms constitutes acceptance of the updated terms.
   </p>
@@ -6140,7 +6207,7 @@ const LAUNCH_PLAN = [
     ['Posts to Muslim community groups and mosque notice boards (Melbourne, Sydney first)', 'planned', ''],
     ['Short explainer video: why every Muslim adult needs a Will', 'planned', ''],
     ['Al-Mawārīth calculator links to Meeras for the Will step', 'planned', ''],
-    ['Feedback channel open (email on the About page) and triage routine', 'planned', 'A support address has not been chosen yet.'],
+    ['Feedback channel open (email on the About page) and triage routine', 'progress', 'support@meeras.com.au is live (Cloudflare Email Routing, 13 November 2026) and shown on the About, Privacy and Terms pages. A triage routine is still to be set.'],
     ['House rule in force: nobody at Meeras answers an individual\'s question about their own Will (WhatsApp, events, email); refer to the FAQ, an Imam or a lawyer', 'live', 'Keeps the legal-practice risk down and avoids a personal duty of care.'],
     ['Claim ladder kept in all launch copy: "designed to meet the formal requirements", "under independent legal review"; never "legally valid" or "lawyer approved"', 'live', ''],
   ]},
@@ -6497,7 +6564,11 @@ function withHonorifics(escaped) {
 
 let SHOWN_SCREEN = null, PREV_SHOWN_SCREEN = null;
 function renderScreen(id) {
-  if (id !== SHOWN_SCREEN) { PREV_SHOWN_SCREEN = SHOWN_SCREEN; SHOWN_SCREEN = id; }
+  if (id !== SHOWN_SCREEN) {
+    const firstRender = SHOWN_SCREEN === null;
+    PREV_SHOWN_SCREEN = SHOWN_SCREEN; SHOWN_SCREEN = id;
+    recordHistory(id, firstRender);   // first render keeps the address, so a link such as /#faq still routes
+  }
   const fn = screens[id];
   const container = document.getElementById('screenContainer');
   if (!fn) {
@@ -7981,8 +8052,12 @@ async function init() {
   renderScreen(STATE.currentScreen);
   renderProgress();
   refreshSessionIndicator();
-  const routed = applyHashRoute();   // a shared link such as /#faq opens that page directly
-  window.addEventListener('hashchange', applyHashRoute);
+  HISTORY_NAV = true;                // the page a link opens on replaces the first history entry
+  let routed = false;
+  try { routed = applyHashRoute(); } finally { HISTORY_NAV = false; }   // a shared link such as /#faq opens that page directly
+  try { history.scrollRestoration = 'manual'; } catch (e) { /* older browsers */ }   // Back and Forward also open a step at its top
+  window.addEventListener('popstate', onHistoryNav);
+  window.addEventListener('hashchange', onHistoryNav);
   updateNavCta();
   if (!routed) updateTitle(STATE.currentScreen || 'S01');
 
