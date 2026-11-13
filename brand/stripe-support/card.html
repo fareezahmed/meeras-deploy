@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<!-- Source for the Stripe product images of the Meeras Support products.
+     One square card per product; pick it with ?v=heart|coffee|domain|server.
+     Rendered to 1600x1600 JPEG by render.sh (macOS WebKit through render.swift).
+     Not deployed: build.js and deploy.sh leave brand/ out. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Meeras Support card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500&family=DM+Sans:opsz,wght@9..40,500;9..40,600&display=block" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 800px; height: 800px; overflow: hidden; }
+  body {
+    position: relative;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    color: #FEFCF7;
+    background:
+      radial-gradient(120% 90% at 50% 18%, #235F82 0%, #1B4D6B 38%, #133649 78%, #0F2B3B 100%);
+  }
+  .pattern { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.11; }
+  .bar { position: absolute; left: 0; right: 0; height: 10px;
+         background: linear-gradient(90deg, #A8873F 0%, #E6CB86 50%, #A8873F 100%); }
+  .bar.top { top: 0; } .bar.bottom { bottom: 0; }
+  .stack { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; }
+  .disc {
+    margin-top: 92px; width: 248px; height: 248px; border-radius: 50%;
+    background: #FEFCF7; border: 5px solid #C9A961;
+    box-shadow: 0 18px 44px rgba(6, 22, 32, 0.45), inset 0 0 0 7px #FEFCF7, inset 0 0 0 8px rgba(201, 169, 97, 0.45);
+    display: flex; align-items: center; justify-content: center; color: #C09A4A;
+  }
+  .disc svg { width: 124px; height: 124px; }
+  .eyebrow { margin-top: 44px; font-weight: 600; font-size: 23px; letter-spacing: 0.22em; color: #DDBF7A; text-transform: uppercase; }
+  h1 {
+    margin-top: 20px; max-width: 660px; text-align: center;
+    font-family: 'Fraunces', Georgia, serif; font-weight: 400; font-size: 64px; line-height: 1.12;
+    letter-spacing: -0.012em; color: #FEFCF7;
+  }
+  .lockup { position: absolute; left: 0; right: 0; bottom: 64px; display: flex; align-items: center; justify-content: center; gap: 16px; }
+  .badge { width: 78px; height: 78px; border-radius: 50%; background: #FEFCF7; border: 2px solid #C9A961;
+           display: flex; align-items: center; justify-content: center; }
+  .badge img { width: 60px; height: 60px; display: block; }
+  .name { font-family: 'Fraunces', Georgia, serif; font-weight: 500; font-size: 40px; line-height: 1; color: #FEFCF7; }
+  .sub { margin-top: 7px; font-weight: 500; font-size: 12.5px; letter-spacing: 0.34em; color: #DDBF7A; }
+</style>
+</head>
+<body>
+<svg class="pattern" aria-hidden="true">
+  <defs>
+    <pattern id="stars" width="100" height="100" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#E6CB86" stroke-width="1.4">
+        <rect x="30" y="30" width="40" height="40"/>
+        <rect x="30" y="30" width="40" height="40" transform="rotate(45 50 50)"/>
+      </g>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#stars)"/>
+</svg>
+<div class="bar top"></div>
+<div class="stack">
+  <div class="disc" id="icon"></div>
+  <div class="eyebrow">Support Meeras</div>
+  <h1 id="headline"></h1>
+</div>
+<div class="lockup">
+  <div class="badge"><img src="../meeras-mark-flat.png" alt=""></div>
+  <div><div class="name">Meeras</div><div class="sub">ISLAMIC WILL</div></div>
+</div>
+<div class="bar bottom"></div>
+<script>
+// The same four icons as the Support Meeras page (DONATE_ICONS in index.html), heart filled.
+var ICONS = {
+  heart: '<svg viewBox="0 0 48 48"><path fill="currentColor" d="M24 42S7.5 32.2 7.5 20.2a9 9 0 0 1 16.5-5 9 9 0 0 1 16.5 5C40.500 32.200 24 42 24 42z"/></svg>',
+  coffee: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M17 6c-2 3 2 5 0 8"/><path d="M24 4c-2 3 2 5 0 8"/><path d="M31 6c-2 3 2 5 0 8"/><path d="M10 20h26v9a10 10 0 0 1-10 10h-6a10 10 0 0 1-10-10z"/><path d="M36 23h3a4 4 0 0 1 0 8h-3"/><path d="M8 43h32"/></svg>',
+  domain: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><circle cx="24" cy="24" r="17"/><path d="M7 24h34M24 7c6 6 6 28 0 34M24 7c-6 6-6 28 0 34"/><path d="M11 13c8 4 18 4 26 0M11 35c8-4 18-4 26 0"/></svg>',
+  server: '<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><rect x="8" y="8" width="32" height="12" rx="3"/><rect x="8" y="28" width="32" height="12" rx="3"/><circle cx="15" cy="14" r="1.9" fill="currentColor"/><circle cx="15" cy="34" r="1.9" fill="currentColor"/><path d="M22 14h11M22 34h11"/></svg>'
+};
+var HEADLINES = {
+  heart: 'Keep it free for<br>every family',
+  coffee: 'A coffee for<br>the developer',
+  domain: 'Keep the domain<br>renewed',
+  server: 'Keep the servers<br>running'
+};
+var v = new URLSearchParams(location.search).get('v');
+if (!ICONS[v]) v = 'heart';
+document.getElementById('icon').innerHTML = ICONS[v];
+document.getElementById('headline').innerHTML = HEADLINES[v];
+</script>
+</body>
+</html>

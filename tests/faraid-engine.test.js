@@ -2,11 +2,11 @@
 /* Headless tests for the farāʾiḍ engine embedded in index.html.
  *
  *   npm test                      (or: node tests/faraid-engine.test.js)
- *   MAWARITH=/path/to/Mawarith-Calculator.html npm test
+ *   MAWARITH=/path/to/calculator.html npm test
  *
  * The engine is pure JavaScript (no DOM), so the script slices section 3 of
  * index.html out and evaluates it in a vm sandbox with a fake STATE. If the
- * Al-Mawārīth calculator is found (default: ../mawarith/Mawarith-Calculator.html,
+ * Al-Mawārīth calculator is found (default: ../mawarith/mcalc/calculator.html,
  * or $MAWARITH) its engine is loaded into the same process and 5,000 random
  * families drawn from the Meeras heir model are compared under the default
  * rules and under the Ḥanafī rules. Exit code 1 on any failure.
@@ -216,9 +216,12 @@ const rnd = n => {
   t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
   return (((t ^ (t >>> 14)) >>> 0) / 4294967296 * n) | 0;
 };
-const mawPath = process.env.MAWARITH || path.join(ROOT, '..', 'mawarith', 'Mawarith-Calculator.html');
+// mcalc/calculator.html is the calculator that is edited and published. The older
+// Mawarith-Calculator.html at the root of that project has no school-of-fiqh rules.
+const mawPath = process.env.MAWARITH || path.join(ROOT, '..', 'mawarith', 'mcalc', 'calculator.html');
 const maw = fs.existsSync(mawPath) ? loadMawarith(mawPath) : null;
 if (!maw) console.warn('  (Al-Mawārīth calculator not found at ' + mawPath + '; cross-check skipped)');
+if (maw) check('reference engine takes the school-of-fiqh rules (calcSunni has a rules argument)', maw.calcSunni.length >= 3, mawPath);
 const MAW_HANAFI = { madhhab: 'hanafi', pgmWithFather: false, jaddMuqasama: false, raddToHeirs: true, distantKindred: true };
 // Canonical view of a result: category -> reduced fraction, so per-person rows
 // (Meeras) and collective rows (Al-Mawārīth) compare equal.

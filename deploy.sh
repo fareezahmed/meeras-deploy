@@ -146,10 +146,12 @@ aws s3 sync . "$SYNC_DEST" \
   --exclude "tests/*" \
   --exclude "build.js" \
   --exclude "brand/*" \
+  --exclude "reference/*" \
   --exclude "worker/*" \
   --exclude "migrations/*" \
   --exclude "wrangler.toml" \
   --exclude "dist/*" \
+  --exclude "sitemap.xml" \
   --exclude "cloudfront/*" \
   --cache-control "max-age=300, public" \
   --delete

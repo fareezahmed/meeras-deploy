@@ -1991,7 +1991,7 @@
 // ────────────────────────────────────────────────────────────────────────────
 const DEFAULT_STATE = () => ({
   meta: { version: '1.0', createdAt: new Date().toISOString(), lastSavedAt: null },
-  capacity: { age: false, willing: false, faraid: false },
+  capacity: { age: false, willing: false, faraid: false, guide: false },
   madhhab: null,           // always 'sunni' once past Step 2 (field retained for draft compatibility)
   testator: { fullName: '', dob: '', idNumber: '', address: '', email: '' },
   jurisdiction: null,      // 'NSW' | 'VIC' | ...
@@ -2687,19 +2687,47 @@ function goTo(screenId) {
     saveImmediately();   // Save navigation right away so the user can resume reliably
   }
   renderScreen(screenId);
-  window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  // Start every step at its top, and jump there instead of animating. Continue sits at the
+  // foot of a step; when the next step is longer the browser keeps the footer in view (scroll
+  // anchoring), and an animated scroll from there can be cut short, which left phone users at
+  // the foot of the new step.
+  window.scrollTo(0, 0);
   renderProgress();
   closeMobileMenu();
   closeNavDropdowns();
   updateNavCta();
   updateTitle(screenId);
   Analytics.screen(screenId);
-  // Keep the address bar in step with the informational pages so links can be shared.
+}
+
+// ---- Browser Back and Forward ---------------------------------------------
+// Every change of screen is one entry in the browser's history, so Back returns
+// to the previous step instead of leaving the site, and Forward goes on again.
+// renderScreen() records the entry; the informational pages keep their hash in
+// the address bar so links can be shared.
+let HISTORY_NAV = false;   // true while a Back/Forward (or first load) is being applied: replace, do not add
+function recordHistory(id, keepUrl) {
   try {
-    const key = hashForScreen(screenId);
-    if (key) history.replaceState(null, '', '#' + key);
-    else if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    const state = { meerasScreen: id };
+    if (keepUrl) { history.replaceState(state, ''); return; }
+    const key = hashForScreen(id);
+    const url = key ? '#' + key : location.pathname + location.search;
+    if (HISTORY_NAV) history.replaceState(state, '', url);
+    else history.pushState(state, '', url);
   } catch (e) { /* history API unavailable */ }
+}
+// The steps of a Will need an open draft; Support and Find an Imam do not.
+function needsDraft(id) {
+  return SCREEN_ORDER.includes(id) && !['S01', 'S24', 'S25'].includes(id);
+}
+function onHistoryNav() {
+  let id = history.state && history.state.meerasScreen;
+  if (!id) id = PAGE_HASHES[(location.hash || '').replace(/^#\/?/, '').toLowerCase()];
+  if (!id || !screens[id]) return;
+  if (needsDraft(id) && !Sessions.activeId) id = 'S01';   // the draft was deleted since
+  if (id === SHOWN_SCREEN) return;
+  HISTORY_NAV = true;
+  try { goTo(id); } finally { HISTORY_NAV = false; }
 }
 
 /** First visit / cleared storage: create the first draft only when the user starts. */
@@ -3247,7 +3275,7 @@ screens.S01 = () => {
     || STATE.executors[0].name || STATE.heirs.sons > 0 || STATE.heirs.daughters > 0
     || STATE.heirs.spouses.some(s => s && s.name)
     || (STATE.bequests.length > 0 && STATE.bequests[0].recipient)
-    || STATE.capacity.age || STATE.capacity.willing || STATE.capacity.faraid;
+    || STATE.capacity.age || STATE.capacity.willing || STATE.capacity.faraid || STATE.capacity.guide;
   const hasDraft = hasNavigated || hasData;
   const pct = computeCompletion();
   const lastStep = STATE.currentScreen || 'S01';
@@ -3543,8 +3571,14 @@ screens.S02 = () => `
     <div class="check-text">I understand and intend my estate to be distributed according to <strong>Islamic inheritance law</strong> (farāʾiḍ), and accept the rules set by Allah ﷻ in the Quran.</div>
   </label>
 
+  <label class="checkbox-card ${STATE.capacity.guide ? 'checked' : ''}">
+    <input type="checkbox" class="native-check" ${STATE.capacity.guide ? 'checked' : ''} onchange="toggleCap('guide', this)">
+    <div class="check-box" aria-hidden="true">${STATE.capacity.guide ? '✓' : ''}</div>
+    <div class="check-text">Meeras prepares my Will from the answers I give. It is a <strong>guide, not legal advice</strong>. I will check my Will and sign it correctly, and I accept the <a href="#terms" target="_blank" rel="noopener" style="color:var(--secondary);">Terms of Service</a>.</div>
+  </label>
+
   <div class="info-callout">
-    <strong>Why we ask.</strong> Each Australian Succession Act requires testamentary capacity: that you understand what you are doing, what you own, and who has a claim. This is also a Shariah condition for a valid Wasiyyah.
+    <strong>Why we ask.</strong> Each Australian Succession Act requires testamentary capacity: that you understand what you are doing, what you own, and who has a claim. This is also a Shariah condition for a valid Wasiyyah. If illness, age or a diagnosis could lead someone to question your capacity later, see a lawyer before you sign and ask your doctor for a letter written at the time.
   </div>
 
   <div class="btn-row">
@@ -3552,7 +3586,7 @@ screens.S02 = () => `
     <button class="btn btn-primary" id="s02Continue" onclick="nextScreen()" ${capacityComplete() ? '' : 'disabled'}>Continue  →</button>
   </div>
 `;
-function capacityComplete() { return STATE.capacity.age && STATE.capacity.willing && STATE.capacity.faraid; }
+function capacityComplete() { return STATE.capacity.age && STATE.capacity.willing && STATE.capacity.faraid && STATE.capacity.guide; }
 function toggleCap(key, input) {
   STATE.capacity[key] = !!input.checked;
   scheduleSave();
@@ -3771,7 +3805,7 @@ screens.S07 = () => `
   <div class="step-label">Step 6 of 14  ·  Article 2 of your Will</div>
   <h1 class="screen-title">Funeral and burial</h1>
   <p class="screen-subtitle">
-    Article 2 of your Will contains a complete set of standard Islamic burial instructions: ghusl, kafan, prompt burial, no casket where the law permits, qibla orientation, no music or non-Islamic ceremony. You don't need to change anything below unless you have specific additional wishes.
+    Article 2 of your Will contains a complete set of standard Islamic burial instructions: ghusl, kafan, prompt burial, no casket where the law permits, qibla orientation, no music or non-Islamic ceremony. You don't need to change anything below unless you have specific additional wishes. Funeral wishes in a Will are generally not legally binding, and a Will is often read after the burial, so tell your family and your executor what you want now.
   </p>
 
   <div class="accent-callout">
@@ -4039,6 +4073,8 @@ screens.S10 = () => `
   <p class="screen-subtitle">
     If you die while any of your children are under 18, who should care for them?
     You can nominate your spouse first (the default), then up to three alternative guardians in order.
+    This records your wish: a surviving parent normally keeps care of the children, and a court can decide
+    differently where that is in the children's best interests. Ask each person first whether they are willing.
   </p>
 
   <div class="person-card">
@@ -4445,6 +4481,7 @@ screens.S13 = () => {
 
   <div class="info-callout">
     <strong>A reminder.</strong> Under Article 8.4 of your Will, a <em>non-Muslim relative cannot inherit</em>; this follows classical Sunni jurisprudence. The engine excludes them by default. Note in the field below if any of your listed family are non-Muslim.
+    <br><br><strong>Australian law still applies.</strong> A spouse, child or dependant who is left out, or who receives less than they need, can ask an Australian court for provision from your estate, whatever the Will says. If that could happen in your family, get legal advice before you sign.
   </div>
 
   <!-- School of fiqh -->
@@ -4927,7 +4964,7 @@ screens.S19 = () => {
     <div class="checkbox-card checked"><div class="check-box">✓</div><div class="check-text"><strong>Not a beneficiary.</strong> Neither witness is named in your Will to receive anything.</div></div>
     <div class="checkbox-card checked"><div class="check-box">✓</div><div class="check-text"><strong>Not the spouse of a beneficiary.</strong> Equivalent disqualification applies in ${st.name}.</div></div>
   ` : `
-    <div class="checkbox-card checked"><div class="check-box">✓</div><div class="check-text"><strong>Preferably not a beneficiary.</strong> Even where permitted, an independent witness avoids any challenge to your Will.</div></div>
+    <div class="checkbox-card checked"><div class="check-box">✓</div><div class="check-text"><strong>Preferably not a beneficiary, nor the spouse, partner or child of one.</strong> Even where permitted, an independent witness avoids any challenge to your Will.</div></div>
   `}
 
   <h2 class="section-h">How the signing must happen</h2>
@@ -5404,7 +5441,7 @@ screens.S22 = () => `
   </div>
   <div class="checkbox-card">
     <div class="check-box" style="background:var(--accent);border-color:var(--accent);color:white;font-weight:bold;">5</div>
-    <div class="check-text">On the final page, fill in the date, day of the week, and time.</div>
+    <div class="check-text">On the final page, fill in the date, day of the week, and time. Each witness writes their <strong>full name and address</strong> beside their signature, so they can be found later if the court needs them. Everyone signs on the <strong>same day</strong>.</div>
   </div>
 
   <div class="btn-row">
@@ -5433,6 +5470,13 @@ screens.S23 = () => `
   <div class="info-callout">
     <strong>4. Tell your executor.</strong> Whichever option you choose, your executor must know where the Will is and how to access it. Consider giving them a sealed photocopy marked "COPY: original held at [location]".
   </div>
+  <div class="info-callout">
+    <strong>5. The signed paper is the Will.</strong> A scan or photo is only a copy for reference. Do not write on the original, and do not pin, clip or staple anything else to it. If you make a new Will, mark the old one cancelled with the date, or destroy it.
+  </div>
+  ${STATE.jurisdiction === 'VIC' ? `
+  <div class="accent-callout">
+    <strong>In Victoria.</strong> The Supreme Court's Probate Office stores Wills for a fee, and State Trustees runs a free Victorian Will and Powers of Attorney Registry where you can record where your Will is kept.
+  </div>` : ''}
 
   <div class="btn-row">
     <button class="btn btn-secondary" onclick="prevScreen()">← Back</button>
@@ -5690,6 +5734,14 @@ screens.S26 = () => `
     family is involved.
   </div>
 
+  <h2 class="section-h">Contact</h2>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Questions, corrections and feedback are welcome at
+    <a href="mailto:support@meeras.com.au" style="color:var(--secondary);">support@meeras.com.au</a>.
+    We cannot give advice on your own Will or family; for that, see an Australian legal
+    practitioner and a qualified Imam. Please do not email us your Will.
+  </p>
+
   <h2 class="section-h">Support the project</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Meeras is free and carries no advertising. If it has benefited you, an optional contribution
@@ -5765,7 +5817,7 @@ screens.S27 = () => `
 screens.S28 = () => `
   <div class="step-label">Legal</div>
   <h1 class="screen-title">Privacy Policy</h1>
-  <p class="screen-subtitle">Effective 22 October 2026 · Applies to the Meeras web application, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497).</p>
+  <p class="screen-subtitle">Effective 13 November 2026 · Applies to the Meeras web application, operated by WIZINSIGHTS PTY LTD (ABN 48 669 478 497).</p>
 
   <h2 class="section-h">Your will data stays on your device</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
@@ -5838,6 +5890,16 @@ screens.S28 = () => `
     account.
   </p>
 
+  <h2 class="section-h">If you email us</h2>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Questions and privacy complaints can be sent to
+    <a href="mailto:support@meeras.com.au" style="color:var(--secondary);">support@meeras.com.au</a>.
+    When you email us we receive your email address and whatever you write, and we use them only
+    to reply to you. The message is delivered through Cloudflare to a mailbox hosted by Google.
+    Please do not send us your Will or personal details about your family; we do not need them
+    to answer a question. Ask us at the same address to delete your messages.
+  </p>
+
   <div class="info-callout">
     <strong>Changes.</strong> If this policy changes, the new version will be published on this
     page with a new effective date. Material changes will be noted on the home page.
@@ -5853,7 +5915,7 @@ screens.S28 = () => `
 screens.S29 = () => `
   <div class="step-label">Legal</div>
   <h1 class="screen-title">Terms of Service</h1>
-  <p class="screen-subtitle">Effective 19 October 2026 · By using Meeras you agree to these terms.</p>
+  <p class="screen-subtitle">Effective 13 November 2026 · By using Meeras you agree to these terms.</p>
 
   <h2 class="section-h">Who we are</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
@@ -5872,6 +5934,16 @@ screens.S29 = () => `
     business interests, superannuation, or a blended family is involved.
   </p>
 
+  <h2 class="section-h">Software you operate yourself</h2>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Meeras is software that you operate on your own device. It assembles a document from a
+    fixed template, using the answers you enter and the choices you make, and applies the
+    published Sunni rules of inheritance to the family you list. Nobody at Meeras sees your
+    answers, reviews your document, or gives an opinion on it. You decide what goes into your
+    Will and whether to sign it. The template reflects our understanding of the law at the
+    template version printed in your PDF; the law may change after that.
+  </p>
+
   <h2 class="section-h">Your responsibilities</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     You are responsible for the accuracy of the information you enter; for reviewing the
@@ -5880,6 +5952,15 @@ screens.S29 = () => `
     as your circumstances change. A will that is not correctly executed may be invalid.
   </p>
 
+  <h2 class="section-h">What Meeras does not promise</h2>
+  <p class="screen-subtitle" style="margin-bottom:8px;">By using Meeras you understand that:</p>
+  <ul class="screen-subtitle" style="margin:0 0 16px 20px;padding:0;">
+    <li style="margin-bottom:6px;"><strong>It is made for straightforward estates.</strong> It may not suit a business, company or family trust, property overseas, a blended family, or a dependant with a disability.</li>
+    <li style="margin-bottom:6px;"><strong>Validity is not guaranteed.</strong> Whether a Will made with Meeras is valid and admitted to probate depends on your answers and on how it is signed and witnessed.</li>
+    <li style="margin-bottom:6px;"><strong>No Will can rule out a claim.</strong> A court can order provision from your estate for a spouse, child or dependant, whatever the Will says.</li>
+    <li><strong>Scholars differ on some cases.</strong> Meeras applies the Sunni rules of inheritance, with your chosen school where the schools differ, and it does not cover every family. Your Will directs your executor to have the shares verified by a qualified scholar before anything is distributed.</li>
+  </ul>
+
   <h2 class="section-h">No warranty</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
     Meeras's Will generator is provided free of charge, "as is" and "as available", without
@@ -5887,6 +5968,25 @@ screens.S29 = () => `
     loss or dispute arising from the use of Meeras or of any document it produces. Nothing in
     these terms excludes guarantees or rights that cannot be excluded under the Australian
     Consumer Law.
+  </p>
+
+  <h2 class="section-h">Limit of liability</h2>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    Where our liability cannot be excluded but can lawfully be limited, the total liability of
+    WIZINSIGHTS PTY LTD and its directors, staff and contractors to you, for all claims
+    connected with Meeras or any document it produces, is limited to A$100, or to the membership
+    fees you paid us in the 12 months before the claim if that is more. We are not liable
+    for indirect or consequential loss, including the cost of a dispute over an estate. This
+    limit does not apply to liability that the law does not allow us to limit.
+  </p>
+
+  <h2 class="section-h">Claims by other people</h2>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    You agree to indemnify WIZINSIGHTS PTY LTD and its directors, staff and contractors against
+    claims made by other people, such as beneficiaries, family members and executors, that
+    arise from the information you entered, from how you signed, stored or used the document,
+    or from your breach of these terms. This does not cover any part of a claim that was caused
+    by our own negligence or breach of these terms.
   </p>
 
   <h2 class="section-h">Membership</h2>
@@ -5933,9 +6033,21 @@ screens.S29 = () => `
     tax-deductible: Meeras is not a registered charity or a Deductible Gift Recipient.
   </p>
 
+  <h2 class="section-h">If something goes wrong</h2>
+  <p class="screen-subtitle" style="margin-bottom:16px;">
+    If you have a complaint or a dispute with us, write to WIZINSIGHTS PTY LTD first at
+    <a href="mailto:support@meeras.com.au" style="color:var(--secondary);">support@meeras.com.au</a> and give
+    us 30 days to try to resolve it with you in good faith. If it is not resolved, you and we
+    agree to try mediation, with a mediator we both accept, before starting court proceedings.
+    This does not stop either of us from seeking urgent court orders, and it does not limit
+    your rights under the Australian Consumer Law or your right to go to a regulator or
+    tribunal.
+  </p>
+
   <h2 class="section-h">General</h2>
   <p class="screen-subtitle" style="margin-bottom:16px;">
-    These terms are governed by the laws of Australia. If any part of these terms is found
+    These terms are governed by the laws of Victoria, Australia, and you and we submit to the
+    non-exclusive jurisdiction of the courts of Victoria. If any part of these terms is found
     invalid, the remainder continues to apply. Continued use of Meeras after a change to these
     terms constitutes acceptance of the updated terms.
   </p>
@@ -6099,9 +6211,13 @@ screens.S32 = () => `
   <div class="faq">
     <details><summary>Is a Will made with Meeras legally valid?</summary><p>The document is designed to meet the formal requirements for a valid will in every Australian State and Territory: in writing, signed by an adult with capacity, before two adult witnesses present at the same time who then sign in your presence. Validity depends on executing it correctly, which is why the execution checklist matters. The template is under independent legal review, and we recommend a review of your own Will where property, a business, superannuation or a blended family is involved.</p></details>
     <details><summary>Who can be a witness?</summary><p>Two adults who watch you sign, at the same time, and then sign themselves. Choose people who are not beneficiaries: in New South Wales, Queensland, Tasmania and the Northern Territory a gift to a witness can be lost, and everywhere else an independent witness avoids any challenge. A paid executor should not witness either.</p></details>
-    <details><summary>Can I sign electronically?</summary><p>No. Print it on plain paper, sign every page with the same pen, and keep the original. Staple it once and never remove the staple. A scanned copy is a reference, not the Will.</p></details>
+    <details><summary>Can I sign electronically?</summary><p>A Meeras Will is made to be printed and signed in ink. Print it on plain paper, sign every page with the same pen, and keep the original. Staple it once and never remove the staple. A scanned copy is a reference, not the Will. Some States, Victoria among them, allow witnessing over a video link under strict conditions (in Victoria one witness must be a lawyer or a justice of the peace); do that only with a lawyer's help.</p></details>
     <details><summary>What happens if I die without a Will?</summary><p>Your State's intestacy formula decides who inherits, usually your spouse and children in fixed statutory proportions. It does not follow the Quranic shares, and it says nothing about Islamic burial, guardianship or bequests. A valid Will is the only instrument that makes your farāʾiḍ intentions operate.</p></details>
-    <details><summary>How do I update my Will?</summary><p>Run the wizard again (import your exported draft to save time), print and sign the new Will with two witnesses. A later valid Will revokes the earlier one, so destroy the old original. Review it after marriage, divorce, a birth, a death in the family, buying property, or moving State.</p></details>
+    <details><summary>How do I update my Will?</summary><p>Run the wizard again (import your exported draft to save time), print and sign the new Will with two witnesses. A later valid Will revokes the earlier one, so destroy the old original. Do not make handwritten changes to a signed Will. Review it every three to five years, and after marriage, divorce, separation, a birth, a death in the family, buying property, or moving State.</p></details>
+    <details><summary>What if I marry, divorce or separate?</summary><p>Marrying generally cancels a Will made before the marriage, unless the Will says it was made with that marriage in mind; a Meeras Will does not say this, so make a new Will after you marry. Divorce generally cancels what the Will gives your former spouse and their appointment as executor, and the detail differs by State. Separation alone changes nothing: a spouse you have separated from still takes under the Will until you make a new one. Get legal advice if you are separated but not divorced.</p></details>
+    <details><summary>Does everything I own pass under my Will?</summary><p>No. A home or account you own as a joint tenant passes to the surviving owner, outside the Will and outside the Islamic shares; check the title, because many couples own their home this way. Superannuation and life insurance follow the nomination you gave the fund or insurer. Assets held in a family trust or a company are not yours to leave by Will. Get advice on these, on overseas property and on business assets.</p></details>
+    <details><summary>Can my Will be challenged?</summary><p>Yes. In every State a court can order provision from your estate for a spouse, child or dependant who was not adequately provided for, whatever the Will says, and no clause can prevent that. The risk is higher where shares are unequal or where someone is left out, such as a non-Muslim relative, an adopted child or a stepchild. Get legal advice if that applies to your family, talk to your family where it is safe to, and consider leaving a letter with the Will that explains your reasons.</p></details>
+    <details><summary>When should I see a lawyer instead?</summary><p>Before you sign, if any of these apply: a child or dependant with a disability; children from an earlier relationship; you are separated but still married; you want to leave someone out; property overseas; a business, company, family trust or self-managed super fund; you are seriously ill or in hospital; or a diagnosis that might lead someone to question your capacity. A doctor's letter written at the time you sign helps in the last two cases.</p></details>
   </div>
 
   <h2 class="section-h">Islamic questions</h2>
@@ -6111,7 +6227,7 @@ screens.S32 = () => `
     <details><summary>Can I leave something to a non-Muslim relative?</summary><p>Not as an heir: Article 8 distributes the remainder among Muslim heirs. You can provide for a non-Muslim relative with a bequest in Article 7, within the one third. Specialist advice is sensible here, because family provision laws also apply.</p></details>
     <details><summary>Why are the printed percentages "illustrative"?</summary><p>Inheritance is determined at the moment of death, by whoever survives you then. The table shows the shares for the family you listed today; Article 8.7 directs the executor to apply Schedule A to your then-living heirs, with a scholar's verification. A child born later still inherits.</p></details>
     <details><summary>Does superannuation follow my Will?</summary><p>Not automatically. Superannuation is paid by the fund's trustee, usually to whoever you nominated. Make a binding nomination to your estate (or to your dependants) if you want it distributed Islamically; Article 10 asks the trustee to pay it to the estate where there is no valid nomination.</p></details>
-    <details><summary>Can I include my funeral wishes?</summary><p>Yes. Article 2 records ghusl, kafan, janāzah and burial by the Sunnah, your chosen burial organisation and plot, and any additional instructions. Tell your family where the Will is, because burial happens before probate.</p></details>
+    <details><summary>Can I include my funeral wishes?</summary><p>Yes. Article 2 records ghusl, kafan, janāzah and burial by the Sunnah, your chosen burial organisation and plot, and any additional instructions. Funeral wishes in a Will are generally not legally binding, and burial happens before probate, so tell your family and your executor what you want and where the Will is.</p></details>
   </div>
 
   <h2 class="section-h">About Meeras</h2>
@@ -6196,7 +6312,7 @@ screens.S33 = () => `
 
 // ───── S34 LAUNCH PLAN (internal page: /#launch, not linked anywhere) ─────
 // Status values: live, progress, planned, considering (see STATUS_LABELS).
-const LAUNCH_UPDATED = '22 October 2026';
+const LAUNCH_UPDATED = '13 November 2026';
 const LAUNCH_PLAN = [
   { phase: 'Before launch', items: [
     ['Production at meeras.com.au with HTTPS, security headers and the canonical link', 'live', ''],
@@ -6209,7 +6325,7 @@ const LAUNCH_PLAN = [
     ['Operator named on the site: WIZINSIGHTS PTY LTD, ABN 48 669 478 497, on the Support, Terms and Privacy pages and in the footer', 'live', ''],
     ['Seven specimen Wills regenerated from the launch build and their checksums recorded', 'live', ''],
     ['Umami website for meeras.com.au (production dashboard separate from dev)', 'live', 'Website id e52170c9-be50-41f7-85e8-70b8bfc36ad3, the default in build.js; UMAMI_WEBSITE_ID overrides it. Dev keeps the shared id.'],
-    ['Search: Google Search Console verified for meeras.com.au; sitemap not needed for a single page', 'live', 'Verified 22 October 2026 by the HTML file google663a0c67b107aea8.html, which the Worker answers at its exact URL (the assets layer would otherwise redirect .html paths).'],
+    ['Search: Google Search Console verified for meeras.com.au; sitemap.xml lists the one canonical URL', 'live', 'Verified 22 October 2026 by the HTML file google663a0c67b107aea8.html, which the Worker answers at its exact URL (the assets layer would otherwise redirect .html paths). From 11 November 2026 the Worker also makes /index.html a 301 to /, serves /404 with a real 404 status, and robots.txt names sitemap.xml.'],
     ['Social preview: Open Graph and Twitter card tags with a Meeras image', 'live', 'assets/logo/og-image.jpg (1200x630).'],
     ['Accessibility pass on the wizard (keyboard, screen reader, contrast)', 'progress', 'Automated checks (axe-core, WCAG 2.2 AA) pass with no violations on all 37 screens as of 22 October 2026: contrast fixed for gold, teal and green text, dialogs with roles, focus trapping and Escape, one h1 per screen with h2 sections, live region for the save indicator, labelled bequest fields, banner and contentinfo landmarks, reduced-motion support, 24px progress-bead targets. Pending: a screen-reader run-through of all 14 steps (VoiceOver and NVDA) and a 200% zoom check; the PDF is untagged (pdf-lib limitation).'],
     ['Privacy Policy and Terms reviewed alongside the template', 'progress', ''],
@@ -6223,7 +6339,7 @@ const LAUNCH_PLAN = [
     ['Posts to Muslim community groups and mosque notice boards (Melbourne, Sydney first)', 'planned', ''],
     ['Short explainer video: why every Muslim adult needs a Will', 'planned', ''],
     ['Al-Mawārīth calculator links to Meeras for the Will step', 'planned', ''],
-    ['Feedback channel open (email on the About page) and triage routine', 'planned', 'A support address has not been chosen yet.'],
+    ['Feedback channel open (email on the About page) and triage routine', 'live', 'support@meeras.com.au receives through Cloudflare Email Routing and replies go out from Gmail as the same address; tested both ways on 13 November 2026. Shown on the About, Privacy and Terms pages. The SPF record lists Cloudflare and Google. Still to do: a routine for checking the inbox (the Terms allow 30 days to resolve a complaint).'],
     ['House rule in force: nobody at Meeras answers an individual\'s question about their own Will (WhatsApp, events, email); refer to the FAQ, an Imam or a lawyer', 'live', 'Keeps the legal-practice risk down and avoids a personal duty of care.'],
     ['Claim ladder kept in all launch copy: "designed to meet the formal requirements", "under independent legal review"; never "legally valid" or "lawyer approved"', 'live', ''],
   ]},
@@ -6231,7 +6347,7 @@ const LAUNCH_PLAN = [
     ['Weekly review of the Umami funnel: visits, wizard started, PDF generated, donation clicks', 'planned', ''],
     ['Fix list from user feedback, prioritised by frequency', 'planned', ''],
     ['Second content batch: State-by-State guides, superannuation nominations, executor sheet', 'planned', ''],
-    ['Membership (encrypted storage, A$15 yearly or A$79 lifetime) and lawyer introductions', 'progress', 'Built on the membership branch and tested on staging. Needs: Stripe and Resend keys, solicitor review of the membership Terms, refund policy, support address, and a lawyer who has agreed. Hidden until then.'],
+    ['Membership (encrypted storage, A$15 yearly or A$79 lifetime) and lawyer introductions', 'progress', 'Built on the membership branch and tested on staging. Needs: Stripe and Resend keys, solicitor review of the membership Terms, refund policy, and a lawyer who has agreed. The support address exists (support@meeras.com.au). Hidden until then.'],
   ]},
 ];
 // Go-live risk register (22 October 2026). Score = severity x likelihood, 1 to 5 each;
@@ -6695,7 +6811,7 @@ const Account = {
       this.pending.notice = 'Payment cancelled. Nothing was charged.';
     }
     if (qs.has('signin') || qs.has('checkout')) {
-      try { history.replaceState(null, '', location.pathname + (location.hash || '')); } catch (e) {}
+      try { history.replaceState(history.state, '', location.pathname + (location.hash || '')); } catch (e) {}   // keep the Back/Forward state
     }
     updateAccountNav();
     // A pending plan choice made before signing in carries straight on to payment.
@@ -7236,7 +7352,11 @@ function withHonorifics(escaped) {
 
 let SHOWN_SCREEN = null, PREV_SHOWN_SCREEN = null;
 function renderScreen(id) {
-  if (id !== SHOWN_SCREEN) { PREV_SHOWN_SCREEN = SHOWN_SCREEN; SHOWN_SCREEN = id; }
+  if (id !== SHOWN_SCREEN) {
+    const firstRender = SHOWN_SCREEN === null;
+    PREV_SHOWN_SCREEN = SHOWN_SCREEN; SHOWN_SCREEN = id;
+    recordHistory(id, firstRender);   // first render keeps the address, so a link such as /#faq still routes
+  }
   const fn = screens[id];
   const container = document.getElementById('screenContainer');
   if (!fn) {
@@ -8210,7 +8330,7 @@ function pdfFilename() {
 // content to render. Used only to build the sample download — never persisted.
 function sampleSTATE() {
   const s = DEFAULT_STATE();
-  s.capacity = { age: true, willing: true, faraid: true };
+  s.capacity = { age: true, willing: true, faraid: true, guide: true };
   s.madhhab = 'sunni';
   s.testator = {
     fullName: 'Yusuf Ahmad Karim',
@@ -8720,9 +8840,13 @@ async function init() {
   renderScreen(STATE.currentScreen);
   renderProgress();
   refreshSessionIndicator();
-  const routed = applyHashRoute();   // a shared link such as /#faq opens that page directly
+  HISTORY_NAV = true;                // the page a link opens on replaces the first history entry
+  let routed = false;
+  try { routed = applyHashRoute(); } finally { HISTORY_NAV = false; }   // a shared link such as /#faq opens that page directly
+  try { history.scrollRestoration = 'manual'; } catch (e) { /* older browsers */ }   // Back and Forward also open a step at its top
+  window.addEventListener('popstate', onHistoryNav);
+  window.addEventListener('hashchange', onHistoryNav);
   Account.init();                    // membership: reachable only where the API runs (meeras.com.au)
-  window.addEventListener('hashchange', applyHashRoute);
   updateNavCta();
   if (!routed) updateTitle(STATE.currentScreen || 'S01');
 

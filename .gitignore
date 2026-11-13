@@ -23,3 +23,6 @@ build/
 .wrangler/
 .claude/
 .dev.vars*
+
+# Third-party reference material (other publishers' booklets); kept local only
+reference/
