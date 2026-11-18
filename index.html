@@ -2610,6 +2610,21 @@ const ID_OPTIONAL_HINT = `<div style="font-size:12px;color:var(--muted);margin-t
 // addresses, heir details, amounts, free text, or anything typed by the user.
 // Will content never leaves the device.
 // ────────────────────────────────────────────────────────────────────────────
+// One fixed event name per wizard step. Umami funnels match on the event name, not on
+// event properties, so a step-by-step funnel needs a name per step. The number is the
+// screen id, which keeps the list in wizard order when Umami sorts it by name.
+const STEP_EVENTS = {
+  S02: 'step-02-capacity',          S03: 'step-03-inheritance-rules', S04: 'step-04-identity',
+  S05: 'step-05-jurisdiction',      S06: 'step-06-organ-donation',    S07: 'step-07-funeral',
+  S08: 'step-08-executors',         S09: 'step-09-arbitrator',        S10: 'step-10-guardians',
+  S11: 'step-11-debts-zakat',       S12: 'step-12-bequests',          S13: 'step-13-heirs',
+  S14: 'step-14-trust',             S15: 'step-15-superannuation',    S16: 'step-16-severability',
+  S17: 'step-17-conclusion',        S18: 'step-18-share-calculation', S19: 'step-19-witnesses',
+  S20: 'step-20-final-review',      S21: 'step-21-generate-pdf',      S21B: 'step-21b-share-will',
+  S22: 'step-22-signing-checklist', S23: 'step-23-storage',           S24: 'step-24-support',
+  S25: 'step-25-find-imam',
+};
+
 const Analytics = {
   _sentScreens: new Set(),
   track(event, data) {
@@ -2623,8 +2638,9 @@ const Analytics = {
   screen(id) {
     if (this._sentScreens.has(id)) return;
     this._sentScreens.add(id);
-    if (INFO_SCREENS.has(id)) this.track('info-page', { page: id });
-    else this.track('wizard-step', { screen: id, step: SCREEN_ORDER.indexOf(id) + 1 });
+    if (INFO_SCREENS.has(id)) { this.track('info-page', { page: id }); return; }
+    this.track('wizard-step', { screen: id, step: SCREEN_ORDER.indexOf(id) + 1 });
+    if (STEP_EVENTS[id]) this.track(STEP_EVENTS[id]);
   },
   timeBucket(ms) {
     if (ms < 1000) return '<1s';
@@ -6342,7 +6358,7 @@ screens.S35 = () => {
     <tr><td>Visit</td><td>page view</td><td>Unique visitors by referrer and UTM source</td></tr>
     <tr><td>Interest</td><td>info-page, sample-downloaded</td><td>Which pages and the sample PDF convert into starts</td></tr>
     <tr><td>Start</td><td>wizard-started</td><td>Share of visitors who begin</td></tr>
-    <tr><td>Progress</td><td>wizard-step (screen and step number)</td><td>Where people stop; the heirs step and the share calculation are the likely drop-offs</td></tr>
+    <tr><td>Progress</td><td>wizard-step (screen and step number), plus one named event per step (step-02-capacity to step-23-storage) for the step-by-step funnel</td><td>Where people stop; the heirs step and the share calculation are the likely drop-offs</td></tr>
     <tr><td>Conversion</td><td>pdf-generated (with State)</td><td>Completed Wills, by State</td></tr>
     <tr><td>Advocacy</td><td>draft-exported, share step</td><td>Wills sent on to executors and family</td></tr>
     <tr><td>Support</td><td>donation-click (tier)</td><td>Contributions per completed Will</td></tr>
